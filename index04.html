@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAHADEWA PALOPO - Web Ceklis & KPI Staff</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100">
+
+  <!-- NAVBAR -->
+  <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+        <i data-lucide="layout-dashboard" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg text-white">MAHADEWA PALOPO</h1>
+        <p class="text-xs text-slate-400">Ceklis Harian & KPI Staff</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300">
+        <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
+        <span id="currentDateDisplay">Loading...</span>
+      </div>
+      <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-md">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span>Tambah Task</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay" class="flex-1 flex flex-col items-center justify-center py-20">
+    <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+    <p class="text-xs text-slate-400 font-medium">Mengambil data dari Google Sheets...</p>
+  </div>
+
+  <!-- KANBAN BOARD MAIN -->
+  <main class="flex-1 p-4 lg:p-6 overflow-x-auto custom-scrollbar hidden" id="mainContent">
+    <div class="flex gap-5 min-w-max pb-4" id="kanbanContainer"></div>
+  </main>
+
+  <!-- MODAL TAMBAH TUGAS -->
+  <div id="taskModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+      <h3 class="text-base font-bold text-white mb-4">Tambah Master Tugas Staff</h3>
+      <form id="addTaskForm" onsubmit="handleAddTask(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Pilih Staff</label>
+          <select id="taskStaff" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Tugas / Ceklis</label>
+          <input type="text" id="taskTitle" required placeholder="Contoh: UPDATE CLAIM QOALA" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Bobot Poin KPI</label>
+          <input type="number" id="taskPoints" value="10" min="1" required class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-200">
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs bg-slate-800 text-slate-300">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs bg-indigo-600 text-white font-semibold">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // MASUKKAN URL GOOGLE APPS SCRIPT WEB APP KAMU DI SINI
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwLIheCIA6xeONoE1zo_B5A8vYVNHN_-5-SaqFmOoEe1joteosHG1dGqKP-vUOa2z5vGw/exec";
+
+    let globalData = null;
+
+    async function fetchData() {
+      try {
+        const response = await fetch(`${GAS_API_URL}?action=getDashboard`);
+        const data = await response.json();
+        onDataLoaded(data);
+      } catch (err) {
+        console.error("Gagal mengambil data:", err);
+      }
+    }
+
+    function onDataLoaded(data) {
+      globalData = data;
+      document.getElementById('currentDateDisplay').innerText = data.todayDate;
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('mainContent').classList.remove('hidden');
+
+      const staffSelect = document.getElementById('taskStaff');
+      staffSelect.innerHTML = data.staffs.map(s => `<option value="${s}">${s}</option>`).join('');
+
+      renderBoard();
+    }
+
+    function renderBoard() {
+      const container = document.getElementById('kanbanContainer');
+      container.innerHTML = '';
+
+      globalData.staffs.forEach((staffName) => {
+        const staffTasks = globalData.tasks.filter(t => t.staff === staffName);
+        const totalPoints = staffTasks.reduce((a, b) => a + b.points, 0);
+        
+        let achievedPoints = 0;
+        staffTasks.forEach(t => {
+          if (globalData.completedToday.includes(staffName + "_" + t.title)) {
+            achievedPoints += t.points;
+          }
+        });
+
+        const kpiPct = totalPoints > 0 ? Math.round((achievedPoints / totalPoints) * 100) : 0;
+
+        const colEl = document.createElement('div');
+        colEl.className = "w-80 bg-slate-900/90 border border-slate-800 rounded-2xl flex flex-col max-h-[78vh] shadow-xl";
+        colEl.innerHTML = `
+          <div class="p-4 border-b border-slate-800 bg-slate-900/50 rounded-t-2xl">
+            <div class="flex items-center justify-between mb-2">
+              <h2 class="font-bold text-sm tracking-wider text-slate-100">${staffName}</h2>
+              <span class="text-xs font-extrabold ${kpiPct === 100 ? 'text-emerald-400' : 'text-indigo-400'}">${kpiPct}% KPI Hari Ini</span>
+            </div>
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 transition-all" style="width: ${kpiPct}%"></div>
+            </div>
+          </div>
+
+          <div class="p-3 overflow-y-auto custom-scrollbar flex-1 space-y-2.5">
+            ${staffTasks.length === 0 ? `<p class="text-center py-8 text-xs text-slate-500">Belum ada tugas.</p>` : 
+              staffTasks.map(t => {
+                const isDone = globalData.completedToday.includes(staffName + "_" + t.title);
+                return `
+                  <div onclick="toggleTask('${staffName}', '${t.title}', ${t.points}, ${!isDone})" class="p-3.5 rounded-xl border cursor-pointer select-none ${isDone ? 'bg-slate-900/40 border-slate-800/60 opacity-60' : 'bg-slate-800/60 border-slate-700/60'}">
+                    <div class="flex items-start gap-3">
+                      <div class="mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center ${isDone ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600'}">
+                        ${isDone ? '✓' : ''}
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold ${isDone ? 'line-through text-slate-400' : 'text-slate-200'}">${t.title}</p>
+                        <span class="text-[10px] font-bold text-indigo-300 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-800/60 mt-1 inline-block">+${t.points} Poin</span>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')
+            }
+          </div>
+          <div class="p-3 border-t border-slate-800">
+            <button onclick="openModal('${staffName}')" class="w-full py-2 bg-slate-800/50 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300 flex items-center justify-center gap-1">
+              + Tambah Task
+            </button>
+          </div>
+        `;
+        container.appendChild(colEl);
+      });
+
+      lucide.createIcons();
+    }
+
+    async function toggleTask(staffName, taskTitle, points, newStatus) {
+      const matchKey = staffName + "_" + taskTitle;
+      if (newStatus) {
+        globalData.completedToday.push(matchKey);
+      } else {
+        globalData.completedToday = globalData.completedToday.filter(k => k !== matchKey);
+      }
+      renderBoard();
+
+      // Sync ke Google Sheets via Fetch API
+      await fetch(GAS_API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "toggleTask",
+          staffName: staffName,
+          taskTitle: taskTitle,
+          points: points,
+          isCompleted: newStatus
+        })
+      });
+    }
+
+    function openModal(staffName) {
+      if (staffName) document.getElementById('taskStaff').value = staffName;
+      document.getElementById('taskModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('taskModal').classList.add('hidden');
+      document.getElementById('addTaskForm').reset();
+    }
+
+    async function handleAddTask(e) {
+      e.preventDefault();
+      const staff = document.getElementById('taskStaff').value;
+      const title = document.getElementById('taskTitle').value;
+      const points = parseInt(document.getElementById('taskPoints').value) || 10;
+
+      closeModal();
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+      document.getElementById('mainContent').classList.add('hidden');
+
+      await fetch(GAS_API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "addTask",
+          staffName: staff,
+          taskTitle: title,
+          points: points
+        })
+      });
+
+      setTimeout(fetchData, 1500);
+    }
+
+    window.onload = fetchData;
+  </script>
+</body>
+</html>
