@@ -1,1791 +1,533 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mahadewa.id — Perbandingan Produk & Spesifikasi</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #ffffff;
-      color: #1d1d1f;
-      -webkit-font-smoothing: antialiased;
-    }
-    .apple-select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 0.75rem center;
-      background-size: 1rem;
-    }
-    /* Custom scrollbar untuk tabel responsif */
-    ::-webkit-scrollbar {
-      height: 6px;
-      width: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #f5f5f7;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #d2d2d7;
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #86868b;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perbandingan Produk - Mahadewa.id</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%23C62828'/><path d='M35 30h18a15 15 0 0 1 15 15v10a15 15 0 0 1-15 15H35V30zm15 30h3a5 5 0 0 0 5-5V45a5 5 0 0 0-5-5h-3v20z' fill='%23fff'/></svg>">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap');
+        body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #FBFBFD; color: #1D1D1F; }
+    </style>
 </head>
-<body class="bg-white text-[#1d1d1f] selection:bg-[#C62828] selection:text-white">
-
-  <!-- Toast Notification (Pengganti alert) -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
-
-  <!-- Navbar / Header Resmi Mahadewa.id -->
-  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-      <!-- Brand Logo Mahadewa.id -->
-      <a href="#" onclick="resetToPublicView(event)" class="flex items-center gap-2.5 group focus:outline-none">
-        <div id="header-logo-container" class="w-9 h-9 flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
-          <!-- Logo SVG Resmi Bundar Merah #C62828 berpotongan huruf 'd' -->
-          <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Mahadewa.id">
-            <circle cx="50" cy="50" r="46" fill="#C62828" />
-            <!-- Huruf 'd' putih bersih dengan potongan geometris khas -->
-            <path d="M62 20 V76 H52 V70 C48.5 74.5 43.2 77 37 77 C25.5 77 18 68.5 18 56.5 C18 44.5 25.5 36 37 36 C43.2 36 48.5 38.5 52 43 V20 H62 Z M39.5 45 C32.5 45 28.2 49.8 28.2 56.5 C28.2 63.2 32.5 68 39.5 68 C46.5 68 51.5 63.2 51.5 56.5 C51.5 49.8 46.5 45 39.5 45 Z" fill="#FFFFFF"/>
-            <!-- Aksen garis potong khas pada batang 'd' -->
-            <polygon points="48,26 67,18 67,25 48,33" fill="#C62828"/>
-            <circle cx="71" cy="71" r="5" fill="#FFFFFF"/>
-          </svg>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-xl font-extrabold tracking-tight text-[#1d1d1f] leading-none">
-            mahadewa<span class="text-[#C62828]">.id</span>
-          </span>
-          <span class="text-[10px] font-medium text-gray-500 tracking-wider uppercase mt-0.5">Apple & Tech Store Palopo</span>
-        </div>
-      </a>
-
-      <!-- Status Sinkronisasi & Tombol Kelola Katalog -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Indikator Status Database -->
-        <div id="sync-status-badge" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-          <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-gray-400"></span>
-          <span id="sync-status-text">Mode Lokal</span>
-        </div>
-
-        <button onclick="toggleAdminPanel()" id="btn-toggle-admin" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] transition-colors border border-gray-200/80">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#C62828]"></i>
-          <span>Kelola Produk & Sync</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Hero Section & Filter Kategori (Gaya Apple Compare) -->
-  <section class="pt-10 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-    <p class="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#C62828] mb-2">Katalog Resmi Mahadewa.id</p>
-    <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-3">
-      Perbandingan Produk
-    </h1>
-    <p class="text-sm sm:text-base text-[#6e6e73] max-w-2xl mx-auto mb-8">
-      Bandingkan spesifikasi teknis, keunggulan, hingga rekomendasi pemakaian secara berdampingan untuk menemukan perangkat terbaik sesuai kebutuhan Anda.
-    </p>
-
-    <!-- Kontrol Filter Kategori & Jumlah Kolom -->
-    <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#f5f5f7] p-3 rounded-2xl border border-gray-200/70">
-      <!-- Filter Kategori Pills -->
-      <div id="category-filters" class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 justify-start md:justify-center">
-        <!-- Di-render otomatis via JS -->
-      </div>
-
-      <!-- Pengatur Jumlah Kolom Perbandingan (2, 3, atau 4) -->
-      <div class="flex items-center gap-2 self-end md:self-auto flex-shrink-0">
-        <span class="text-xs font-medium text-[#6e6e73]">Tampilkan:</span>
-        <div class="inline-flex bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
-          <button onclick="setColumnCount(2)" id="col-btn-2" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">2 Produk</button>
-          <button onclick="setColumnCount(3)" id="col-btn-3" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">3 Produk</button>
-          <button onclick="setColumnCount(4)" id="col-btn-4" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">4 Produk</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Area Utama Tabel Perbandingan (Gaya Apple Compare) -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-    <div class="overflow-x-auto pb-4">
-      <div id="comparison-wrapper" class="min-w-[680px]">
-        <!-- Baris Sticky Header Pemilih Produk + Foto + Tombol WA -->
-        <div id="compare-header-grid" class="grid gap-4 sm:gap-6 border-b border-gray-200 pb-8 pt-2">
-          <!-- Kolom produk akan di-render oleh JavaScript -->
-        </div>
-
-        <!-- Baris Spesifikasi Teknis Lengkap -->
-        <div id="compare-specs-container" class="divide-y divide-gray-200">
-          <!-- Baris spesifikasi akan di-render oleh JavaScript -->
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- PANEL ADMIN: Kelola Katalog, Sinkronisasi Google Sheets & AI Auto-Isi -->
-  <section id="admin-panel" class="hidden bg-[#f5f5f7] border-t border-gray-200 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto space-y-8">
-      
-      <!-- Header Panel Admin -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-300 pb-5">
-        <div>
-          <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#C62828]">
-            <i data-lucide="database" class="w-3.5 h-3.5"></i> Manajemen Katalog & Cloud Sync
-          </span>
-          <h2 class="text-2xl font-bold text-[#1d1d1f] mt-1">Kelola Produk & Sinkronisasi Google Sheets</h2>
-          <p class="text-sm text-[#6e6e73]">Tambahkan produk baru secara manual, gunakan AI Auto-Isi, atau sinkronkan database ke semua perangkat toko via Google Sheets.</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button onclick="exportProductsJSON()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-gray-100 text-[#1d1d1f] border border-gray-300 shadow-sm transition">
-            <i data-lucide="download" class="w-4 h-4 text-gray-600"></i> Export JSON
-          </button>
-          <label class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-gray-100 text-[#1d1d1f] border border-gray-300 shadow-sm transition cursor-pointer">
-            <i data-lucide="upload" class="w-4 h-4 text-gray-600"></i> Import JSON
-            <input type="file" accept=".json" onchange="importProductsJSON(event)" class="hidden" />
-          </label>
-          <label class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-gray-100 text-[#1d1d1f] border border-gray-300 shadow-sm transition cursor-pointer">
-            <i data-lucide="image" class="w-4 h-4 text-[#C62828]"></i> Ganti Logo Toko
-            <input type="file" accept="image/*" onchange="handleLogoUpload(event)" class="hidden" />
-          </label>
-          <button onclick="resetToDefaultCatalog()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 text-[#C62828] border border-red-200 transition">
-            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Default
-          </button>
-        </div>
-      </div>
-
-      <!-- KARTU 1: Integrasi Database Real-Time Google Sheets (Apps Script) -->
-      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200/90">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5">
-          <div class="flex items-start gap-3.5">
-            <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0">
-              <i data-lucide="sheet" class="w-6 h-6 text-emerald-600"></i>
-            </div>
-            <div>
-              <div class="flex items-center gap-2.5 flex-wrap">
-                <h3 class="text-lg font-bold text-[#1d1d1f]">Sinkronisasi Database Google Sheets</h3>
-                <span id="gsheet-badge-card" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
-                  Belum Terhubung
-                </span>
-              </div>
-              <p class="text-xs sm:text-sm text-[#6e6e73] mt-0.5">
-                Hubungkan ke Google Sheets agar setiap perubahan produk otomatis tersimpan dan tampil di semua HP & komputer kasir Mahadewa.id.
-              </p>
-            </div>
-          </div>
-
-          <button onclick="openAppsScriptModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex-shrink-0">
-            <i data-lucide="code-2" class="w-4 h-4"></i>
-            <span>Lihat & Salin Kode Google Apps Script (Code.gs)</span>
-          </button>
-        </div>
-
-        <!-- Form URL Web App & Tombol Sync -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end bg-[#f5f5f7] p-4 rounded-2xl border border-gray-200">
-          <div class="lg:col-span-6">
-            <label for="gsheet-url-input" class="block text-xs font-semibold text-gray-700 mb-1.5">
-              URL Google Apps Script Web App (<code class="text-[#C62828]">.../exec</code>)
-            </label>
-            <div class="flex gap-2">
-              <input type="url" id="gsheet-url-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              <button onclick="saveGoogleSheetUrl()" class="px-4 py-2.5 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs sm:text-sm font-semibold transition flex-shrink-0">
-                Simpan URL
-              </button>
-            </div>
-          </div>
-
-          <div class="lg:col-span-6 flex flex-wrap sm:flex-nowrap gap-2">
-            <button onclick="syncFromGoogleSheets(false)" id="btn-sync-pull" class="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-[#1d1d1f] border border-gray-300 text-xs sm:text-sm font-semibold shadow-sm transition">
-              <i data-lucide="cloud-download" class="w-4 h-4 text-blue-600"></i>
-              <span>Tarik Data dari Sheets (Sync)</span>
-            </button>
-            <button onclick="pushAllToGoogleSheets()" id="btn-sync-push" class="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs sm:text-sm font-semibold shadow-sm transition">
-              <i data-lucide="cloud-upload" class="w-4 h-4"></i>
-              <span>Kirim Semua ke Sheets (Push)</span>
-            </button>
-          </div>
-        </div>
-        <p id="gsheet-last-sync" class="text-[11px] text-gray-500 mt-2.5 flex items-center gap-1.5">
-          <i data-lucide="info" class="w-3.5 h-3.5"></i>
-          <span>Tips: Setelah URL disimpan, setiap aksi Tambah, Edit, atau Hapus produk akan otomatis dikirim ke Google Sheets.</span>
-        </p>
-      </div>
-
-      <!-- KARTU 2: Form Tambah / Edit Produk + AI Auto-Isi Spesifikasi -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <!-- Kolom Kiri (7 Kolom): Form Input Produk & AI Auto-Fill -->
-        <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200/90 space-y-6">
-          <div class="flex items-center justify-between border-b border-gray-100 pb-4">
-            <div>
-              <h3 id="form-title" class="text-lg font-bold text-[#1d1d1f]">Tambah Produk Baru</h3>
-              <p class="text-xs text-[#6e6e73]">Isi manual atau gunakan asisten AI di bawah untuk mengisi spesifikasi otomatis.</p>
-            </div>
-            <button type="button" onclick="resetProductForm()" id="btn-cancel-edit" class="hidden text-xs font-semibold text-gray-500 hover:text-[#C62828] px-3 py-1.5 rounded-lg bg-gray-100">
-              Batal Edit
-            </button>
-          </div>
-
-          <!-- Kotak AI Auto-Isi Spesifikasi (Kebal Safari AutoFill) -->
-          <div class="bg-gradient-to-br from-red-50/70 via-white to-gray-50 p-4 sm:p-5 rounded-2xl border border-red-200/80 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#C62828]">
-                <i data-lucide="sparkles" class="w-4 h-4"></i> AI Auto-Isi Spesifikasi Produk
-              </span>
-              <span class="text-[11px] text-gray-500">Mendukung Gemini API (`AIza...` / `AQ...`) & Pencarian Gratis</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-              <div class="sm:col-span-7">
-                <input type="text" id="ai-product-query" placeholder="Ketik nama produk, misal: iPhone 16 Pro Max atau MacBook Pro M4"
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              </div>
-              <div class="sm:col-span-5 relative">
-                <!-- Input API Key kebal AutoFill Safari (type="text" dengan masking CSS jika disembunyikan) -->
-                <input type="text" id="ai-api-key" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-                  data-lpignore="true" data-form-type="other"
-                  placeholder="API Key Gemini (Opsional)"
-                  class="w-full pl-3.5 pr-16 py-2.5 rounded-xl bg-white border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-                <button type="button" onclick="toggleApiKeyVisibility()" id="btn-toggle-key"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-600 hover:text-[#1d1d1f] px-2 py-1 rounded-md bg-gray-100">
-                  Sembunyi
-                </button>
-              </div>
-            </div>
-
-            <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-              <p class="text-[11px] text-gray-500">Kosongkan API Key untuk menggunakan pencarian spesifikasi terbuka / preset otomatis.</p>
-              <button type="button" onclick="autoFillWithAI()" id="btn-ai-autofill"
-                class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition">
-                <i data-lucide="wand-2" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>Isi Spesifikasi Otomatis</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Form Input Spesifikasi Produk -->
-          <form id="product-form" onsubmit="handleSaveProduct(event)" class="space-y-4">
-            <input type="hidden" id="prod-id" />
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Produk *</label>
-                <input type="text" id="prod-name" required placeholder="Contoh: iPhone 18 Pro Max"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Kategori *</label>
-                <select id="prod-category" required
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C62828]">
-                  <option value="iPhone">iPhone</option>
-                  <option value="iPad">iPad</option>
-                  <option value="MacBook">MacBook</option>
-                  <option value="Laptop Windows">Laptop Windows</option>
-                  <option value="Starlink">Starlink</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Tagline / Slogan Singkat *</label>
-                <input type="text" id="prod-tagline" required placeholder="Contoh: Performa Pro paling mutakhir."
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Foto Produk (URL atau Upload File)</label>
-                <div class="flex gap-2">
-                  <input type="text" id="prod-image" placeholder="https://... atau upload file ->"
-                    class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-                  <label class="inline-flex items-center justify-center px-3 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 border border-gray-300 cursor-pointer flex-shrink-0" title="Upload Foto dari Perangkat">
-                    <i data-lucide="camera" class="w-4 h-4 text-gray-700"></i>
-                    <input type="file" accept="image/*" onchange="handleProductImageUpload(event)" class="hidden" />
-                  </label>
+<body class="min-h-screen flex flex-col justify-between">
+    <!-- Header Mahadewa.id -->
+    <header class="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-[#C62828] flex items-center justify-center text-white font-bold text-xl shadow-md">
+                    d
                 </div>
-              </div>
+                <div>
+                    <span class="font-bold text-lg tracking-tight text-gray-900">mahadewa.id</span>
+                    <span class="block text-xs text-gray-500">Cabang Palopo</span>
+                </div>
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Layar / Dimensi *</label>
-                <input type="text" id="prod-display" required placeholder="Contoh: 6,9 inci Super Retina XDR OLED 120Hz"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Performa / Chip *</label>
-                <input type="text" id="prod-chip" required placeholder="Contoh: Chip A20 Pro (2nm) dengan Apple Intelligence"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Kamera / Konektivitas *</label>
-                <input type="text" id="prod-camera" required placeholder="Contoh: Sistem kamera Pro 48MP + Telefoto 5x"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Baterai / Daya *</label>
-                <input type="text" id="prod-battery" required placeholder="Contoh: Pemutaran video hingga 33 jam, USB-C"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              </div>
-            </div>
-
+            <nav class="hidden md:flex space-x-8 text-sm font-medium text-gray-600">
+                <a href="#compareSection" class="hover:text-[#C62828] transition">Perbandingan</a>
+                <a href="#adminSection" class="hover:text-[#C62828] transition">Kelola & Sync</a>
+            </nav>
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Fitur Unggulan *</label>
-              <input type="text" id="prod-features" required placeholder="Contoh: Bodi Titanium, Kontrol Kamera, Action Button, Tahan air IP68"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
+                <a href="https://wa.me/6282344888441" target="_blank" class="bg-[#C62828] hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-full transition shadow-sm flex items-center gap-2">
+                    <i class="fa-brands fa-whatsapp"></i> Tanya Stok
+                </a>
             </div>
+        </div>
+    </header>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-semibold text-emerald-700 mb-1">Kelebihan Utama *</label>
-                <textarea id="prod-pros" rows="2" required placeholder="Contoh: Layar sangat luas & terang, performa gaming/editing kencang, baterai awet seharian."
-                  class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"></textarea>
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-amber-700 mb-1">Kekurangan / Catatan *</label>
-                <textarea id="prod-cons" rows="2" required placeholder="Contoh: Ukuran bodi besar dan bobot terasa saat digenggam satu tangan."
-                  class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]"></textarea>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">URL Sumber Referensi Resmi</label>
-              <input type="url" id="prod-source" placeholder="https://www.apple.com/id/"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-            </div>
-
-            <div class="pt-2 flex items-center justify-end gap-3">
-              <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#C62828] hover:bg-[#a61c1c] text-white text-sm font-semibold shadow-md transition">
-                <i data-lucide="save" class="w-4 h-4"></i>
-                <span id="btn-submit-text">Simpan Produk ke Katalog</span>
-              </button>
-            </div>
-          </form>
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full" id="compareSection">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-2">Perbandingan Produk Mahadewa.id</h1>
+            <p class="text-gray-500 text-sm sm:text-base">Pilih perangkat terbaik sesuai kebutuhan Anda dengan spesifikasi resmi terlengkap.</p>
         </div>
 
-        <!-- Kolom Kanan (5 Kolom): Daftar Produk Tersimpan -->
-        <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200/90 flex flex-col">
-          <div class="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-            <div>
-              <h3 class="text-lg font-bold text-[#1d1d1f]">Daftar Katalog (<span id="catalog-count">0</span>)</h3>
-              <p class="text-xs text-[#6e6e73]">Klik Edit untuk memperbarui spesifikasi atau Hapus produk.</p>
+        <!-- Filter & Layout Control -->
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <div class="flex flex-wrap gap-2 items-center" id="categoryFilters">
+                <button onclick="setCategoryFilter('Semua')" class="cat-btn px-4 py-2 rounded-full text-xs font-semibold bg-[#C62828] text-white transition shadow-sm">Semua</button>
+                <button onclick="setCategoryFilter('iPhone')" class="cat-btn px-4 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">iPhone</button>
+                <button onclick="setCategoryFilter('iPad')" class="cat-btn px-4 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">iPad</button>
+                <button onclick="setCategoryFilter('MacBook')" class="cat-btn px-4 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">MacBook</button>
+                <button onclick="setCategoryFilter('Laptop Windows')" class="cat-btn px-4 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">Laptop Windows</button>
+                <button onclick="setCategoryFilter('Starlink')" class="cat-btn px-4 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition">Starlink</button>
             </div>
-            <input type="text" id="admin-search-input" oninput="renderAdminProductList()" placeholder="Cari produk..."
-              class="px-3 py-1.5 rounded-xl border border-gray-300 text-xs w-36 sm:w-44 focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-          </div>
-
-          <div id="admin-product-list" class="space-y-2.5 overflow-y-auto max-h-[640px] pr-1 flex-1">
-            <!-- List produk di-render via JavaScript -->
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer Resmi Mahadewa.id -->
-  <footer class="bg-[#f5f5f7] border-t border-gray-200 text-[#6e6e73] text-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-gray-200">
-        <!-- Brand Info -->
-        <div class="space-y-3">
-          <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7">
-              <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="46" fill="#C62828" />
-                <path d="M62 20 V76 H52 V70 C48.5 74.5 43.2 77 37 77 C25.5 77 18 68.5 18 56.5 C18 44.5 25.5 36 37 36 C43.2 36 48.5 38.5 52 43 V20 H62 Z M39.5 45 C32.5 45 28.2 49.8 28.2 56.5 C28.2 63.2 32.5 68 39.5 68 C46.5 68 51.5 63.2 51.5 56.5 C51.5 49.8 46.5 45 39.5 45 Z" fill="#FFFFFF"/>
-                <polygon points="48,26 67,18 67,25 48,33" fill="#C62828"/>
-                <circle cx="71" cy="71" r="5" fill="#FFFFFF"/>
-              </svg>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-500">Kolom Tampilan:</span>
+                <button onclick="setColumnCount(2)" class="col-btn px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 hover:bg-gray-50">2</button>
+                <button onclick="setColumnCount(3)" class="col-btn px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 hover:bg-gray-50">3</button>
+                <button onclick="setColumnCount(4)" class="col-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-white">4</button>
             </div>
-            <span class="text-base font-extrabold text-[#1d1d1f]">mahadewa<span class="text-[#C62828]">.id</span></span>
-          </div>
-          <p class="leading-relaxed text-gray-600">
-            Pusat penjualan iPhone, iPad, MacBook, Laptop Windows, dan Starlink terpercaya di Kota Palopo. Bandingkan spesifikasi resmi sebelum membeli.
-          </p>
         </div>
 
-        <!-- Alamat Toko -->
-        <div class="space-y-2">
-          <h4 class="font-bold text-[#1d1d1f] uppercase tracking-wider text-[11px]">Lokasi Toko</h4>
-          <p class="flex items-start gap-2 text-gray-600 leading-relaxed">
-            <i data-lucide="map-pin" class="w-4 h-4 text-[#C62828] flex-shrink-0 mt-0.5"></i>
-            <span>Jl. Andi Djemma / Tompotika Kec. Wara, Kota Palopo, Sulawesi Selatan</span>
-          </p>
+        <!-- Tabel Perbandingan Utama -->
+        <div id="comparisonGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Render via JavaScript -->
         </div>
 
-        <!-- Kontak Resmi -->
-        <div class="space-y-2">
-          <h4 class="font-bold text-[#1d1d1f] uppercase tracking-wider text-[11px]">Hubungi Kami</h4>
-          <p class="flex items-center gap-2 text-gray-600">
-            <i data-lucide="phone" class="w-4 h-4 text-[#C62828] flex-shrink-0"></i>
-            <a href="https://wa.me/6282344888441" target="_blank" rel="noopener" class="hover:text-[#C62828] font-medium">0823-4488-8441 (WhatsApp / Telepon)</a>
-          </p>
-          <p class="flex items-center gap-2 text-gray-600">
-            <i data-lucide="mail" class="w-4 h-4 text-[#C62828] flex-shrink-0"></i>
-            <a href="mailto:mahadewa.cabpalopo@gmail.com" class="hover:text-[#C62828] font-medium">mahadewa.cabpalopo@gmail.com</a>
-          </p>
-        </div>
-      </div>
-
-      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-500">
-        <p>&copy; <span id="footer-year"></span> Mahadewa.id Palopo. Hak Cipta Dilindungi.</p>
-        <p>Spesifikasi dapat bervariasi tergantung konfigurasi & ketersediaan stok.</p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- MODAL POP-UP: Kode Google Apps Script (Code.gs) -->
-  <div id="apps-script-modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
-      <!-- Header Modal -->
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-[#f5f5f7]">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
-            <i data-lucide="file-code-2" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-[#1d1d1f]">Kode Google Apps Script (Code.gs)</h3>
-            <p class="text-xs text-[#6e6e73]">Pasang sekali di Google Sheets untuk sinkronisasi otomatis semua perangkat</p>
-          </div>
-        </div>
-        <button onclick="closeAppsScriptModal()" class="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- Langkah Pemasangan Singkat -->
-      <div class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-gray-700">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-1.5 text-emerald-950">
-          <p class="font-bold text-emerald-900">Cara Pemasangan (Hanya 2 Menit):</p>
-          <ol class="list-decimal list-inside space-y-1 text-xs leading-relaxed">
-            <li>Buka <strong>Google Sheets</strong> baru di akun Google Anda (<a href="https://sheets.new" target="_blank" class="underline font-semibold text-emerald-700">sheets.new</a>).</li>
-            <li>Klik menu <strong>Ekstensi (Extensions) &rarr; Apps Script</strong>.</li>
-            <li>Hapus semua kode bawaan di editor, lalu tempel kode <code>Code.gs</code> di bawah ini dan klik ikon <strong>Simpan (Ctrl+S / Cmd+S)</strong>.</li>
-            <li>Klik tombol biru <strong>Terapkan (Deploy) &rarr; Deployment baru (New deployment)</strong>.</li>
-            <li>Pilih jenis: <strong>Aplikasi web (Web app)</strong> &bull; Jalankan sebagai: <strong>Saya (Me)</strong> &bull; Yang memiliki akses: <strong>Siapa saja (Anyone)</strong>.</li>
-            <li>Klik <strong>Terapkan (Deploy)</strong>, izinkan akses Google, lalu salin <strong>URL Aplikasi Web (<code>.../exec</code>)</strong> dan tempel di kolom pengaturan Mahadewa.id!</li>
-          </ol>
-        </div>
-
-        <!-- Area Kode Script -->
-        <div class="relative">
-          <div class="flex items-center justify-between bg-[#1d1d1f] text-gray-300 px-4 py-2.5 rounded-t-2xl text-xs font-mono">
-            <span>Code.gs</span>
-            <button onclick="copyAppsScriptCode()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-sans font-semibold text-xs transition">
-              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-              <span>Salin Kode Script</span>
-            </button>
-          </div>
-          <textarea id="apps-script-code-box" readonly rows="13"
-            class="w-full p-4 bg-[#141416] text-emerald-300 font-mono text-xs rounded-b-2xl focus:outline-none leading-relaxed select-all"></textarea>
-        </div>
-      </div>
-
-      <!-- Footer Modal -->
-      <div class="px-6 py-3.5 border-t border-gray-200 bg-gray-50 flex justify-end gap-2">
-        <button onclick="copyAppsScriptCode()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold transition">
-          <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin Kode
-        </button>
-        <button onclick="closeAppsScriptModal()" class="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-[#1d1d1f] text-xs font-semibold transition">
-          Tutup
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // =========================================================================
-    // 1. KONFIGURASI & DATA BAWAAN LENGKAP MAHADEWA.ID
-    // =========================================================================
-    const STORAGE_KEY_PRODUCTS = 'mahadewa_compare_products_v2';
-    const STORAGE_KEY_GSHEET_URL = 'mahadewa_gsheet_url';
-    const STORAGE_KEY_LOGO = 'mahadewa_custom_logo_v1';
-    const WHATSAPP_NUMBER = '6282344888441';
-
-    // Kode Google Apps Script siap salin untuk sinkronisasi real-time
-    const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
-// GOOGLE APPS SCRIPT DATABASE SYNC UNTUK MAHADEWA.ID
-// Tempel kode ini di Google Sheets > Ekstensi > Apps Script, lalu Deploy Web App
-// ============================================================================
-
-const SHEET_NAME = 'KatalogProduk';
-const HEADERS = [
-  'id', 'name', 'category', 'tagline', 'image',
-  'display', 'chip', 'camera', 'battery',
-  'features', 'pros', 'cons', 'source', 'updatedAt'
-];
-
-function getOrCreateSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-    sheet.appendRow(HEADERS);
-    sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#f3f4f6');
-    sheet.setFrozenRows(1);
-  }
-  return sheet;
-}
-
-// Mengambil semua produk dari Google Sheets (GET)
-function doGet(e) {
-  try {
-    const sheet = getOrCreateSheet();
-    const data = sheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      return jsonResponse({ status: 'success', products: [] });
-    }
-    const headers = data[0];
-    const products = [];
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      if (!row[0] && !row[1]) continue;
-      const item = {};
-      headers.forEach((h, idx) => {
-        item[h] = row[idx] !== undefined ? String(row[idx]) : '';
-      });
-      products.push(item);
-    }
-    return jsonResponse({ status: 'success', products: products });
-  } catch (err) {
-    return jsonResponse({ status: 'error', message: err.toString() });
-  }
-}
-
-// Menyimpan / memperbarui / menghapus produk di Google Sheets (POST)
-function doPost(e) {
-  try {
-    const payload = JSON.parse(e.postData.contents);
-    const action = payload.action || 'syncAll';
-    const sheet = getOrCreateSheet();
-
-    if (action === 'syncAll' && Array.isArray(payload.products)) {
-      sheet.clearContents();
-      sheet.appendRow(HEADERS);
-      sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#f3f4f6');
-      const now = new Date().toISOString();
-      const rows = payload.products.map(p => [
-        p.id || '', p.name || '', p.category || '', p.tagline || '', p.image || '',
-        p.display || '', p.chip || '', p.camera || '', p.battery || '',
-        p.features || '', p.pros || '', p.cons || '', p.source || '', now
-      ]);
-      if (rows.length > 0) {
-        sheet.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
-      }
-      return jsonResponse({ status: 'success', count: rows.length });
-    }
-
-    if (action === 'upsert' && payload.product) {
-      const p = payload.product;
-      const data = sheet.getDataRange().getValues();
-      const now = new Date().toISOString();
-      const rowValues = [
-        p.id || '', p.name || '', p.category || '', p.tagline || '', p.image || '',
-        p.display || '', p.chip || '', p.camera || '', p.battery || '',
-        p.features || '', p.pros || '', p.cons || '', p.source || '', now
-      ];
-      let foundRow = -1;
-      for (let i = 1; i < data.length; i++) {
-        if (String(data[i][0]) === String(p.id)) {
-          foundRow = i + 1;
-          break;
-        }
-      }
-      if (foundRow > 0) {
-        sheet.getRange(foundRow, 1, 1, HEADERS.length).setValues([rowValues]);
-      } else {
-        sheet.appendRow(rowValues);
-      }
-      return jsonResponse({ status: 'success', id: p.id });
-    }
-
-    if (action === 'delete' && payload.id) {
-      const data = sheet.getDataRange().getValues();
-      for (let i = data.length - 1; i >= 1; i--) {
-        if (String(data[i][0]) === String(payload.id)) {
-          sheet.deleteRow(i + 1);
-        }
-      }
-      return jsonResponse({ status: 'success', deletedId: payload.id });
-    }
-
-    return jsonResponse({ status: 'error', message: 'Aksi tidak dikenal' });
-  } catch (err) {
-    return jsonResponse({ status: 'error', message: err.toString() });
-  }
-}
-
-function jsonResponse(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}`;
-
-    // Generator Ilustrasi SVG Bawaan Berkualitas Tinggi (Bebas Broken Image)
-    function createDeviceSvgDataUri(type, accentColor = '#1d1d1f', label = '') {
-      let svg = '';
-      if (type === 'iphone') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <defs>
-            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="${accentColor}"/>
-              <stop offset="100%" stop-color="#3a3a3c"/>
-            </linearGradient>
-          </defs>
-          <rect x="68" y="18" width="104" height="204" rx="22" fill="#1d1d1f" stroke="#d2d2d7" stroke-width="3"/>
-          <rect x="74" y="24" width="92" height="192" rx="17" fill="url(#g1)"/>
-          <rect x="104" y="31" width="32" height="8" rx="4" fill="#000000"/>
-          <circle cx="128" cy="35" r="2.2" fill="#1e3a8a"/>
-          <text x="120" y="128" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle" opacity="0.92">${label}</text>
-        </svg>`;
-      } else if (type === 'iphone-duo') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="36" y="28" width="84" height="184" rx="18" fill="#1d1d1f" stroke="#d2d2d7" stroke-width="2.5"/>
-          <rect x="41" y="33" width="74" height="174" rx="14" fill="#2c2c2e"/>
-          <rect x="120" y="28" width="84" height="184" rx="18" fill="#1d1d1f" stroke="#d2d2d7" stroke-width="2.5"/>
-          <rect x="125" y="33" width="74" height="174" rx="14" fill="#C62828"/>
-          <text x="120" y="126" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">${label}</text>
-        </svg>`;
-      } else if (type === 'ipad') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="46" y="22" width="148" height="196" rx="16" fill="#1d1d1f" stroke="#d2d2d7" stroke-width="3"/>
-          <rect x="54" y="30" width="132" height="180" rx="10" fill="#2563eb"/>
-          <circle cx="120" cy="26" r="2" fill="#4b5563"/>
-          <text x="120" y="125" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">${label}</text>
-        </svg>`;
-      } else if (type === 'macbook') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="34" y="48" width="172" height="114" rx="10" fill="#1d1d1f" stroke="#9ca3af" stroke-width="2.5"/>
-          <rect x="40" y="54" width="160" height="102" rx="6" fill="#0f172a"/>
-          <path d="M16 162 H224 L214 172 H26 Z" fill="#d1d5db"/>
-          <rect x="102" y="162" width="36" height="4" rx="2" fill="#9ca3af"/>
-          <text x="120" y="108" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">${label}</text>
-        </svg>`;
-      } else if (type === 'windows') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="34" y="48" width="172" height="114" rx="8" fill="#334155" stroke="#cbd5e1" stroke-width="2.5"/>
-          <rect x="40" y="54" width="160" height="102" rx="4" fill="#1e293b"/>
-          <path d="M18 162 H222 L215 171 H25 Z" fill="#94a3b8"/>
-          <text x="120" y="108" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#38bdf8" text-anchor="middle">${label}</text>
-        </svg>`;
-      } else {
-        // Starlink
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="42" y="38" width="156" height="102" rx="10" transform="rotate(-12 120 89)" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
-          <path d="M115 135 L95 198 M125 135 L155 198 M80 198 H170" stroke="#475569" stroke-width="7" stroke-linecap="round"/>
-          <text x="120" y="95" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="#1d1d1f" text-anchor="middle">${label}</text>
-        </svg>`;
-      }
-      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-    }
-
-    // Data Bawaan Lengkap (11 Produk Utama Mahadewa.id)
-    const DEFAULT_PRODUCTS = [
-      {
-        id: 'iphone-15',
-        name: 'iPhone 15',
-        category: 'iPhone',
-        tagline: 'Dynamic Island dan kamera utama 48 MP yang bertenaga.',
-        image: createDeviceSvgDataUri('iphone', '#2563eb', 'iPhone 15'),
-        display: '6,1 inci Super Retina XDR OLED, 2.000 nit puncak luar ruangan',
-        chip: 'Chip A16 Bionic dengan GPU 5-core',
-        camera: 'Sistem kamera ganda: Utama 48 MP + Ultra Wide 12 MP, Telefoto 2x',
-        battery: 'Pemutaran video hingga 20 jam, konektor USB-C (USB 2)',
-        features: 'Dynamic Island, Kaca belakang berwarna, Tahan air IP68, MagSafe',
-        pros: 'Harga paling terjangkau dengan Dynamic Island & USB-C, kamera 48 MP tajam.',
-        cons: 'Refresh rate masih 60Hz, belum mendukung Apple Intelligence.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-16',
-        name: 'iPhone 16',
-        category: 'iPhone',
-        tagline: 'Dibuat untuk Apple Intelligence dengan Kontrol Kamera baru.',
-        image: createDeviceSvgDataUri('iphone', '#0d9488', 'iPhone 16'),
-        display: '6,1 inci Super Retina XDR OLED dengan Ceramic Shield generasi terbaru',
-        chip: 'Chip A18 (3nm) dengan Neural Engine 16-core yang jauh lebih cepat',
-        camera: 'Kamera Fusion 48 MP + Ultra Wide 12 MP dengan autofokus (Foto Makro)',
-        battery: 'Pemutaran video hingga 22 jam, pengisian cepat MagSafe 25W',
-        features: 'Kontrol Kamera fisik, Action Button, Apple Intelligence, Wi-Fi 7',
-        pros: 'Performa lompat jauh ke chip A18, tombol Kontrol Kamera praktis, dukung fitur AI.',
-        cons: 'Layar masih 60Hz dan transfer kabel USB-C masih kecepatan USB 2.',
-        source: 'https://www.apple.com/id/iphone-16/'
-      },
-      {
-        id: 'iphone-17',
-        name: 'iPhone 17',
-        category: 'iPhone',
-        tagline: 'Layar ProMotion 120Hz kini hadir di lini standar yang lebih tipis.',
-        image: createDeviceSvgDataUri('iphone', '#4f46e5', 'iPhone 17'),
-        display: '6,3 inci Super Retina XDR OLED dengan ProMotion adaptif hingga 120Hz',
-        chip: 'Chip A19 (3nm generasi kedua) hemat daya & optimal untuk AI',
-        camera: 'Kamera Fusion 48 MP + Ultra Wide 48 MP, Kamera Depan 24 MP',
-        battery: 'Pemutaran video hingga 24 jam, efisiensi daya layar LTPO',
-        features: 'Layar Always-On 120Hz, Apple Intelligence penuh, Kontrol Kamera, Wi-Fi 7',
-        pros: 'Akhirnya membawa layar 120Hz ke seri reguler dan kamera selfie 24 MP jauh lebih jernih.',
-        cons: 'Belum memiliki lensa Telefoto optik khusus seperti varian Pro.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-18',
-        name: 'iPhone 18',
-        category: 'iPhone',
-        tagline: 'Generasi baru dengan efisiensi chip 2nm dan kecerdasan generasi berikutnya.',
-        image: createDeviceSvgDataUri('iphone', '#7c3aed', 'iPhone 18'),
-        display: '6,3 inci Super Retina XDR OLED ProMotion 120Hz, bezel ultra tipis',
-        chip: 'Chip A20 (fabrikasi 2nm) dengan akselerator AI terintegrasi',
-        camera: 'Kamera Ganda 48 MP Fusion dengan pemrosesan Photonic Engine baru',
-        battery: 'Pemutaran video hingga 26 jam, pengisian cepat USB-C & Qi2/MagSafe',
-        features: 'Apple Intelligence generasi baru, Dynamic Island lebih ringkas, Wi-Fi 7',
-        pros: 'Sangat hemat baterai berkat arsitektur 2nm dan sangat mulus untuk multitasking harian.',
-        cons: 'Kecepatan transfer port USB-C masih di bawah lini Pro.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-18-pro',
-        name: 'iPhone 18 Pro',
-        category: 'iPhone',
-        tagline: 'Kekuatan Pro dalam ukuran ringkas yang ergonomis.',
-        image: createDeviceSvgDataUri('iphone', '#374151', 'iPhone 18 Pro'),
-        display: '6,3 inci LTPO Super Retina XDR OLED 120Hz, kecerahan puncak tinggi',
-        chip: 'Chip A20 Pro (2nm) dengan GPU 6-core kelas konsol & RAM 12GB',
-        camera: 'Sistem kamera Pro tiga lensa 48 MP (Utama, Ultra Wide, Telefoto Periskop 5x)',
-        battery: 'Pemutaran video hingga 29 jam, USB-C kecepatan tinggi USB 3 (10Gb/s)',
-        features: 'Rangka Titanium Grade 5, ProRes Log video, Kontrol Kamera, Face ID bawah layar',
-        pros: 'Kamera zoom optik 5x di bodi yang nyaman digenggam satu tangan, performa video terbaik.',
-        cons: 'Harga premium dan kapasitas baterai di bawah varian Pro Max.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-18-pro-max',
-        name: 'iPhone 18 Pro Max',
-        category: 'iPhone',
-        tagline: 'Layar terbesar, baterai paling tahan lama, dan kamera Pro terlengkap.',
-        image: createDeviceSvgDataUri('iphone', '#C62828', '18 Pro Max'),
-        display: '6,9 inci LTPO Super Retina XDR OLED 120Hz dengan anti-reflektif baru',
-        chip: 'Chip A20 Pro (2nm) dengan sistem pendingin vapor chamber untuk beban berat',
-        camera: 'Tiga kamera 48 MP Pro (Utama apertur variabel, Ultra Wide, Telefoto Tetraprisma)',
-        battery: 'Pemutaran video hingga 35 jam (rekor daya tahan baterai iPhone)',
-        features: 'Titanium Grade 5, USB 3 10Gb/s, ProRAW & ProRes 4K120, Apple Intelligence',
-        pros: 'Daya tahan baterai luar biasa, layar sinematik 6,9 inci, dan sistem kamera paling lengkap.',
-        cons: 'Dimensi cukup besar dan berat untuk saku celana kecil.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-duo',
-        name: 'iPhone Duo',
-        category: 'iPhone',
-        tagline: 'Paket bundling hemat dua unit iPhone untuk pasangan, keluarga, atau bisnis.',
-        image: createDeviceSvgDataUri('iphone-duo', '#C62828', 'iPhone Duo'),
-        display: 'Dual Display Super Retina XDR OLED (2 unit perangkat dalam 1 paket)',
-        chip: 'Chip Apple Silicon Bionic / A-Series generasi terbaru di kedua unit',
-        camera: 'Sistem kamera ganda 48 MP di masing-masing unit dengan mode Sinematik',
-        battery: 'Daya tahan seharian penuh di kedua perangkat + dukungan MagSafe',
-        features: 'Paket bundling resmi Mahadewa.id, bonus aksesori, garansi resmi terdaftar',
-        pros: 'Harga paket jauh lebih hemat dibanding beli satuan, cocok untuk hadiah atau operasional tim.',
-        cons: 'Pilihan warna dan kapasitas penyimpanan mengikuti ketersediaan stok paket.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'ipad-gen-11',
-        name: 'iPad Generasi 11',
-        category: 'iPad',
-        tagline: 'Layar penuh warna serbaguna untuk belajar, bekerja, dan hiburan.',
-        image: createDeviceSvgDataUri('ipad', '#0284c7', 'iPad Gen 11'),
-        display: '10,9 inci Liquid Retina IPS LCD, True Tone, resolusi 2360 x 1640 piksel',
-        chip: 'Chip Apple Silicon seri A terbaru dengan dukungan Apple Intelligence',
-        camera: 'Kamera belakang 12 MP Wide + Kamera depan lanskap 12 MP Center Stage',
-        battery: 'Hingga 10 jam menjelajah web via Wi-Fi atau menonton video, USB-C',
-        features: 'Touch ID di tombol atas, dukung Apple Pencil (USB-C) & Magic Keyboard Folio',
-        pros: 'Sangat ideal untuk pelajar, mahasiswa, dan kasir/POS toko dengan harga terjangkau.',
-        cons: 'Layar belum laminated dan refresh rate masih 60Hz.',
-        source: 'https://www.apple.com/id/ipad/'
-      },
-      {
-        id: 'macbook-air-m4-13',
-        name: 'MacBook Air M4 13 inci',
-        category: 'MacBook',
-        tagline: 'Super tipis, super ringan, dan super bertenaga dengan chip M4.',
-        image: createDeviceSvgDataUri('macbook', '#1e293b', 'MacBook Air M4'),
-        display: '13,6 inci Liquid Retina dengan 1 miliar warna, kecerahan 500 nit, True Tone',
-        chip: 'Chip Apple M4 (CPU 10-core, GPU hingga 10-core, Neural Engine 16-core)',
-        camera: 'Kamera 12MP Center Stage + Wi-Fi 6E, Bluetooth 5.3, 2x port Thunderbolt 4',
-        battery: 'Hingga 18 jam pemakaian nirkabel, pengisian daya MagSafe 3',
-        features: 'Desain tanpa kipas (hening total), bobot hanya 1,24 kg, dukung 2 layar eksternal',
-        pros: 'Performa sangat kencang untuk editing & multitasking, baterai awet seharian, sangat ringan.',
-        cons: 'Jumlah port terbatas (2x Thunderbolt + MagSafe), tidak memiliki kipas aktif untuk render ekstrem.',
-        source: 'https://www.apple.com/id/macbook-air/'
-      },
-      {
-        id: 'asus-vivobook-14-a1404',
-        name: 'ASUS Vivobook 14 (A1404)',
-        category: 'Laptop Windows',
-        tagline: 'Laptop harian ringkas dengan engsel 180° dan ketahanan standar militer.',
-        image: createDeviceSvgDataUri('windows', '#334155', 'Vivobook 14'),
-        display: '14,0 inci FHD (1920 x 1080) 16:9 Anti-Glare, bezel tipis NanoEdge',
-        chip: 'Prosesor Intel Core i3 / i5 / i7 Generasi ke-13 + Intel UHD / Iris Xe Graphics',
-        camera: 'Kamera HD 720p dengan penutup privasi fisik + Wi-Fi 6E, USB-C, USB-A, HDMI',
-        battery: '42WHrs Li-ion, pengisian cepat 60% dalam 49 menit',
-        features: 'Sertifikasi ketahanan militer MIL-STD-810H, engsel datar 180°, ASUS Antimicrobial Guard',
-        pros: 'Port sangat lengkap (HDMI & USB-A tersedia tanpa dongle), harga ekonomis untuk kantor & kuliah.',
-        cons: 'Akurasi warna layar standar (45% NTSC) dan bodi berbahan polikarbonat.',
-        source: 'https://www.asus.com/id/laptops/for-home/vivobook/'
-      },
-      {
-        id: 'starlink-gen-3-standard',
-        name: 'Starlink Gen 3 Standard',
-        category: 'Starlink',
-        tagline: 'Internet satelit berkecepatan tinggi dengan latensi rendah di mana saja.',
-        image: createDeviceSvgDataUri('starlink', '#0f172a', 'Starlink Gen 3'),
-        display: 'Antena Phased Array Elektronik (594 x 383 mm) dengan Kickstand terintegrasi',
-        chip: 'Router Wi-Fi 6 Tri-Band 4x4 MU-MIMO terintegrasi (jangkauan hingga 297 m²)',
-        camera: 'Konektivitas Satelit LEO (kecepatan unduh 100–250+ Mbps), 2x port LAN Ethernet',
-        battery: 'Daya listrik AC 100-240V (konsumsi rata-rata 75–100W), tahan cuaca IP67',
-        features: 'Tahan hujan lebat & angin kencang (IP67), tanpa motor penggerak (lebih awet), instalasi mudah',
-        pros: 'Sinyal kencang & stabil bahkan di daerah pelosok/tambang/perkebunan tanpa jaringan fiber.',
-        cons: 'Membutuhkan pandangan langit terbuka tanpa halangan pohon/atap dan biaya langganan bulanan.',
-        source: 'https://www.starlink.com/id'
-      }
-    ];
-
-    // =========================================================================
-    // 2. STATE APLIKASI
-    // =========================================================================
-    let products = [];
-    let selectedCategory = 'Semua';
-    let columnCount = 3;
-    let selectedProductIds = ['iphone-18-pro-max', 'iphone-18-pro', 'iphone-17', 'macbook-air-m4-13'];
-    let isApiKeyHidden = false;
-
-    // =========================================================================
-    // 3. INISIALISASI & PENYIMPANAN LOKAL + GOOGLE SHEETS SYNC
-    // =========================================================================
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('footer-year').textContent = new Date().getFullYear();
-      document.getElementById('apps-script-code-box').value = GOOGLE_APPS_SCRIPT_TEMPLATE;
-
-      // Muat custom logo jika ada
-      const savedLogo = localStorage.getItem(STORAGE_KEY_LOGO);
-      if (savedLogo) {
-        applyCustomLogo(savedLogo);
-      }
-
-      // Muat data produk dari localStorage atau gunakan DEFAULT_PRODUCTS
-      loadLocalProducts();
-
-      // Muat URL Google Apps Script jika tersimpan
-      const savedUrl = localStorage.getItem(STORAGE_KEY_GSHEET_URL) || '';
-      document.getElementById('gsheet-url-input').value = savedUrl;
-      updateSyncStatusUI(savedUrl ? 'connected' : 'local', savedUrl ? 'Terhubung ke Google Sheets' : 'Mode Lokal');
-
-      // Render tampilan awal
-      renderCategoryFilters();
-      updateColumnButtonsUI();
-      renderComparisonTable();
-      renderAdminProductList();
-      lucide.createIcons();
-
-      // Jika URL Google Sheets sudah ada, lakukan sinkronisasi latar belakang otomatis
-      if (savedUrl) {
-        syncFromGoogleSheets(true);
-      }
-    });
-
-    function loadLocalProducts() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            products = parsed;
-            return;
-          }
-        }
-      } catch (e) {
-        console.warn('Gagal membaca localStorage:', e);
-      }
-      products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-      saveLocalProducts();
-    }
-
-    function saveLocalProducts() {
-      try {
-        localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
-      } catch (e) {
-        showToast('Penyimpanan lokal penuh. Gunakan gambar berukuran lebih kecil.', 'error');
-      }
-    }
-
-    // =========================================================================
-    // 4. LOGIKA SINKRONISASI GOOGLE SHEETS (APPS SCRIPT WEB APP)
-    // =========================================================================
-    function getGoogleSheetUrl() {
-      return (localStorage.getItem(STORAGE_KEY_GSHEET_URL) || '').trim();
-    }
-
-    function saveGoogleSheetUrl() {
-      const input = document.getElementById('gsheet-url-input');
-      const url = input.value.trim();
-
-      if (!url) {
-        localStorage.removeItem(STORAGE_KEY_GSHEET_URL);
-        updateSyncStatusUI('local', 'Mode Lokal');
-        showToast('URL Google Sheets dihapus. Beralih ke Mode Lokal.', 'info');
-        return;
-      }
-
-      if (!url.startsWith('https://script.google.com/')) {
-        showToast('Pastikan URL diawali dengan https://script.google.com/macros/s/...', 'error');
-        return;
-      }
-
-      localStorage.setItem(STORAGE_KEY_GSHEET_URL, url);
-      updateSyncStatusUI('connected', 'Terhubung ke Google Sheets');
-      showToast('URL Google Apps Script berhasil disimpan!', 'success');
-      syncFromGoogleSheets(false);
-    }
-
-    function updateSyncStatusUI(state, text) {
-      const dot = document.getElementById('sync-status-dot');
-      const label = document.getElementById('sync-status-text');
-      const cardBadge = document.getElementById('gsheet-badge-card');
-
-      if (label) label.textContent = text;
-      if (cardBadge) cardBadge.textContent = text;
-
-      if (state === 'syncing') {
-        dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-ping';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200';
-      } else if (state === 'connected') {
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
-      } else if (state === 'error') {
-        dot.className = 'w-2 h-2 rounded-full bg-red-500';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200';
-      } else {
-        dot.className = 'w-2 h-2 rounded-full bg-gray-400';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200';
-      }
-    }
-
-    // Menarik data terbaru dari Google Sheets (GET)
-    async function syncFromGoogleSheets(silent = false) {
-      const url = getGoogleSheetUrl();
-      if (!url) {
-        if (!silent) showToast('Masukkan dan simpan URL Google Apps Script terlebih dahulu.', 'error');
-        return;
-      }
-
-      updateSyncStatusUI('syncing', 'Menyinkronkan...');
-      try {
-        const response = await fetch(url, { method: 'GET' });
-        const data = await response.json();
-
-        if (data && data.status === 'success' && Array.isArray(data.products)) {
-          if (data.products.length > 0) {
-            // Pastikan produk tanpa gambar tetap punya fallback SVG rapi
-            products = data.products.map(p => ({
-              ...p,
-              image: p.image && p.image.trim() !== '' ? p.image : getFallbackImageByCategory(p.category, p.name)
-            }));
-            saveLocalProducts();
-            renderCategoryFilters();
-            renderComparisonTable();
-            renderAdminProductList();
-            if (!silent) showToast(`Berhasil menarik ${products.length} produk dari Google Sheets!`, 'success');
-          } else {
-            if (!silent) showToast('Google Sheets masih kosong. Klik "Kirim Semua ke Sheets (Push)" untuk mengisi data awal.', 'info');
-          }
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Terhubung ke Google Sheets');
-          document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Terakhir sinkronisasi dari Google Sheets pukul <strong>${timeStr}</strong> (${products.length} produk).</span>`;
-          lucide.createIcons();
-        } else {
-          throw new Error(data.message || 'Format respons Google Sheets tidak valid');
-        }
-      } catch (err) {
-        console.error('Sync GET error:', err);
-        updateSyncStatusUI('error', 'Gagal Terhubung');
-        if (!silent) {
-          showToast('Gagal terhubung ke Google Sheets. Pastikan akses Web App diatur ke "Siapa saja (Anyone)".', 'error');
-        }
-      }
-    }
-
-    // Mengirim seluruh katalog lokal ke Google Sheets sekaligus (POST syncAll)
-    async function pushAllToGoogleSheets() {
-      const url = getGoogleSheetUrl();
-      if (!url) {
-        showToast('Masukkan dan simpan URL Google Apps Script terlebih dahulu.', 'error');
-        return;
-      }
-
-      updateSyncStatusUI('syncing', 'Mengirim ke Sheets...');
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'syncAll',
-            products: products
-          })
-        });
-        const result = await response.json();
-        if (result && result.status === 'success') {
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Terhubung ke Google Sheets');
-          document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Seluruh katalog (${products.length} produk) berhasil dikirim ke Sheets pukul <strong>${timeStr}</strong>.</span>`;
-          lucide.createIcons();
-          showToast(`Berhasil mengunggah ${products.length} produk ke Google Sheets!`, 'success');
-        } else {
-          throw new Error(result.message || 'Gagal menyimpan ke Sheets');
-        }
-      } catch (err) {
-        console.error('Push POST error:', err);
-        updateSyncStatusUI('error', 'Gagal Sinkronisasi');
-        showToast('Gagal mengirim data ke Google Sheets. Periksa URL Web App Anda.', 'error');
-      }
-    }
-
-    // Sinkronisasi otomatis 1 item (upsert / delete) ke Google Sheets di latar belakang
-    async function syncSingleMutationToSheets(action, payloadObj) {
-      const url = getGoogleSheetUrl();
-      if (!url) return;
-
-      updateSyncStatusUI('syncing', 'Menyimpan ke Sheets...');
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action, ...payloadObj })
-        });
-        const result = await response.json();
-        if (result && result.status === 'success') {
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Terhubung ke Google Sheets');
-          document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Perubahan otomatis tersinkron ke Google Sheets pukul <strong>${timeStr}</strong>.</span>`;
-          lucide.createIcons();
-        } else {
-          throw new Error(result.message || 'Gagal sinkron');
-        }
-      } catch (err) {
-        console.warn('Auto-sync mutation error:', err);
-        updateSyncStatusUI('error', 'Sinkron Tertunda');
-        showToast('Tersimpan di perangkat lokal, namun gagal menyinkronkan ke Google Sheets.', 'error');
-      }
-    }
-
-    // Modal Google Apps Script
-    function openAppsScriptModal() {
-      document.getElementById('apps-script-modal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function closeAppsScriptModal() {
-      document.getElementById('apps-script-modal').classList.add('hidden');
-    }
-
-    function copyAppsScriptCode() {
-      const textarea = document.getElementById('apps-script-code-box');
-      textarea.select();
-      textarea.setSelectionRange(0, 99999);
-      try {
-        document.execCommand('copy');
-        showToast('Kode Google Apps Script (Code.gs) berhasil disalin!', 'success');
-      } catch (e) {
-        showToast('Gagal menyalin otomatis. Silakan blok kode dan tekan Ctrl+C / Cmd+C.', 'error');
-      }
-    }
-
-    // =========================================================================
-    // 5. RENDER TAMPILAN PERBANDINGAN GAYA APPLE COMPARE
-    // =========================================================================
-    function getFilteredProducts() {
-      if (selectedCategory === 'Semua') return products;
-      return products.filter(p => p.category === selectedCategory);
-    }
-
-    function renderCategoryFilters() {
-      const categories = ['Semua', 'iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink'];
-      const container = document.getElementById('category-filters');
-      container.innerHTML = categories.map(cat => {
-        const isActive = selectedCategory === cat;
-        const count = cat === 'Semua' ? products.length : products.filter(p => p.category === cat).length;
-        return `
-          <button onclick="selectCategory('${cat}')"
-            class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              isActive
-                ? 'bg-[#1d1d1f] text-white shadow-sm'
-                : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-white/70'
-            }">
-            <span>${cat}</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-gray-200/80 text-gray-600'}">${count}</span>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function selectCategory(cat) {
-      selectedCategory = cat;
-      renderCategoryFilters();
-      renderComparisonTable();
-    }
-
-    function setColumnCount(count) {
-      columnCount = count;
-      updateColumnButtonsUI();
-      renderComparisonTable();
-    }
-
-    function updateColumnButtonsUI() {
-      [2, 3, 4].forEach(num => {
-        const btn = document.getElementById(`col-btn-${num}`);
-        if (num === columnCount) {
-          btn.className = 'px-3 py-1 rounded-lg text-xs font-semibold bg-[#1d1d1f] text-white shadow-sm transition-all';
-        } else {
-          btn.className = 'px-3 py-1 rounded-lg text-xs font-semibold text-[#6e6e73] hover:text-[#1d1d1f] transition-all';
-        }
-      });
-    }
-
-    function handleSelectColumnProduct(colIndex, newProductId) {
-      selectedProductIds[colIndex] = newProductId;
-      renderComparisonTable();
-    }
-
-    function getFallbackImageByCategory(category, name = '') {
-      const shortLabel = (name || category || 'Device').slice(0, 14);
-      if (category === 'iPad') return createDeviceSvgDataUri('ipad', '#0284c7', shortLabel);
-      if (category === 'MacBook') return createDeviceSvgDataUri('macbook', '#1e293b', shortLabel);
-      if (category === 'Laptop Windows') return createDeviceSvgDataUri('windows', '#334155', shortLabel);
-      if (category === 'Starlink') return createDeviceSvgDataUri('starlink', '#0f172a', shortLabel);
-      return createDeviceSvgDataUri('iphone', '#C62828', shortLabel);
-    }
-
-    function renderComparisonTable() {
-      const available = getFilteredProducts();
-      const fallbackPool = available.length > 0 ? available : products;
-
-      if (fallbackPool.length === 0) return;
-
-      // Pastikan setiap slot kolom memiliki ID produk yang valid di kategori terpilih
-      const activeColumnProducts = [];
-      for (let i = 0; i < columnCount; i++) {
-        let found = fallbackPool.find(p => p.id === selectedProductIds[i]);
-        if (!found) {
-          // Pilih produk berbeda dari kolom sebelumnya jika memungkinkan
-          const unused = fallbackPool.find(p => !activeColumnProducts.some(acp => acp.id === p.id));
-          found = unused || fallbackPool[i % fallbackPool.length];
-          selectedProductIds[i] = found.id;
-        }
-        activeColumnProducts.push(found);
-      }
-
-      const gridColsClass =
-        columnCount === 2 ? 'grid-cols-2' :
-        columnCount === 3 ? 'grid-cols-3' : 'grid-cols-4';
-
-      // 1. Render Header Pemilih Produk, Foto, Tagline & Tombol WhatsApp
-      const headerGrid = document.getElementById('compare-header-grid');
-      headerGrid.className = `grid ${gridColsClass} gap-4 sm:gap-6 border-b border-gray-200 pb-8 pt-2`;
-
-      headerGrid.innerHTML = activeColumnProducts.map((prod, idx) => {
-        const waText = encodeURIComponent(`Halo Mahadewa.id Palopo, saya ingin menanyakan harga dan ketersediaan stok untuk *${prod.name}*.`);
-        const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
-        const fallbackImg = getFallbackImageByCategory(prod.category, prod.name);
-
-        return `
-          <div class="flex flex-col items-center text-center bg-white rounded-3xl p-3 sm:p-4 transition-all">
-            <!-- Dropdown Pemilih Produk -->
-            <div class="w-full mb-5">
-              <select aria-label="Pilih produk kolom ${idx + 1}"
-                onchange="handleSelectColumnProduct(${idx}, this.value)"
-                class="apple-select w-full px-3.5 py-2.5 pr-8 rounded-xl border border-gray-300 bg-[#f5f5f7] hover:bg-gray-200/70 text-xs sm:text-sm font-semibold text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#C62828] transition cursor-pointer">
-                ${fallbackPool.map(item => `
-                  <option value="${item.id}" ${item.id === prod.id ? 'selected' : ''}>
-                    ${item.name}
-                  </option>
-                `).join('')}
-              </select>
+        <!-- Bagian Admin & Kelola Data -->
+        <section id="adminSection" class="mt-20 bg-white rounded-3xl p-6 sm:p-10 border border-gray-200 shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-gray-100">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">Kelola Produk & Sinkronisasi Google Sheets</h2>
+                    <p class="text-xs text-gray-500 mt-1">Tambah produk baru secara manual, gunakan AI Auto-Isi, atau sinkronkan ke Google Sheets.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="exportJson()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-4 py-2 rounded-xl transition"><i class="fa-solid fa-download mr-1"></i> Export JSON</button>
+                    <label class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-4 py-2 rounded-xl transition cursor-pointer">
+                        <i class="fa-solid fa-upload mr-1"></i> Import JSON <input type="file" accept=".json" onchange="importJson(event)" class="hidden">
+                    </label>
+                    <button onclick="resetDefaultData()" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium px-4 py-2 rounded-xl transition">Reset Data</button>
+                </div>
             </div>
 
-            <!-- Foto Produk -->
-            <div class="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center mb-4 p-2 rounded-2xl bg-[#fbfbfd]">
-              <img src="${prod.image || fallbackImg}"
-                alt="${prod.name}"
-                onerror="this.onerror=null;this.src='${fallbackImg}';"
-                class="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105" />
-            </div>
-
-            <!-- Badge Kategori & Nama Produk -->
-            <span class="text-[11px] font-bold uppercase tracking-wider text-[#C62828] mb-1">${prod.category}</span>
-            <h2 class="text-base sm:text-xl font-bold text-[#1d1d1f] leading-snug mb-1.5">${prod.name}</h2>
-            <p class="text-xs sm:text-sm text-[#6e6e73] line-clamp-2 min-h-[2.5rem] mb-5 px-1">${prod.tagline}</p>
-
-            <!-- Tombol Lihat Harga / Tanya Stok (WhatsApp Resmi) -->
-            <a href="${waUrl}" target="_blank" rel="noopener"
-              class="mt-auto w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs sm:text-sm font-semibold shadow-sm transition-all hover:shadow">
-              <i data-lucide="message-circle" class="w-4 h-4"></i>
-              <span>Lihat Harga / Tanya Stok</span>
-            </a>
-          </div>
-        `;
-      }).join('');
-
-      // 2. Render Baris Spesifikasi Teknis Berikon Minimalis
-      const specRows = [
-        { key: 'display', label: 'Layar & Dimensi', icon: 'maximize-2' },
-        { key: 'chip', label: 'Performa & Chip', icon: 'cpu' },
-        { key: 'camera', label: 'Kamera & Konektivitas', icon: 'camera' },
-        { key: 'battery', label: 'Baterai & Daya', icon: 'battery-charging' },
-        { key: 'features', label: 'Fitur Unggulan', icon: 'sparkles' },
-        { key: 'pros', label: 'Kelebihan Utama', icon: 'check-circle-2', accent: 'text-emerald-700' },
-        { key: 'cons', label: 'Kekurangan / Catatan', icon: 'alert-circle', accent: 'text-amber-700' },
-        { key: 'source', label: 'Sumber Referensi Resmi', icon: 'external-link', isLink: true }
-      ];
-
-      const specsContainer = document.getElementById('compare-specs-container');
-      specsContainer.innerHTML = specRows.map(row => `
-        <div class="py-6">
-          <div class="flex items-center justify-center gap-2 mb-4">
-            <i data-lucide="${row.icon}" class="w-4 h-4 text-[#C62828]"></i>
-            <h3 class="text-xs font-bold uppercase tracking-wider text-[#86868b]">${row.label}</h3>
-          </div>
-          <div class="grid ${gridColsClass} gap-4 sm:gap-6">
-            ${activeColumnProducts.map(prod => {
-              const val = prod[row.key] || '-';
-              if (row.isLink) {
-                if (val && val.startsWith('http')) {
-                  return `
-                    <div class="text-center px-2">
-                      <a href="${val}" target="_blank" rel="noopener"
-                        class="inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-blue-600 hover:underline">
-                        <span>Spesifikasi Resmi</span>
-                        <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-                      </a>
+            <!-- AI Auto-Fill & Google Sheets Sync Bar -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                <!-- AI Auto-Fill -->
+                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-900 mb-2"><i class="fa-solid fa-wand-magic-sparkles text-[#C62828] mr-1"></i> Auto-Isi Spesifikasi Cerdas (AI)</h3>
+                    <p class="text-xs text-gray-500 mb-4">Ketik nama perangkat untuk menarik spesifikasi otomatis dari sumber resmi.</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="aiQueryInput" placeholder="Contoh: iPad generasi 11, Asus Vivobook 14, Starlink Gen 3..." class="flex-grow text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                        <button onclick="triggerAiAutoFill()" id="aiBtn" class="bg-[#C62828] hover:bg-red-700 text-white text-xs font-medium px-5 py-2.5 rounded-xl transition flex-shrink-0">Auto-Isi</button>
                     </div>
-                  `;
-                }
-                return `<div class="text-center text-xs text-gray-400">Katalog Mahadewa.id</div>`;
-              }
-              return `
-                <div class="text-center px-2 sm:px-4">
-                  <p class="text-xs sm:text-sm leading-relaxed ${row.accent || 'text-[#1d1d1f]'} font-normal">
-                    ${val}
-                  </p>
                 </div>
-              `;
-            }).join('')}
-          </div>
+
+                <!-- Google Sheets Sync -->
+                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-900 mb-2"><i class="fa-solid fa-cloud-arrow-up text-blue-600 mr-1"></i> Sinkronisasi Google Sheets</h3>
+                    <p class="text-xs text-gray-500 mb-3">Masukkan Web App URL dari Google Apps Script agar data tersinkron di semua perangkat.</p>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="flex-grow text-sm bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:border-blue-600">
+                        <button onclick="saveSheetsUrl()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-4 py-2 rounded-xl transition flex-shrink-0">Simpan URL</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="syncFromSheets()" class="flex-1 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 text-xs font-medium py-2 rounded-xl transition"><i class="fa-solid fa-rotate mr-1"></i> Tarik Data (Pull)</button>
+                        <button onclick="syncToSheets()" class="flex-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-medium py-2 rounded-xl transition"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Kirim Data (Push)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Excel / CSV & Pengaturan API Key -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10 pb-8 border-b border-gray-100">
+                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-900 mb-2"><i class="fa-solid fa-file-excel text-green-600 mr-1"></i> Upload File Excel / CSV</h3>
+                    <p class="text-xs text-gray-500 mb-4">Unggah file .xlsx atau .csv untuk memasukkan banyak spesifikasi produk sekaligus.</p>
+                    <input type="file" accept=".xlsx, .csv" id="excelFileInput" onchange="handleExcelUpload(event)" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer">
+                </div>
+
+                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                    <h3 class="text-sm font-bold text-gray-900 mb-2"><i class="fa-solid fa-key text-amber-600 mr-1"></i> Pengaturan Gemini API Key</h3>
+                    <p class="text-xs text-gray-500 mb-3">Masukkan API key Gemini Anda (berawalan AQ. atau AIza) untuk pencarian online otomatis.</p>
+                    <div class="flex gap-2">
+                        <input type="password" id="apiKeyInput" placeholder="AQ.Ab8RN6... atau AIza..." class="flex-grow text-sm bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:border-amber-600">
+                        <button onclick="saveApiKey()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium px-4 py-2 rounded-xl transition flex-shrink-0">Simpan Key</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Tambah/Edit Produk -->
+            <div class="bg-gray-50 p-6 sm:p-8 rounded-3xl border border-gray-200">
+                <h3 id="formTitle" class="text-lg font-bold text-gray-900 mb-6">Tambah / Edit Detail Produk</h3>
+                <form id="productForm" onsubmit="saveProduct(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <input type="hidden" id="editIndex" value="-1">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Produk *</label>
+                        <input type="text" id="inputName" required placeholder="Contoh: iPad (Generasi ke-11)" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Kategori *</label>
+                        <select id="inputCategory" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                            <option value="iPhone">iPhone</option>
+                            <option value="iPad">iPad</option>
+                            <option value="MacBook">MacBook</option>
+                            <option value="Laptop Windows">Laptop Windows</option>
+                            <option value="Starlink">Starlink</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">URL Foto Produk</label>
+                        <input type="url" id="inputImage" placeholder="https://..." class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Tagline Singkat</label>
+                        <input type="text" id="inputTagline" placeholder="Performa bertenaga dengan layar Liquid Retina" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Layar / Dimensi</label>
+                        <input type="text" id="inputDisplay" placeholder="11" Liquid Retina" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Baterai / Daya</label>
+                        <input type="text" id="inputBattery" placeholder="Hingga 10 jam pemutaran video" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Chip / Prosesor</label>
+                        <input type="text" id="inputChip" placeholder="Chip A16 Bionic" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Kamera / Konektivitas</label>
+                        <input type="text" id="inputCamera" placeholder="Kamera Utama 12MP" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Kamera Depan / Fitur Lain</label>
+                        <input type="text" id="inputFrontCam" placeholder="Kamera Depan Ultra Wide 12MP" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">AI / Fitur Unggulan</label>
+                        <input type="text" id="inputAi" placeholder="Dukungan Apple Pencil" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Kisaran Harga / Status</label>
+                        <input type="text" id="inputPrice" placeholder="Rp 7.999.000" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Sumber Referensi Resmi</label>
+                        <input type="text" id="inputSource" placeholder="apple.com" class="w-full text-sm bg-white border border-gray-300 rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#C62828]">
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3 flex justify-end gap-3 mt-4">
+                        <button type="button" onclick="resetForm()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold px-6 py-2.5 rounded-xl transition">Batal</button>
+                        <button type="submit" class="bg-[#C62828] hover:bg-red-700 text-white text-xs font-semibold px-6 py-2.5 rounded-xl transition shadow-sm">Simpan Produk</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Daftar Produk Tersimpan -->
+            <div class="mt-10">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Daftar Produk Tersimpan (<span id="productCount">0</span>)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="productListGrid">
+                    <!-- Render via JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Mahadewa.id -->
+    <footer class="bg-white border-t border-gray-200 mt-20 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-gray-500">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-[#C62828] flex items-center justify-center text-white font-bold text-xs">d</div>
+                <span class="font-semibold text-gray-800">mahadewa.id Cabang Palopo</span>
+            </div>
+            <div>
+                <p><i class="fa-solid fa-location-dot text-[#C62828] mr-1"></i> Jl. Andi Djemma (ex Jend. Sudirman), Tompotika, Kec. Wara, Kota Palopo, Sulawesi Selatan 91911</p>
+            </div>
+            <div class="flex gap-4">
+                <span><i class="fa-solid fa-phone text-[#C62828] mr-1"></i> 0823-4488-8441</span>
+                <span><i class="fa-solid fa-envelope text-[#C62828] mr-1"></i> mahadewa.cabpalopo@gmail.com</span>
+            </div>
         </div>
-      `).join('');
+    </footer>
 
-      lucide.createIcons();
-    }
+    <!-- Script Aplikasi -->
+    <script>
+        const DEFAULT_PRODUCTS = [
+            {
+                name: "iPhone 15", category: "iPhone", image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-finish-select-202309-6-1inch-blue?wid=512&hei=512&fmt=p-jpg&qlt=80&.v=1692925508563",
+                tagline: "Dynamic Island dan kamera 48MP dalam desain menawan.", display: "6.1\" Super Retina XDR\n60Hz, Dynamic Island", battery: "Pemutaran video hingga 20 jam",
+                chip: "Chip A16 Bionic\nUSB-C", camera: "Kamera ganda 48MP\nUtama 48MP & Ultra Wide 12MP", frontCam: "Kamera depan 12MP TrueDepth", ai: "Tidak mendukung Apple Intelligence", price: "Rp 11.249.000", source: "apple.com"
+            },
+            {
+                name: "iPhone 16", category: "iPhone", image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-finish-select-202409-6-1inch-ultramarine-witb?wid=512&hei=512&fmt=p-jpg&qlt=80&.v=1724025426189",
+                tagline: "Super cepat dengan tombol Camera Control baru.", display: "6.1\" Super Retina XDR\n60Hz, Dynamic Island", battery: "Pemutaran video hingga 22 jam",
+                chip: "Chip A18\nTombol Camera Control", camera: "Sistem kamera ganda 48MP\nUtama 48MP & Ultra Wide 12MP", frontCam: "Kamera depan 12MP TrueDepth", ai: "Apple Intelligence", price: "Rp 16.499.000", source: "apple.com"
+            },
+            {
+                name: "iPhone 17 Pro", category: "iPhone", image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-17-pro-finish-select-202509-6-3inch-cosmicorange?wid=512&hei=512&fmt=p-jpg&qlt=80&.v=1725540000000",
+                tagline: "Performa profesional dengan layar 120Hz ProMotion.", display: "6.3\" Super Retina XDR\nProMotion 120Hz, Always-On", battery: "Pemutaran video hingga 30 jam",
+                chip: "Chip A19 Pro\nStorage mulai 256GB", camera: "Sistem kamera Dual Fusion 48MP\nUtama 48MP & Ultra Wide 48MP", frontCam: "Kamera depan 18MP Center Stage", ai: "Apple Intelligence", price: "Rp 22.999.000", source: "apple.com"
+            },
+            {
+                name: "iPhone 18 Pro Max", category: "iPhone", image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-18-pro-max-silver?wid=512&hei=512&fmt=p-jpg&qlt=80&.v=1725540000000",
+                tagline: "Puncak performa Apple dengan baterai hingga 45 jam.", display: "6.9\" Super Retina XDR\nProMotion 120Hz, Always-On", battery: "Pemutaran video hingga 45 jam",
+                chip: "Chip A20 Pro (2nm)\nModem Apple C2", camera: "Sistem kamera 48MP Pro Fusion\nUtama 48MP Variable Aperture", frontCam: "Kamera depan 18MP Center Stage", ai: "Apple Intelligence + Siri AI", price: "Rp 29.499.000", source: "apple.com"
+            }
+        ];
 
-    // =========================================================================
-    // 6. MANAJEMEN KATALOG (TAMBAH, EDIT, HAPUS, UPLOAD GAMBAR, JSON)
-    // =========================================================================
-    function toggleAdminPanel() {
-      const panel = document.getElementById('admin-panel');
-      panel.classList.toggle('hidden');
-      if (!panel.classList.contains('hidden')) {
-        panel.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
+        let products = JSON.parse(localStorage.getItem('mahadewa_compare_products_v3')) || DEFAULT_PRODUCTS;
+        let currentCategory = 'Semua';
+        let columnCount = 4;
+        let apiKey = localStorage.getItem('mahadewa_gemini_apikey') || '';
+        let sheetsUrl = localStorage.getItem('mahadewa_sheets_url') || '';
 
-    function resetToPublicView(e) {
-      if (e) e.preventDefault();
-      document.getElementById('admin-panel').classList.add('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+        document.getElementById('apiKeyInput').value = apiKey;
+        document.getElementById('sheetsUrlInput').value = sheetsUrl;
 
-    function renderAdminProductList() {
-      const query = (document.getElementById('admin-search-input').value || '').toLowerCase();
-      const filtered = products.filter(p =>
-        p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)
-      );
-
-      document.getElementById('catalog-count').textContent = products.length;
-      const listEl = document.getElementById('admin-product-list');
-
-      if (filtered.length === 0) {
-        listEl.innerHTML = `<p class="text-xs text-center text-gray-500 py-8">Tidak ada produk yang cocok.</p>`;
-        return;
-      }
-
-      listEl.innerHTML = filtered.map(prod => {
-        const fallbackImg = getFallbackImageByCategory(prod.category, prod.name);
-        return `
-          <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-[#f5f5f7] hover:bg-gray-200/70 border border-gray-200/80 transition">
-            <div class="flex items-center gap-3 min-w-0">
-              <img src="${prod.image || fallbackImg}" alt="${prod.name}"
-                onerror="this.onerror=null;this.src='${fallbackImg}';"
-                class="w-11 h-11 rounded-xl object-contain bg-white p-1 border border-gray-200 flex-shrink-0" />
-              <div class="min-w-0">
-                <span class="text-[10px] font-bold uppercase text-[#C62828] block">${prod.category}</span>
-                <p class="text-xs sm:text-sm font-bold text-[#1d1d1f] truncate">${prod.name}</p>
-                <p class="text-[11px] text-gray-500 truncate">${prod.chip}</p>
-              </div>
-            </div>
-            <div class="flex items-center gap-1.5 flex-shrink-0">
-              <button onclick="editProduct('${prod.id}')" class="p-2 rounded-xl bg-white hover:bg-blue-50 text-blue-600 border border-gray-200 transition" title="Edit Produk">
-                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-              </button>
-              <button onclick="deleteProduct('${prod.id}')" class="p-2 rounded-xl bg-white hover:bg-red-50 text-[#C62828] border border-gray-200 transition" title="Hapus Produk">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      lucide.createIcons();
-    }
-
-    function handleSaveProduct(e) {
-      e.preventDefault();
-      const existingId = document.getElementById('prod-id').value;
-      const name = document.getElementById('prod-name').value.trim();
-      const category = document.getElementById('prod-category').value;
-      const imageInput = document.getElementById('prod-image').value.trim();
-
-      const productData = {
-        id: existingId || 'prod-' + Date.now(),
-        name,
-        category,
-        tagline: document.getElementById('prod-tagline').value.trim(),
-        image: imageInput || getFallbackImageByCategory(category, name),
-        display: document.getElementById('prod-display').value.trim(),
-        chip: document.getElementById('prod-chip').value.trim(),
-        camera: document.getElementById('prod-camera').value.trim(),
-        battery: document.getElementById('prod-battery').value.trim(),
-        features: document.getElementById('prod-features').value.trim(),
-        pros: document.getElementById('prod-pros').value.trim(),
-        cons: document.getElementById('prod-cons').value.trim(),
-        source: document.getElementById('prod-source').value.trim() || 'https://www.apple.com/id/'
-      };
-
-      if (existingId) {
-        const idx = products.findIndex(p => p.id === existingId);
-        if (idx !== -1) products[idx] = productData;
-        showToast(`Produk "${name}" berhasil diperbarui!`, 'success');
-      } else {
-        products.unshift(productData);
-        selectedProductIds[0] = productData.id;
-        showToast(`Produk "${name}" berhasil ditambahkan ke katalog!`, 'success');
-      }
-
-      saveLocalProducts();
-      renderCategoryFilters();
-      renderComparisonTable();
-      renderAdminProductList();
-      resetProductForm();
-
-      // Sinkronkan otomatis ke Google Sheets jika terhubung
-      syncSingleMutationToSheets('upsert', { product: productData });
-    }
-
-    function editProduct(id) {
-      const prod = products.find(p => p.id === id);
-      if (!prod) return;
-
-      document.getElementById('prod-id').value = prod.id;
-      document.getElementById('prod-name').value = prod.name;
-      document.getElementById('prod-category').value = prod.category;
-      document.getElementById('prod-tagline').value = prod.tagline;
-      document.getElementById('prod-image').value = prod.image.startsWith('data:image/svg+xml') ? '' : prod.image;
-      document.getElementById('prod-display').value = prod.display;
-      document.getElementById('prod-chip').value = prod.chip;
-      document.getElementById('prod-camera').value = prod.camera;
-      document.getElementById('prod-battery').value = prod.battery;
-      document.getElementById('prod-features').value = prod.features;
-      document.getElementById('prod-pros').value = prod.pros;
-      document.getElementById('prod-cons').value = prod.cons;
-      document.getElementById('prod-source').value = prod.source || '';
-
-      document.getElementById('form-title').textContent = `Edit Produk: ${prod.name}`;
-      document.getElementById('btn-submit-text').textContent = 'Simpan Perubahan';
-      document.getElementById('btn-cancel-edit').classList.remove('hidden');
-
-      document.getElementById('product-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function resetProductForm() {
-      document.getElementById('product-form').reset();
-      document.getElementById('prod-id').value = '';
-      document.getElementById('form-title').textContent = 'Tambah Produk Baru';
-      document.getElementById('btn-submit-text').textContent = 'Simpan Produk ke Katalog';
-      document.getElementById('btn-cancel-edit').classList.add('hidden');
-    }
-
-    function deleteProduct(id) {
-      if (products.length <= 2) {
-        showToast('Minimal harus tersisa 2 produk di katalog untuk perbandingan.', 'error');
-        return;
-      }
-      const target = products.find(p => p.id === id);
-      products = products.filter(p => p.id !== id);
-      saveLocalProducts();
-      renderCategoryFilters();
-      renderComparisonTable();
-      renderAdminProductList();
-      showToast(`Produk "${target ? target.name : ''}" dihapus.`, 'info');
-
-      // Hapus otomatis di Google Sheets jika terhubung
-      syncSingleMutationToSheets('delete', { id });
-    }
-
-    // Kompresi otomatis gambar upload agar ringan di localStorage & Google Sheets
-    function handleProductImageUpload(event) {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const MAX_SIZE = 320;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height && width > MAX_SIZE) {
-            height *= MAX_SIZE / width;
-            width = MAX_SIZE;
-          } else if (height > MAX_SIZE) {
-            width *= MAX_SIZE / height;
-            height = MAX_SIZE;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedBase64 = canvas.toDataURL('image/webp', 0.82);
-          document.getElementById('prod-image').value = compressedBase64;
-          showToast('Foto produk berhasil diunggah & dikompresi!', 'success');
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // Ganti Logo Toko Custom
-    function handleLogoUpload(event) {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const dataUrl = e.target.result;
-        localStorage.setItem(STORAGE_KEY_LOGO, dataUrl);
-        applyCustomLogo(dataUrl);
-        showToast('Logo toko berhasil diperbarui!', 'success');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function applyCustomLogo(dataUrl) {
-      const container = document.getElementById('header-logo-container');
-      container.innerHTML = `<img src="${dataUrl}" alt="Logo Mahadewa.id" class="w-full h-full object-contain rounded-full" />`;
-    }
-
-    // Export & Import JSON
-    function exportProductsJSON() {
-      const dataStr = JSON.stringify(products, null, 2);
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `katalog-mahadewa-id-${new Date().toISOString().slice(0, 10)}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('File JSON katalog berhasil diunduh!', 'success');
-    }
-
-    function importProductsJSON(event) {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const imported = JSON.parse(e.target.result);
-          if (!Array.isArray(imported) || imported.length === 0) {
-            throw new Error('Format JSON tidak valid');
-          }
-          products = imported;
-          saveLocalProducts();
-          renderCategoryFilters();
-          renderComparisonTable();
-          renderAdminProductList();
-          showToast(`Berhasil mengimpor ${products.length} produk!`, 'success');
-          if (getGoogleSheetUrl()) {
-            pushAllToGoogleSheets();
-          }
-        } catch (err) {
-          showToast('File JSON tidak valid atau rusak.', 'error');
+        function saveApiKey() {
+            apiKey = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('mahadewa_gemini_apikey', apiKey);
+            alert('Gemini API Key berhasil disimpan!');
         }
-      };
-      reader.readAsText(file);
-    }
 
-    function resetToDefaultCatalog() {
-      products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-      saveLocalProducts();
-      renderCategoryFilters();
-      renderComparisonTable();
-      renderAdminProductList();
-      showToast('Katalog dikembalikan ke 11 produk bawaan Mahadewa.id.', 'info');
-    }
-
-    // =========================================================================
-    // 7. FITUR AI AUTO-ISI SPESIFIKASI (GEMINI API + FALLBACK WIKIPEDIA/PRESET)
-    // =========================================================================
-    function toggleApiKeyVisibility() {
-      const input = document.getElementById('ai-api-key');
-      const btn = document.getElementById('btn-toggle-key');
-      isApiKeyHidden = !isApiKeyHidden;
-      if (isApiKeyHidden) {
-        input.style.webkitTextSecurity = 'disc';
-        btn.textContent = 'Lihat';
-      } else {
-        input.style.webkitTextSecurity = 'none';
-        btn.textContent = 'Sembunyi';
-      }
-    }
-
-    async function autoFillWithAI() {
-      const query = document.getElementById('ai-product-query').value.trim();
-      const apiKey = document.getElementById('ai-api-key').value.trim();
-
-      if (!query) {
-        showToast('Ketik nama produk terlebih dahulu (misal: iPhone 16 Pro Max).', 'error');
-        return;
-      }
-
-      const btn = document.getElementById('btn-ai-autofill');
-      const originalHtml = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Mencari Spesifikasi...</span>`;
-      lucide.createIcons();
-
-      try {
-        if (apiKey) {
-          // Gunakan Gemini API (mendukung AIza... maupun AQ...)
-          const prompt = `Berikan spesifikasi teknis resmi dan akurat dalam Bahasa Indonesia untuk produk: "${query}".
-Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa markdown:
-{
-  "name": "Nama resmi produk",
-  "category": "Pilih salah satu: iPhone, iPad, MacBook, Laptop Windows, atau Starlink",
-  "tagline": "Tagline singkat 1 kalimat gaya Apple",
-  "display": "Spesifikasi layar & ukuran",
-  "chip": "Chipset / Prosesor & RAM",
-  "camera": "Spesifikasi kamera & konektivitas",
-  "battery": "Kapasitas / daya tahan baterai & port pengisian",
-  "features": "Fitur unggulan utama",
-  "pros": "Kelebihan utama produk ini",
-  "cons": "Kekurangan atau catatan sebelum membeli",
-  "source": "URL situs resmi produk (misal https://www.apple.com/id/)"
-}`;
-
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json' }
-            })
-          });
-
-          if (!res.ok) throw new Error('API Key tidak valid atau kuota habis');
-          const data = await res.json();
-          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-          const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
-          fillFormWithSpecs(parsed);
-          showToast(`Spesifikasi "${parsed.name || query}" berhasil diisi dengan AI!`, 'success');
-        } else {
-          // Mode Gratis: Pencarian Wikipedia API + Smart Category Detection
-          const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
-          let summary = '';
-          let pageUrl = 'https://www.apple.com/id/';
-          if (wikiRes.ok) {
-            const wikiData = await wikiRes.json();
-            summary = wikiData.extract || '';
-            pageUrl = wikiData.content_urls?.desktop?.page || pageUrl;
-          }
-
-          const detectedCategory = detectCategoryFromName(query);
-          const smartPreset = buildSmartFallbackSpec(query, detectedCategory, summary, pageUrl);
-          fillFormWithSpecs(smartPreset);
-          showToast(`Spesifikasi dasar "${query}" diisi otomatis! Silakan sesuaikan detailnya.`, 'success');
+        function saveSheetsUrl() {
+            sheetsUrl = document.getElementById('sheetsUrlInput').value.trim();
+            localStorage.setItem('mahadewa_sheets_url', sheetsUrl);
+            alert('URL Google Sheets berhasil disimpan!');
         }
-      } catch (err) {
-        console.warn('AI AutoFill fallback:', err);
-        const detectedCategory = detectCategoryFromName(query);
-        const smartPreset = buildSmartFallbackSpec(query, detectedCategory, '', 'https://www.apple.com/id/');
-        fillFormWithSpecs(smartPreset);
-        showToast('Menggunakan template spesifikasi pintar untuk produk Anda.', 'info');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHtml;
-        lucide.createIcons();
-      }
-    }
 
-    function detectCategoryFromName(name) {
-      const lower = name.toLowerCase();
-      if (lower.includes('ipad')) return 'iPad';
-      if (lower.includes('macbook') || lower.includes('mac ')) return 'MacBook';
-      if (lower.includes('starlink')) return 'Starlink';
-      if (lower.includes('asus') || lower.includes('lenovo') || lower.includes('acer') || lower.includes('hp ') || lower.includes('dell') || lower.includes('windows') || lower.includes('laptop')) return 'Laptop Windows';
-      return 'iPhone';
-    }
+        function setCategoryFilter(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if(btn.textContent.trim() === cat) {
+                    btn.className = "cat-btn px-4 py-2 rounded-full text-xs font-semibold bg-[#C62828] text-white transition shadow-sm";
+                } else {
+                    btn.className = "cat-btn px-4 py-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition";
+                }
+            });
+            renderComparisonGrid();
+        }
 
-    function buildSmartFallbackSpec(name, category, summary, sourceUrl) {
-      const shortDesc = summary ? summary.split('. ').slice(0, 2).join('. ') + '.' : `Perangkat ${category} berperforma tinggi untuk produktivitas dan hiburan.`;
-      if (category === 'MacBook') {
-        return {
-          name,
-          category,
-          tagline: shortDesc,
-          display: 'Layar Liquid Retina resolusi tinggi, True Tone, warna P3',
-          chip: 'Apple Silicon M-Series dengan CPU & GPU multi-core',
-          camera: 'Kamera FaceTime HD 1080p, Wi-Fi 6E, Thunderbolt / USB 4',
-          battery: 'Daya tahan baterai hingga 18 jam, pengisian MagSafe / USB-C',
-          features: 'Touch ID, Magic Keyboard, bodi aluminium unibody tipis & ringan',
-          pros: 'Performa kencang, efisiensi baterai luar biasa, kualitas layar tajam.',
-          cons: 'Opsi upgrade penyimpanan setelah pembelian terbatas.',
-          source: sourceUrl
-        };
-      }
-      if (category === 'iPad') {
-        return {
-          name,
-          category,
-          tagline: shortDesc,
-          display: 'Layar Liquid Retina Multi-Touch dengan lapisan oleophobic',
-          chip: 'Chip Apple Silicon berperforma tinggi untuk multitasking iPadOS',
-          camera: 'Kamera belakang 12 MP Wide + Kamera depan lanskap Center Stage',
-          battery: 'Hingga 10 jam penggunaan web/video via Wi-Fi, port USB-C',
-          features: 'Mendukung Apple Pencil, Magic Keyboard, Touch ID / Face ID',
-          pros: 'Ringan dibawa ke mana saja, ekosistem aplikasi kreatif melimpah.',
-          cons: 'Aksesori stylus dan keyboard dijual terpisah.',
-          source: sourceUrl
-        };
-      }
-      if (category === 'Laptop Windows') {
-        return {
-          name,
-          category,
-          tagline: shortDesc,
-          display: '14 / 15,6 inci Full HD IPS Anti-Glare',
-          chip: 'Prosesor Intel Core / AMD Ryzen generasi terbaru + SSD NVMe',
-          camera: 'Webcam HD dengan Privacy Shutter, Wi-Fi 6, HDMI, USB-C & USB-A',
-          battery: 'Baterai Li-ion tahan hingga 8–10 jam dengan Fast Charging',
-          features: 'Windows 11 Home, keyboard ergonomis, port konektivitas lengkap',
-          pros: 'Port lengkap tanpa butuh adapter tambahan, kompatibel dengan software kantor.',
-          cons: 'Performa maksimal optimal saat terhubung ke adaptor daya.',
-          source: sourceUrl
-        };
-      }
-      if (category === 'Starlink') {
-        return {
-          name,
-          category,
-          tagline: shortDesc,
-          display: 'Antena Phased Array elektronik tahan cuaca (IP67)',
-          chip: 'Router Wi-Fi 6 Dual/Tri-Band dengan manajemen via Aplikasi Starlink',
-          camera: 'Koneksi internet satelit orbit rendah (LEO) latensi rendah',
-          battery: 'Konsumsi daya AC 75–100W, mudah dipasang di atap atau halaman terbuka',
-          features: 'Kecepatan tinggi di area terpencil, tahan hujan & angin kencang',
-          pros: 'Menjangkau area blank-spot yang tidak tercover kabel fiber optik.',
-          cons: 'Membutuhkan pandangan langit yang bebas halangan.',
-          source: 'https://www.starlink.com/id'
-        };
-      }
-      return {
-        name,
-        category: 'iPhone',
-        tagline: shortDesc,
-        display: 'Super Retina XDR OLED dengan Ceramic Shield',
-        chip: 'Chip Apple Silicon A-Series dengan Neural Engine cepat',
-        camera: 'Sistem kamera 48 MP Fusion dengan perekaman video 4K Dolby Vision',
-        battery: 'Daya tahan baterai seharian penuh, pengisian cepat USB-C & MagSafe',
-        features: 'Face ID, tahan air dan debu IP68, iOS terbaru dengan fitur keamanan lengkap',
-        pros: 'Kualitas kamera & video terdepan di kelasnya, pembaruan iOS jangka panjang.',
-        cons: 'Kepala charger dijual terpisah dalam kotak penjualan.',
-        source: sourceUrl
-      };
-    }
+        function setColumnCount(num) {
+            columnCount = num;
+            const grid = document.getElementById('comparisonGrid');
+            grid.className = `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-${num} gap-6`;
+            document.querySelectorAll('.col-btn').forEach(btn => {
+                if(parseInt(btn.textContent) === num) {
+                    btn.className = "col-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-900 text-white";
+                } else {
+                    btn.className = "col-btn px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 hover:bg-gray-50";
+                }
+            });
+        }
 
-    function fillFormWithSpecs(spec) {
-      if (spec.name) document.getElementById('prod-name').value = spec.name;
-      if (spec.category) {
-        const validCats = ['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink'];
-        document.getElementById('prod-category').value = validCats.includes(spec.category) ? spec.category : 'iPhone';
-      }
-      if (spec.tagline) document.getElementById('prod-tagline').value = spec.tagline;
-      if (spec.display) document.getElementById('prod-display').value = spec.display;
-      if (spec.chip) document.getElementById('prod-chip').value = spec.chip;
-      if (spec.camera) document.getElementById('prod-camera').value = spec.camera;
-      if (spec.battery) document.getElementById('prod-battery').value = spec.battery;
-      if (spec.features) document.getElementById('prod-features').value = spec.features;
-      if (spec.pros) document.getElementById('prod-pros').value = spec.pros;
-      if (spec.cons) document.getElementById('prod-cons').value = spec.cons;
-      if (spec.source) document.getElementById('prod-source').value = spec.source;
-    }
+        function renderComparisonGrid() {
+            const grid = document.getElementById('comparisonGrid');
+            const filtered = currentCategory === 'Semua' ? products : products.filter(p => p.category === currentCategory);
+            
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400 text-sm">Belum ada produk dalam kategori ini. Tambahkan melalui panel di bawah.</div>`;
+                renderProductList();
+                return;
+            }
 
-    // =========================================================================
-    // 8. TOAST NOTIFICATION (PENGGANTI ALERT)
-    // =========================================================================
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-white rounded-3xl p-6 border border-gray-200 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="text-center mb-6">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-[#C62828] bg-red-50 px-3 py-1 rounded-full">${p.category}</span>
+                            <div class="h-44 my-4 flex items-center justify-center">
+                                <img src="${p.image || 'https://via.placeholder.com/150'}" alt="${p.name}" class="max-h-full max-w-full object-contain drop-shadow-sm">
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900">${p.name}</h3>
+                            <p class="text-xs text-gray-500 mt-1 min-h-[32px]">${p.tagline || ''}</p>
+                        </div>
+                        <div class="space-y-4 text-xs divide-y divide-gray-100">
+                            <div class="pt-3 text-center"><span class="block text-gray-400 text-[10px] mb-1">LAYAR</span><strong class="text-gray-800 whitespace-pre-line">${p.display || '-'}</strong></div>
+                            <div class="pt-3 text-center"><span class="block text-gray-400 text-[10px] mb-1">BATERAI</span><strong class="text-gray-800">${p.battery || '-'}</strong></div>
+                            <div class="pt-3 text-center"><span class="block text-gray-400 text-[10px] mb-1">CHIP / PROSESOR</span><strong class="text-gray-800 whitespace-pre-line">${p.chip || '-'}</strong></div>
+                            <div class="pt-3 text-center"><span class="block text-gray-400 text-[10px] mb-1">KAMERA UTAMA</span><strong class="text-gray-800 whitespace-pre-line">${p.camera || '-'}</strong></div>
+                            <div class="pt-3 text-center"><span class="block text-gray-400 text-[10px] mb-1">KAMERA DEPAN</span><strong class="text-gray-800">${p.frontCam || '-'}</strong></div>
+                            <div class="pt-3 text-center"><span class="block text-gray-400 text-[10px] mb-1">FITUR AI / UNGGULAN</span><strong class="text-gray-800">${p.ai || '-'}</strong></div>
+                        </div>
+                    </div>
+                    <div class="mt-8 pt-4 border-t border-gray-100 text-center">
+                        <span class="block text-sm font-bold text-gray-900 mb-2">${p.price || 'Hubungi Toko'}</span>
+                        <a href="https://wa.me/6282344888441?text=Halo%20Mahadewa.id,%20saya%20tertarik%20dengan%20${encodeURIComponent(p.name)}" target="_blank" class="w-full bg-gray-900 hover:bg-black text-white text-xs font-semibold py-2.5 rounded-xl transition block shadow-sm">Tanya Stok / Beli</a>
+                        <span class="block text-[10px] text-gray-400 mt-2">Sumber: ${p.source || 'mahadewa.id'}</span>
+                    </div>
+                </div>
+            `).join('');
 
-      const styles = {
-        success: 'bg-[#1d1d1f] text-white border-emerald-500',
-        error: 'bg-[#C62828] text-white border-red-300',
-        info: 'bg-[#1d1d1f] text-white border-gray-600'
-      };
-      const icons = {
-        success: 'check-circle-2',
-        error: 'alert-triangle',
-        info: 'info'
-      };
+            renderProductList();
+        }
 
-      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-xl border-l-4 text-xs sm:text-sm font-medium transition-all duration-300 transform translate-y-2 opacity-0 max-w-sm ${styles[type] || styles.info}`;
-      toast.innerHTML = `
-        <i data-lucide="${icons[type] || 'info'}" class="w-4 h-4 flex-shrink-0"></i>
-        <span>${message}</span>
-      `;
-      container.appendChild(toast);
-      lucide.createIcons();
+        function renderProductList() {
+            document.getElementById('productCount').textContent = products.length;
+            const grid = document.getElementById('productListGrid');
+            grid.innerHTML = products.map((p, idx) => `
+                <div class="bg-white p-4 rounded-2xl border border-gray-200 flex items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <img src="${p.image || 'https://via.placeholder.com/50'}" class="w-10 h-10 object-contain flex-shrink-0">
+                        <div class="truncate">
+                            <span class="text-[10px] font-bold text-[#C62828]">${p.category}</span>
+                            <h4 class="text-xs font-bold text-gray-900 truncate">${p.name}</h4>
+                            <span class="text-[10px] text-gray-400">${p.price || ''}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <button onclick="editProduct(${idx})" class="p-1.5 text-gray-500 hover:text-blue-600 rounded-lg"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button onclick="deleteProduct(${idx})" class="p-1.5 text-gray-500 hover:text-red-600 rounded-lg"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-2', 'opacity-0');
-      });
+        function saveProduct(e) {
+            e.preventDefault();
+            const idx = parseInt(document.getElementById('editIndex').value);
+            const newProd = {
+                name: document.getElementById('inputName').value,
+                category: document.getElementById('inputCategory').value,
+                image: document.getElementById('inputImage').value,
+                tagline: document.getElementById('inputTagline').value,
+                display: document.getElementById('inputDisplay').value,
+                battery: document.getElementById('inputBattery').value,
+                chip: document.getElementById('inputChip').value,
+                camera: document.getElementById('inputCamera').value,
+                frontCam: document.getElementById('inputFrontCam').value,
+                ai: document.getElementById('inputAi').value,
+                price: document.getElementById('inputPrice').value,
+                source: document.getElementById('inputSource').value || 'mahadewa.id'
+            };
 
-      setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-2');
-        setTimeout(() => toast.remove(), 300);
-      }, 3800);
-    }
-  </script>
+            if(idx === -1) {
+                products.push(newProd);
+            } else {
+                products[idx] = newProd;
+            }
+
+            localStorage.setItem('mahadewa_compare_products_v3', JSON.stringify(products));
+            resetForm();
+            renderComparisonGrid();
+            alert('Produk berhasil disimpan!');
+        }
+
+        function editProduct(idx) {
+            const p = products[idx];
+            document.getElementById('editIndex').value = idx;
+            document.getElementById('inputName').value = p.name;
+            document.getElementById('inputCategory').value = p.category;
+            document.getElementById('inputImage').value = p.image;
+            document.getElementById('inputTagline').value = p.tagline;
+            document.getElementById('inputDisplay').value = p.display;
+            document.getElementById('inputBattery').value = p.battery;
+            document.getElementById('inputChip').value = p.chip;
+            document.getElementById('inputCamera').value = p.camera;
+            document.getElementById('inputFrontCam').value = p.frontCam;
+            document.getElementById('inputAi').value = p.ai;
+            document.getElementById('inputPrice').value = p.price;
+            document.getElementById('inputSource').value = p.source;
+            document.getElementById('formTitle').textContent = `Edit Produk: ${p.name}`;
+            window.scrollTo({ top: document.getElementById('adminSection').offsetTop, behavior: 'smooth' });
+        }
+
+        function deleteProduct(idx) {
+            if(confirm('Hapus produk ini dari daftar?')) {
+                products.splice(idx, 1);
+                localStorage.setItem('mahadewa_compare_products_v3', JSON.stringify(products));
+                renderComparisonGrid();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('productForm').reset();
+            document.getElementById('editIndex').value = -1;
+            document.getElementById('formTitle').textContent = 'Tambah / Edit Detail Produk';
+        }
+
+        function resetDefaultData() {
+            if(confirm('Kembalikan ke data produk awal?')) {
+                products = DEFAULT_PRODUCTS;
+                localStorage.setItem('mahadewa_compare_products_v3', JSON.stringify(products));
+                renderComparisonGrid();
+            }
+        }
+
+        function exportJson() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", "katalog_mahadewa.json");
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+        }
+
+        function importJson(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    products = JSON.parse(e.target.result);
+                    localStorage.setItem('mahadewa_compare_products_v3', JSON.stringify(products));
+                    renderComparisonGrid();
+                    alert('Katalog berhasil diimpor!');
+                } catch(err) {
+                    alert('Format file JSON tidak valid.');
+                }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        async function triggerAiAutoFill() {
+            const q = document.getElementById('aiQueryInput').value.trim();
+            if(!q) { alert('Masukkan nama perangkat terlebih dahulu!'); return; }
+            if(!apiKey) { alert('Masukkan dan simpan Gemini API Key terlebih dahulu di kotak pengaturan!'); return; }
+
+            const btn = document.getElementById('aiBtn');
+            btn.textContent = 'Mencari...';
+            btn.disabled = true;
+
+            try {
+                const prompt = `Berikan spesifikasi teknis lengkap untuk produk "${q}" dalam format JSON murni tanpa markdown dengan keys: name, category (pilih salah satu: iPhone, iPad, MacBook, Laptop Windows, Starlink), image (URL gambar produk yang valid jika ada), tagline, display, battery, chip, camera, frontCam, ai, price, source.`;
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                const data = await response.json();
+                const text = data.candidates[0].content.parts[0].text;
+                const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(cleanJson);
+
+                document.getElementById('inputName').value = parsed.name || q;
+                document.getElementById('inputCategory').value = parsed.category || 'Laptop Windows';
+                document.getElementById('inputImage').value = parsed.image || '';
+                document.getElementById('inputTagline').value = parsed.tagline || '';
+                document.getElementById('inputDisplay').value = parsed.display || '';
+                document.getElementById('inputBattery').value = parsed.battery || '';
+                document.getElementById('inputChip').value = parsed.chip || '';
+                document.getElementById('inputCamera').value = parsed.camera || '';
+                document.getElementById('inputFrontCam').value = parsed.frontCam || '';
+                document.getElementById('inputAi').value = parsed.ai || '';
+                document.getElementById('inputPrice').value = parsed.price || 'Rp 10.000.000';
+                document.getElementById('inputSource').value = parsed.source || 'official website';
+
+                window.scrollTo({ top: document.getElementById('productForm').offsetTop, behavior: 'smooth' });
+                alert('Spesifikasi berhasil ditarik otomatis oleh AI!');
+            } catch(err) {
+                alert('Gagal mengambil spesifikasi: ' + err.message);
+            } finally {
+                btn.textContent = 'Auto-Isi';
+                btn.disabled = false;
+            }
+        }
+
+        async function syncToSheets() {
+            if(!sheetsUrl) { alert('Masukkan URL Google Sheets Apps Script terlebih dahulu!'); return; }
+            try {
+                await fetch(sheetsUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'save', products: products })
+                });
+                alert('Data berhasil dikirim ke Google Sheets!');
+            } catch(err) {
+                alert('Gagal sync: ' + err.message);
+            }
+        }
+
+        async function syncFromSheets() {
+            if(!sheetsUrl) { alert('Masukkan URL Google Sheets Apps Script terlebih dahulu!'); return; }
+            try {
+                const res = await fetch(sheetsUrl);
+                const data = await res.json();
+                if(data && data.products) {
+                    products = data.products;
+                    localStorage.setItem('mahadewa_compare_products_v3', JSON.stringify(products));
+                    renderComparisonGrid();
+                    alert('Data berhasil ditarik dari Google Sheets!');
+                }
+            } catch(err) {
+                alert('Gagal mengambil data dari Sheets: ' + err.message);
+            }
+        }
+
+        // Inisialisasi awal
+        renderComparisonGrid();
+    </script>
 </body>
 </html>
