@@ -238,7 +238,7 @@
                             <input type="text" id="geminiApiKeyInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true"
                                 style="-webkit-text-security: disc;"
                                 class="w-full pr-9 pl-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs font-mono text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#C62828]"
-                                placeholder="Tempel kode AIzaSy... (39 karakter)">
+                                placeholder="Tempel kode AQ... atau AIzaSy...">
                             <button type="button" onclick="toggleApiKeyVisibility()" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#86868b] hover:text-[#1d1d1f] cursor-pointer" title="Lihat / Sembunyikan Kode">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             </button>
@@ -1372,8 +1372,8 @@
                 initSettingsUI();
             }
 
-            if (customApiKey && !customApiKey.startsWith('AIza')) {
-                showToast('Format API Key salah (harus diawali "AIzaSy..."). Pastikan bukan password Safari yang terisi otomatis.', 'error');
+            if (customApiKey && !(customApiKey.startsWith('AIza') || customApiKey.startsWith('AQ.'))) {
+                showToast('Format API Key tidak valid (harus diawali "AQ." atau "AIza"). Pastikan bukan password Safari yang terisi otomatis.', 'error');
                 document.getElementById('geminiApiKeyInput')?.focus();
                 return;
             }
@@ -1617,8 +1617,8 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
                 showToast('Masukkan kode Gemini API Key terlebih dahulu.', 'error');
                 return;
             }
-            if (!val.startsWith('AIza')) {
-                showToast('Kode API Key harus diawali huruf "AIzaSy...". Periksa kembali salinan Anda.', 'error');
+            if (!(val.startsWith('AIza') || val.startsWith('AQ.'))) {
+                showToast('Kode API Key harus diawali "AQ." atau "AIza". Periksa kembali hasil Copy key Anda.', 'error');
                 return;
             }
             localStorage.setItem(API_KEY_STORAGE_KEY, val);
