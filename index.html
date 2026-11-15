@@ -3,367 +3,1475 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perbandingan Model iPhone - Mahadewa.id</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Perbandingan Produk & Spesifikasi - mahadewa.id</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Font: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #fbfbfd;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background-color: #ffffff;
             color: #1d1d1f;
+            -webkit-font-smoothing: antialiased;
         }
-        /* Custom scrollbar for sleek Apple look */
-        ::-webkit-scrollbar {
+        /* Custom scrollbar for horizontal comparison table */
+        .compare-scroll::-webkit-scrollbar {
             height: 6px;
-            width: 6px;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f3;
+        .compare-scroll::-webkit-scrollbar-track {
+            background: #f5f5f7;
+            border-radius: 9999px;
         }
-        ::-webkit-scrollbar-thumb {
+        .compare-scroll::-webkit-scrollbar-thumb {
             background: #d2d2d7;
             border-radius: 9999px;
         }
-        ::-webkit-scrollbar-thumb:hover {
+        .compare-scroll::-webkit-scrollbar-thumb:hover {
             background: #86868b;
+        }
+        .apple-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231d1d1f'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+        .ai-glow {
+            box-shadow: 0 0 25px rgba(220, 38, 38, 0.12);
         }
     </style>
 </head>
-<body class="bg-[#fbfbfd] text-[#1d1d1f] min-h-screen flex flex-col justify-between antialiased selection:bg-red-500 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between bg-white text-[#1d1d1f]">
 
-    <!-- Header Mahadewa.id -->
-    <header class="w-full bg-[#fbfbfd]/80 backdrop-blur-md border-b border-[#d2d2d7]/50 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 bg-red-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
-                    <span class="text-lg tracking-tighter">d</span>
-                </div>
-                <span class="text-xl font-semibold tracking-tight text-[#1d1d1f]">mahadewa<span class="text-red-600">.id</span></span>
+    <!-- Toast Notification Container (Replaces alert/confirm) -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Custom Confirmation Modal (Replaces confirm) -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-[#d2d2d7]/60 text-center">
+            <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             </div>
-            <div class="text-sm font-medium text-[#86868b] hidden sm:block">
-                Katalog & Perangkat Resmi Apple
+            <h3 id="confirmTitle" class="text-base font-bold text-[#1d1d1f] mb-1">Konfirmasi Tindakan</h3>
+            <p id="confirmMessage" class="text-sm text-[#86868b] mb-6">Apakah Anda yakin ingin melanjutkan?</p>
+            <div class="flex gap-3 justify-center">
+                <button id="confirmCancelBtn" class="flex-1 py-2.5 px-4 rounded-xl border border-[#d2d2d7] text-sm font-medium text-[#1d1d1f] hover:bg-[#f5f5f7] transition-colors">Batal</button>
+                <button id="confirmOkBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">Ya, Lanjutkan</button>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+    <!-- Main Container -->
+    <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16">
         
-        <!-- Hero Section -->
-        <div class="text-center max-w-3xl mx-auto mb-12">
-            <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-4">
-                Bandingkan model iPhone.
+        <!-- Brand Header (Mahadewa.id) -->
+        <header class="text-center mb-10">
+            <div class="inline-flex items-center justify-center space-x-2.5 mb-6">
+                <div class="w-9 h-9 rounded-full bg-[#dc2626] flex items-center justify-center shadow-xs">
+                    <span class="text-white font-extrabold text-xl leading-none tracking-tighter" style="font-family: 'Inter', sans-serif;">d</span>
+                </div>
+                <span class="text-2xl font-extrabold tracking-tight text-[#1d1d1f]">mahadewa.id</span>
+            </div>
+            <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-3">
+                Perbandingan Produk & Spesifikasi
             </h1>
-            <p class="text-lg sm:text-xl text-[#86868b]">
-                Pilih hingga 4 model sekaligus untuk melihat perbandingan spesifikasi secara berdampingan.
+            <p class="text-base sm:text-lg text-[#86868b] max-w-2xl mx-auto font-normal">
+                Pilih produk untuk dibandingkan atau tambahkan produk baru secara otomatis dengan AI.
             </p>
-        </div>
+        </header>
 
-        <!-- Model Selection Panel -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-[#d2d2d7]/60 mb-12">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-[#86868b]">
-                    Pilih Model untuk Dibandingkan (Maksimal 4)
-                </h2>
-                <button onclick="resetSelection()" class="text-xs text-red-600 hover:text-red-700 font-medium transition-colors">
-                    Reset Pilihan
-                </button>
-            </div>
-            <div id="modelCheckboxes" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                <!-- Checkboxes will be populated by JS -->
-            </div>
-        </div>
+        <!-- Category Filter & Slot Controls -->
+        <section class="mb-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 pb-6 border-b border-[#d2d2d7]/60">
+                <!-- Category Filter Pills -->
+                <div id="categoryTabs" class="flex flex-wrap items-center justify-center gap-2">
+                    <button onclick="setCategoryFilter('Semua')" data-cat="Semua" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#1d1d1f] text-white shadow-xs">Semua</button>
+                    <button onclick="setCategoryFilter('iPhone')" data-cat="iPhone" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">iPhone</button>
+                    <button onclick="setCategoryFilter('iPad')" data-cat="iPad" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">iPad</button>
+                    <button onclick="setCategoryFilter('MacBook')" data-cat="MacBook" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">MacBook</button>
+                    <button onclick="setCategoryFilter('Starlink / Lainnya')" data-cat="Starlink / Lainnya" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">Starlink / Lainnya</button>
+                </div>
 
-        <!-- Comparison Table Container -->
-        <div class="bg-white rounded-2xl shadow-sm border border-[#d2d2d7]/60 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table id="comparisonTable" class="w-full text-left border-collapse">
-                    <!-- Dynamic Table Content -->
-                </table>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Footer Mahadewa.id -->
-    <footer class="bg-[#f5f5f7] border-t border-[#d2d2d7]/50 mt-20 py-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 pb-8 border-b border-[#d2d2d7]/50">
-                <!-- Brand Info -->
-                <div>
-                    <div class="flex items-center space-x-3 mb-3">
-                        <div class="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                            d
-                        </div>
-                        <span class="text-lg font-semibold tracking-tight">mahadewa<span class="text-red-600">.id</span></span>
+                <!-- Column Count & Quick Jump to Admin -->
+                <div class="flex items-center gap-3">
+                    <div class="inline-flex items-center bg-[#f5f5f7] rounded-full p-1 text-xs font-medium">
+                        <span class="px-2.5 text-[#86868b]">Kolom:</span>
+                        <button onclick="setColumnCount(2)" id="colBtn2" class="col-btn px-2.5 py-1 rounded-full transition-all text-[#1d1d1f]">2</button>
+                        <button onclick="setColumnCount(3)" id="colBtn3" class="col-btn px-2.5 py-1 rounded-full transition-all text-[#1d1d1f]">3</button>
+                        <button onclick="setColumnCount(4)" id="colBtn4" class="col-btn px-2.5 py-1 rounded-full transition-all bg-white text-[#1d1d1f] shadow-xs font-semibold">4</button>
                     </div>
-                    <p class="text-sm text-[#86868b] leading-relaxed">
-                        Pusat informasi spesifikasi dan perangkat teknologi premium terlengkap dengan pelayanan profesional di Kota Palopo.
-                    </p>
-                </div>
-                <!-- Contact Info -->
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#1d1d1f] mb-3">Hubungi Kami</h3>
-                    <ul class="space-y-2 text-sm text-[#515154]">
-                        <li class="flex items-center space-x-2">
-                            <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                            <span>0823-4488-8441</span>
-                        </li>
-                        <li class="flex items-center space-x-2">
-                            <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            <span>mahadewa.cabpalopo@gmail.com</span>
-                        </li>
-                    </ul>
-                </div>
-                <!-- Address Info -->
-                <div>
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#1d1d1f] mb-3">Lokasi Toko</h3>
-                    <p class="text-sm text-[#515154] leading-relaxed flex items-start space-x-2">
-                        <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span>Tompotika, Kec. Wara, Kota Palopo, Sulawesi Selatan 91911</span>
-                    </p>
+                    <a href="#adminSection" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-red-50 hover:bg-red-100 text-[#dc2626] text-xs sm:text-sm font-semibold transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>+ Auto-Isi AI</span>
+                    </a>
                 </div>
             </div>
-            <div class="text-center text-xs text-[#86868b]">
-                &copy; 2026 mahadewa.id. Hak cipta dilindungi undang-undang.
+        </section>
+
+        <!-- Apple Compare Style Side-by-Side Comparison Matrix -->
+        <section class="mb-20">
+            <div class="compare-scroll overflow-x-auto pb-4">
+                <div id="comparisonGrid" class="min-w-[680px]">
+                    <!-- Dynamically rendered comparison columns and rows -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="border-t border-[#d2d2d7]/70 my-12"></div>
+
+        <!-- Smart AI Auto-Fill & Product Manager (Admin Panel) -->
+        <section id="adminSection" class="scroll-mt-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 text-[#dc2626] text-xs font-semibold mb-2">
+                        <span class="w-2 h-2 rounded-full bg-[#dc2626] animate-pulse"></span>
+                        <span>Manajemen Katalog & AI Spec Lookup</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-[#1d1d1f]">Kelola Produk & Auto-Isi Spesifikasi</h2>
+                    <p class="text-sm text-[#86868b] mt-1">Ketik nama perangkat untuk menarik spesifikasi otomatis dari sumber resmi, atau ubah foto produk kapan saja.</p>
+                </div>
+
+                <!-- Backup / Restore / Reset Actions -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="exportCatalogJSON()" class="px-3.5 py-2 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] text-xs font-medium text-[#1d1d1f] transition-colors inline-flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <span>Export JSON</span>
+                    </button>
+                    <label class="px-3.5 py-2 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] text-xs font-medium text-[#1d1d1f] transition-colors inline-flex items-center gap-1.5 cursor-pointer">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        <span>Import JSON</span>
+                        <input type="file" accept=".json" onchange="importCatalogJSON(event)" class="hidden">
+                    </label>
+                    <button onclick="confirmResetDefaults()" class="px-3.5 py-2 rounded-xl border border-red-200 hover:bg-red-50 text-xs font-medium text-[#dc2626] transition-colors">
+                        Reset ke Data Default
+                    </button>
+                </div>
+            </div>
+
+            <!-- Prominent AI Auto-Fill Search Bar -->
+            <div class="bg-[#f5f5f7] rounded-3xl p-5 sm:p-7 mb-10 border border-[#d2d2d7]/60 ai-glow">
+                <label for="aiSearchInput" class="block text-sm font-bold text-[#1d1d1f] mb-1">
+                    Cari & Isi Spesifikasi Otomatis (AI + Google Search Grounding)
+                </label>
+                <p class="text-xs text-[#86868b] mb-4">
+                    Contoh: <button type="button" onclick="quickFillExample('iPad generasi 11')" class="underline hover:text-[#1d1d1f]">iPad generasi 11</button>, 
+                    <button type="button" onclick="quickFillExample('MacBook Air M4 13 inci')" class="underline hover:text-[#1d1d1f]">MacBook Air M4 13 inci</button>, 
+                    <button type="button" onclick="quickFillExample('Starlink Gen 3 Standard')" class="underline hover:text-[#1d1d1f]">Starlink Gen 3 Standard</button>, atau 
+                    <button type="button" onclick="quickFillExample('iPhone 17 Pro Max')" class="underline hover:text-[#1d1d1f]">iPhone 17 Pro Max</button>.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#86868b]">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <input type="text" id="aiSearchInput" onkeydown="if(event.key==='Enter'){event.preventDefault(); triggerAiAutoFill();}"
+                            class="w-full pl-11 pr-4 py-3.5 bg-white rounded-2xl border border-[#d2d2d7] text-sm sm:text-base text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-red-500/15 transition-all"
+                            placeholder="Ketik nama tipe barang (misal: iPad generasi 11)...">
+                    </div>
+                    <button type="button" id="aiFetchBtn" onclick="triggerAiAutoFill()"
+                        class="px-6 py-3.5 rounded-2xl bg-[#dc2626] hover:bg-red-700 active:scale-[0.99] text-white font-semibold text-sm sm:text-base transition-all shadow-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <span>Auto-Isi Spesifikasi</span>
+                    </button>
+                </div>
+
+                <!-- AI Loading & Status Bar -->
+                <div id="aiStatusBox" class="hidden mt-4 p-4 rounded-2xl bg-white border border-[#d2d2d7]/70">
+                    <div id="aiLoadingIndicator" class="flex items-center gap-3 text-sm font-medium text-[#1d1d1f]">
+                        <svg class="animate-spin h-5 w-5 text-[#dc2626]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Mencari spesifikasi resmi dari sumber terpercaya...</span>
+                    </div>
+                    <div id="aiGroundedSources" class="hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Spesifikasi Berhasil Ditemukan & Diisi Otomatis
+                            </span>
+                            <span class="text-[11px] text-[#86868b]">Periksa form di bawah lalu klik Simpan</span>
+                        </div>
+                        <div id="aiSourcePills" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add / Edit Product Editor Form + Catalog Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left Column: Product Editor Form (5 cols) -->
+                <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-[#d2d2d7]/80 shadow-xs">
+                    <div class="flex items-center justify-between pb-4 mb-5 border-b border-[#d2d2d7]/50">
+                        <div>
+                            <h3 id="editorFormTitle" class="text-lg font-bold text-[#1d1d1f]">Tambah / Edit Detail Produk</h3>
+                            <p class="text-xs text-[#86868b]">Lengkapi foto dan spesifikasi untuk ditampilkan di tabel.</p>
+                        </div>
+                        <button type="button" onclick="resetEditorForm()" class="text-xs font-medium text-[#86868b] hover:text-[#1d1d1f] underline">
+                            Form Baru
+                        </button>
+                    </div>
+
+                    <form id="productEditorForm" onsubmit="handleSaveProduct(event)" class="space-y-4">
+                        <input type="hidden" id="editingProductId" value="">
+
+                        <!-- Photo Upload & Live Preview Box -->
+                        <div class="p-4 rounded-2xl bg-[#f5f5f7] border border-[#d2d2d7]/60">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-[#86868b] mb-3">Foto Produk</label>
+                            <div class="flex items-center gap-4">
+                                <div class="w-20 h-24 rounded-xl bg-white border border-[#d2d2d7]/60 flex items-center justify-center overflow-hidden shrink-0 p-1.5">
+                                    <img id="formPhotoPreview" src="" alt="Preview" class="w-full h-full object-contain hidden">
+                                    <div id="formPhotoPlaceholder" class="text-center text-[#86868b]">
+                                        <svg class="w-7 h-7 mx-auto mb-1 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        <span class="text-[10px] block leading-tight">Auto SVG</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1 space-y-2">
+                                    <label class="w-full py-2 px-3 rounded-xl bg-white hover:bg-gray-50 border border-[#d2d2d7] text-xs font-semibold text-[#1d1d1f] cursor-pointer flex items-center justify-center gap-1.5 transition-colors shadow-2xs">
+                                        <svg class="w-4 h-4 text-[#dc2626]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                        <span>Upload Foto dari Perangkat</span>
+                                        <input type="file" id="photoFileInput" accept="image/*" onchange="handlePhotoFileUpload(event)" class="hidden">
+                                    </label>
+                                    <input type="text" id="fieldImage" oninput="updatePhotoPreviewFromUrl(this.value)"
+                                        class="w-full px-3 py-2 rounded-xl bg-white border border-[#d2d2d7] text-xs text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#dc2626]"
+                                        placeholder="Atau tempel URL gambar (https://...)">
+                                    <button type="button" onclick="clearProductPhoto()" class="text-[11px] text-[#86868b] hover:text-[#dc2626]">
+                                        Gunakan ilustrasi vektor bersih bawaan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">Nama Produk *</label>
+                                <input type="text" id="fieldName" required class="w-full px-3.5 py-2.5 rounded-xl border border-[#d2d2d7] text-sm focus:outline-none focus:border-[#dc2626]" placeholder="Contoh: iPad (Generasi ke-11)">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">Kategori *</label>
+                                <select id="fieldCategory" class="w-full px-3.5 py-2.5 rounded-xl border border-[#d2d2d7] text-sm bg-white focus:outline-none focus:border-[#dc2626]">
+                                    <option value="iPhone">iPhone</option>
+                                    <option value="iPad">iPad</option>
+                                    <option value="MacBook">MacBook</option>
+                                    <option value="Starlink / Lainnya">Starlink / Lainnya</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">Tagline Singkat</label>
+                            <input type="text" id="fieldTagline" class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-sm focus:outline-none focus:border-[#dc2626]" placeholder="Contoh: Performa bertenaga chip A16 dengan layar Liquid Retina.">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">1. Layar / Dimensi *</label>
+                            <textarea id="fieldDisplay" rows="2" required class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-sm focus:outline-none focus:border-[#dc2626]" placeholder="Contoh: 11&quot; Liquid Retina&#10;Resolusi 2360 x 1640, True Tone"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">2. Baterai / Daya *</label>
+                                <input type="text" id="fieldBattery" required class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-sm focus:outline-none focus:border-[#dc2626]" placeholder="Hingga 10 jam pemakaian">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">3. Chipset / Performa *</label>
+                                <input type="text" id="fieldChip" required class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-sm focus:outline-none focus:border-[#dc2626]" placeholder="Chip A16 Bionic">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">4. Kamera / Konektivitas *</label>
+                            <textarea id="fieldCamera" rows="2" required class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-sm focus:outline-none focus:border-[#dc2626]" placeholder="Kamera belakang 12MP Wide, depan 12MP Center Stage, Wi-Fi 6"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">5. Fitur Utama / AI *</label>
+                            <input type="text" id="fieldFeatures" required class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-sm focus:outline-none focus:border-[#dc2626]" placeholder="Touch ID, USB-C, Apple Pencil (USB-C)">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-emerald-700 mb-1">6a. Kelebihan (+)</label>
+                                <textarea id="fieldPros" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs focus:outline-none focus:border-[#dc2626]" placeholder="Storage mulai 128GB, harga terjangkau"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-red-600 mb-1">6b. Kekurangan (-)</label>
+                                <textarea id="fieldCons" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs focus:outline-none focus:border-[#dc2626]" placeholder="Layar masih 60Hz, belum Apple Intelligence"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            <div>
+                                <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">7a. Nama Situs Referensi</label>
+                                <input type="text" id="fieldSourceName" class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs focus:outline-none focus:border-[#dc2626]" placeholder="apple.com">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-[#1d1d1f] mb-1">7b. URL Sumber Resmi</label>
+                                <input type="url" id="fieldSourceUrl" class="w-full px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs focus:outline-none focus:border-[#dc2626]" placeholder="https://www.apple.com/ipad/">
+                            </div>
+                        </div>
+
+                        <div class="pt-3 flex items-center gap-3">
+                            <button type="submit" id="saveSubmitBtn" class="flex-1 py-3 px-5 rounded-2xl bg-[#1d1d1f] hover:bg-black text-white font-semibold text-sm transition-all shadow-xs cursor-pointer">
+                                Simpan ke Katalog Perbandingan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Stored Catalog Cards (7 cols) -->
+                <div class="lg:col-span-7">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <h3 class="text-base font-bold text-[#1d1d1f]">
+                            Daftar Produk Tersimpan (<span id="catalogCount">0</span>)
+                        </h3>
+                        <input type="text" id="catalogSearchInput" oninput="renderAdminCatalog()"
+                            class="px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs w-full sm:w-60 focus:outline-none focus:border-[#dc2626]"
+                            placeholder="Filter daftar produk...">
+                    </div>
+
+                    <div id="adminCatalogList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Dynamically populated product cards -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Official Mahadewa.id Footer -->
+    <footer class="bg-[#f5f5f7] border-t border-[#d2d2d7]/60 py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <!-- Contact Left -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-8">
+                    <!-- Telepon -->
+                    <a href="tel:082344888441" class="flex items-center gap-3 group">
+                        <div class="w-9 h-9 rounded-full bg-[#dc2626] text-white flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                        </div>
+                        <div>
+                            <span class="block text-[11px] font-medium text-[#86868b]">Telepon</span>
+                            <span class="text-xs sm:text-sm font-bold text-[#1d1d1f]">0823-4488-8441</span>
+                        </div>
+                    </a>
+
+                    <!-- Email -->
+                    <a href="mailto:mahadewa.cabpalopo@gmail.com" class="flex items-center gap-3 group">
+                        <div class="w-9 h-9 rounded-full bg-[#dc2626] text-white flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        </div>
+                        <div>
+                            <span class="block text-[11px] font-medium text-[#86868b]">Email</span>
+                            <span class="text-xs sm:text-sm font-bold text-[#1d1d1f]">mahadewa.cabpalopo@gmail.com</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Address Right -->
+                <div class="flex items-start sm:items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-[#dc2626] text-white flex items-center justify-center shrink-0 shadow-2xs mt-0.5 sm:mt-0">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+                    </div>
+                    <div>
+                        <span class="block text-[11px] font-medium text-[#86868b]">Alamat</span>
+                        <span class="text-xs sm:text-sm font-bold text-[#1d1d1f] block leading-snug">
+                            Tompotika, Kec. Wara, Kota Palopo, Sulawesi Selatan 91911
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
 
-    <!-- JavaScript for Interactive Comparison -->
     <script>
-        // Database of iPhone models
-        const iphoneData = [
+        // ==========================================
+        // 1. DEFAULT PRE-POPULATED PRODUCT DATABASE
+        // ==========================================
+        const STORAGE_KEY = 'mahadewa_compare_catalog_v2';
+        const SLOTS_STORAGE_KEY = 'mahadewa_compare_slots_v2';
+
+        const DEFAULT_PRODUCTS = [
             {
-                id: "iphone15",
-                name: "iPhone 15",
-                category: "Standard",
-                price: "Mulai Rp 12.499.000",
-                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+15",
+                id: 'iphone-15',
+                name: 'iPhone 15',
+                category: 'iPhone',
+                tagline: 'Dynamic Island, kamera 48MP, dan USB-C yang terjangkau.',
+                image: '',
+                visualType: 'iphone-standard',
+                accentColor: '#93c5fd',
                 specs: {
-                    display: '6.1" Super Retina XDR\n60Hz, Dynamic Island',
-                    battery: "Pemutaran video hingga 20 jam",
-                    chip: "Chip A16 Bionic\nUSB-C",
-                    mainCamera: "Kamera ganda 48MP\nUtama 48MP & Ultra Wide 12MP",
-                    frontCamera: "Kamera depan 12MP TrueDepth",
-                    ai: "Tidak mendukung Apple Intelligence"
+                    display: '6.1" Super Retina XDR\n60Hz, Dynamic Island, hingga 2000 nit',
+                    battery: 'Pemutaran video hingga 20 jam',
+                    chip: 'Chip A16 Bionic (GPU 5-core)',
+                    camera: 'Kamera ganda 48MP (Utama 48MP & Ultra Wide 12MP)\nDepan 12MP TrueDepth, USB-C',
+                    features: 'Dynamic Island, Face ID, Tahan air IP68',
+                    pros: 'Harga paling terjangkau, layar cerah, port USB-C',
+                    cons: 'Layar masih 60Hz, belum mendukung Apple Intelligence',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/iphone/compare/'
                 }
             },
             {
-                id: "iphone16",
-                name: "iPhone 16",
-                category: "Standard",
-                price: "Mulai Rp 14.999.000",
-                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+16",
+                id: 'iphone-16',
+                name: 'iPhone 16',
+                category: 'iPhone',
+                tagline: 'Dibangun untuk Apple Intelligence dengan Kontrol Kamera.',
+                image: '',
+                visualType: 'iphone-dual-vertical',
+                accentColor: '#818cf8',
                 specs: {
-                    display: '6.1" Super Retina XDR\n60Hz, Dynamic Island',
-                    battery: "Pemutaran video hingga 22 jam",
-                    chip: "Chip A18\nTombol Camera Control",
-                    mainCamera: "Sistem kamera ganda 48MP\nUtama 48MP & Ultra Wide 12MP",
-                    frontCamera: "Kamera depan 12MP TrueDepth",
-                    ai: "Apple Intelligence"
+                    display: '6.1" Super Retina XDR\n60Hz, Dynamic Island, Ceramic Shield terbaru',
+                    battery: 'Pemutaran video hingga 22 jam',
+                    chip: 'Chip A18 (3nm, GPU 5-core)',
+                    camera: 'Sistem kamera ganda Fusion 48MP\nTombol Camera Control, Wi-Fi 7',
+                    features: 'Apple Intelligence, Tombol Action, Camera Control',
+                    pros: 'Dukungan penuh Apple Intelligence, tombol kontrol kamera fisik',
+                    cons: 'Refresh rate layar standar masih 60Hz',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/iphone/compare/'
                 }
             },
             {
-                id: "iphone17",
-                name: "iPhone 17",
-                category: "Standard",
-                price: "Mulai Rp 16.999.000",
-                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+17",
+                id: 'iphone-17',
+                name: 'iPhone 17',
+                category: 'iPhone',
+                tagline: 'Layar ProMotion 120Hz kini hadir di seluruh lini standar.',
+                image: '',
+                visualType: 'iphone-dual-vertical',
+                accentColor: '#a3a3a3',
+                specs: {
+                    display: '6.3" Super Retina XDR\nProMotion 120Hz, Always-On Display',
+                    battery: 'Pemutaran video hingga 30 jam',
+                    chip: 'Chip A19 (GPU 5-core)',
+                    camera: 'Sistem kamera Dual Fusion 48MP\nKamera depan 18MP Center Stage',
+                    features: 'Apple Intelligence, Storage dasar mulai 256GB',
+                    pros: 'Semua tipe sudah 120Hz ProMotion, storage awal lega 256GB',
+                    cons: 'Tidak memiliki lensa telefoto optik khusus',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/iphone/compare/'
+                }
+            },
+            {
+                id: 'iphone-18',
+                name: 'iPhone 18',
+                category: 'iPhone',
+                tagline: 'Performa generasi baru dengan chip A20 2nm dan modem Apple C2.',
+                image: '',
+                visualType: 'iphone-dual-vertical',
+                accentColor: '#60a5fa',
                 specs: {
                     display: '6.3" Super Retina XDR\nProMotion 120Hz, Always-On',
-                    battery: "Pemutaran video hingga 30 jam",
-                    chip: "Chip A19\nStorage mulai 256GB",
-                    mainCamera: "Sistem kamera Dual Fusion 48MP\nUtama 48MP & Ultra Wide 48MP",
-                    frontCamera: "Kamera depan 18MP Center Stage",
-                    ai: "Apple Intelligence"
+                    battery: 'Pemutaran video hingga 35 jam',
+                    chip: 'Chip A20 (2nm) + Modem Apple C2',
+                    camera: 'Sistem kamera Dual Fusion 48MP\nKamera depan 18MP Center Stage',
+                    features: 'Apple Intelligence & Siri AI generasi baru',
+                    pros: 'Efisiensi daya chip 2nm tinggi, konektivitas modem C2 cepat',
+                    cons: 'Tanpa lensa telefoto periskop 8x',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/iphone/compare/'
                 }
             },
             {
-                id: "iphone18",
-                name: "iPhone 18",
-                category: "Standard",
-                price: "Mulai Rp 18.999.000",
-                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+18",
+                id: 'iphone-18-pro',
+                name: 'iPhone 18 Pro',
+                category: 'iPhone',
+                tagline: 'Performa dan kamera Pro dengan bukaan lensa variabel.',
+                image: '',
+                visualType: 'iphone-pro',
+                accentColor: '#7f1d1d',
                 specs: {
-                    display: '6.3" Super Retina XDR\nProMotion 120Hz, Always-On',
-                    battery: "Pemutaran video hingga 35 jam",
-                    chip: "Chip A20 (2nm)\nModem Apple C2",
-                    mainCamera: "Sistem kamera Dual Fusion 48MP\nUtama 48MP & Ultra Wide 48MP",
-                    frontCamera: "Kamera depan 18MP Center Stage",
-                    ai: "Apple Intelligence & Siri AI"
+                    display: '6.3" Super Retina XDR\nProMotion 120Hz, Always-On, bezel ultra tipis',
+                    battery: 'Pemutaran video hingga 36 jam',
+                    chip: 'Chip A20 Pro (2nm)\nGPU 7-core + Pendingin Vapor Chamber',
+                    camera: 'Sistem 48MP Pro Fusion (Variable Aperture)\nUltra Wide 48MP & Telefoto 48MP (8x Zoom)',
+                    features: 'Kamera depan 18MP Dual Capture, Siri AI, ProRes',
+                    pros: 'Bukaan lensa variabel mekanis, pendingin Vapor Chamber stabil',
+                    cons: 'Harga kelas flagship premium',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/iphone/compare/'
                 }
             },
             {
-                id: "iphone18pro",
-                name: "iPhone 18 Pro",
-                category: "Pro",
-                price: "Mulai Rp 21.999.000",
-                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+18+Pro",
+                id: 'iphone-18-pro-max',
+                name: 'iPhone 18 Pro Max',
+                category: 'iPhone',
+                tagline: 'Layar terbesar iPhone batang dengan daya tahan baterai terlama.',
+                image: '',
+                visualType: 'iphone-pro',
+                accentColor: '#d4d4d8',
                 specs: {
-                    display: '6.3" Super Retina XDR\nProMotion 120Hz, Always-On',
-                    battery: "Pemutaran video hingga 36 jam",
-                    chip: "Chip A20 Pro (2nm)\nGPU 7-core, Pendingin Vapor Chamber",
-                    mainCamera: "Sistem kamera 48MP Pro Fusion\nUtama Variable Aperture & Telefoto 8x",
-                    frontCamera: "Kamera depan 18MP Center Stage\nDual Capture",
-                    ai: "Apple Intelligence & Siri AI"
+                    display: '6.9" Super Retina XDR\nProMotion 120Hz, Always-On Display',
+                    battery: 'Pemutaran video hingga 45 jam',
+                    chip: 'Chip A20 Pro (2nm)\nGPU 7-core + Pendingin Vapor Chamber',
+                    camera: 'Sistem 48MP Pro Fusion (Variable Aperture)\nUltra Wide 48MP & Telefoto 48MP (8x Zoom)',
+                    features: 'Kamera depan 18MP Dual Capture, Siri AI, USB 3 10Gbps',
+                    pros: 'Baterai hingga 45 jam, layar luas 6.9 inci maksimal untuk multimedia',
+                    cons: 'Dimensi besar dan bobot lebih berat di saku',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/iphone/compare/'
                 }
             },
             {
-                id: "iphone18promax",
-                name: "iPhone 18 Pro Max",
-                category: "Pro",
-                price: "Mulai Rp 24.999.000",
-                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+18+Pro+Max",
+                id: 'iphone-duo',
+                name: 'iPhone Duo',
+                category: 'iPhone',
+                tagline: 'Layar lipat terbesar di iPhone. Lipat, fleksibel, dan tangguh.',
+                image: '',
+                visualType: 'iphone-fold',
+                accentColor: '#e5e7eb',
                 specs: {
-                    display: '6.9" Super Retina XDR\nProMotion 120Hz, Always-On',
-                    battery: "Pemutaran video hingga 45 jam",
-                    chip: "Chip A20 Pro (2nm)\nGPU 7-core, Pendingin Vapor Chamber",
-                    mainCamera: "Sistem kamera 48MP Pro Fusion\nUtama Variable Aperture & Telefoto 8x",
-                    frontCamera: "Kamera depan 18MP Center Stage\nDual Capture",
-                    ai: "Apple Intelligence & Siri AI"
+                    display: '7.6" Super Retina XDR Lipat (Nano-Texture)\nLayar luar 5.4" Super Retina XDR',
+                    battery: 'Hingga 31 jam (layar dalam)\nHingga 44 jam (layar luar)',
+                    chip: 'Chip A20 Pro (2nm)\nGPU 7-core dengan Neural Accelerators',
+                    camera: 'Sistem 48MP Dual Fusion (Utama & Ultra Wide)\nDepan 12MP Center Stage + FaceTime bawah layar',
+                    features: 'Desain lipat multitasking, Apple Intelligence, Siri AI',
+                    pros: 'Layar tablet 7.6 inci dalam genggaman, layar anti-silau Nano-Texture',
+                    cons: 'Harga tertinggi di jajaran iPhone, tanpa lensa telefoto khusus',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/iphone/compare/'
                 }
             },
             {
-                id: "iphoneduo",
-                name: "iPhone Duo",
-                category: "Foldable",
-                price: "Mulai Rp 31.999.000",
-                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+Duo",
+                id: 'ipad-gen-11',
+                name: 'iPad (Generasi ke-11)',
+                category: 'iPad',
+                tagline: 'iPad serba bisa dengan chip A16 dan penyimpanan dasar 128GB.',
+                image: '',
+                visualType: 'ipad',
+                accentColor: '#3b82f6',
                 specs: {
-                    display: '7.6" Lipat Nano-Texture\nLayar luar 5.4" Super Retina XDR',
-                    battery: "Hingga 31 jam (dalam) / 44 jam (luar)",
-                    chip: "Chip A20 Pro (2nm)\nGPU 7-core dengan Neural Accelerators",
-                    mainCamera: "Sistem kamera 48MP Dual Fusion\nUtama 48MP & Ultra Wide 48MP",
-                    frontCamera: "Kamera depan 12MP Center Stage\nKamera FaceTime bawah layar",
-                    ai: "Apple Intelligence & Siri AI"
+                    display: '11" Liquid Retina\nResolusi 2360 x 1640 piksel, True Tone, 500 nit',
+                    battery: 'Hingga 10 jam menjelajah web via Wi-Fi',
+                    chip: 'Chip A16 Bionic (CPU 5-core, GPU 4-core)',
+                    camera: 'Kamera belakang 12MP Wide (4K video)\nKamera depan 12MP Landscape Center Stage, Wi-Fi 6',
+                    features: 'Touch ID di tombol atas, USB-C, dukung Apple Pencil (USB-C)',
+                    pros: 'Kapasitas awal 128GB, harga sangat ekonomis untuk pelajar & kerja',
+                    cons: 'Belum mendukung Apple Intelligence & layar belum laminated',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/ipad/compare/'
+                }
+            },
+            {
+                id: 'ipad-air-m3',
+                name: 'iPad Air M3',
+                category: 'iPad',
+                tagline: 'Kecepatan luar biasa chip M3 dalam desain tipis dan ringan.',
+                image: '',
+                visualType: 'ipad',
+                accentColor: '#a855f7',
+                specs: {
+                    display: '11" atau 13" Liquid Retina\nLaminated display, lapisan anti-reflektif, P3 Wide Color',
+                    battery: 'Hingga 10 jam pemakaian aktif',
+                    chip: 'Chip Apple M3 (CPU 8-core, GPU 9-core)',
+                    camera: 'Kamera belakang 12MP Wide\nKamera depan 12MP Landscape Center Stage, Wi-Fi 6E',
+                    features: 'Apple Intelligence, dukung Apple Pencil Pro & Magic Keyboard',
+                    pros: 'Performa setara laptop dengan chip M3, mendukung Apple Pencil Pro',
+                    cons: 'Refresh rate layar masih 60Hz (non-ProMotion)',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/ipad/compare/'
+                }
+            },
+            {
+                id: 'starlink-mini',
+                name: 'Starlink Mini',
+                category: 'Starlink / Lainnya',
+                tagline: 'Internet satelit berkecepatan tinggi yang muat di dalam ransel.',
+                image: '',
+                visualType: 'starlink-mini',
+                accentColor: '#0284c7',
+                specs: {
+                    display: 'Dimensi: 298.5 x 259 x 38.5 mm\nBerat: 1.1 kg (dengan kickstand)',
+                    battery: 'Konsumsi daya rata-rata 25 - 40W\nMendukung input daya DC / USB-C PD 100W',
+                    chip: 'Antena Phased Array Elektronik\nBidang pandang 110°',
+                    camera: 'Wi-Fi 5 Terintegrasi (jangkauan hingga 112 m²)\n1 Port Ethernet LAN tahan cuaca',
+                    features: 'Ketahanan cuaca IP67, tahan angin 96+ kpj',
+                    pros: 'Sangat portabel, hemat daya (bisa pakai power bank PD), router built-in',
+                    cons: 'Jangkauan Wi-Fi lebih sempit dibanding Standard Gen 3',
+                    sourceName: 'starlink.com',
+                    sourceUrl: 'https://www.starlink.com/specifications'
+                }
+            },
+            {
+                id: 'starlink-gen3',
+                name: 'Starlink Standard Gen 3 (V4)',
+                category: 'Starlink / Lainnya',
+                tagline: 'Koneksi stabil berkecepatan tinggi dengan router Wi-Fi 6 terpisah.',
+                image: '',
+                visualType: 'starlink-std',
+                accentColor: '#0f172a',
+                specs: {
+                    display: 'Dimensi: 594 x 383 x 39.7 mm\nBerat: 2.9 kg (dengan penyangga)',
+                    battery: 'Konsumsi daya rata-rata 75 - 100W\nAdaptor daya AC 100-240V',
+                    chip: 'Antena Phased Array Generasi Baru\nBidang pandang luas 110°',
+                    camera: 'Router Gen 3 Wi-Fi 6 Tri-Band (hingga 297 m²)\n2 Port Ethernet LAN internal',
+                    features: 'Ketahanan cuaca ekstrem IP67, penyangga kickstand',
+                    pros: 'Jangkauan Wi-Fi 6 sangat luas, sudah ada 2 port LAN bawaan',
+                    cons: 'Penyelarasan arah antena manual via aplikasi (tanpa motor)',
+                    sourceName: 'starlink.com',
+                    sourceUrl: 'https://www.starlink.com/specifications'
                 }
             }
         ];
 
-        // Default selected models (up to 4)
-        let selectedModelIds = ["iphone15", "iphone16", "iphone18pro", "iphoneduo"];
-        const maxSelection = 4;
+        // ==========================================
+        // 2. APPLICATION STATE & INITIALIZATION
+        // ==========================================
+        let products = [];
+        let activeCategory = 'Semua';
+        let columnCount = 4;
+        let selectedSlots = ['iphone-18-pro', 'iphone-duo', 'ipad-gen-11', 'starlink-mini'];
 
-        function initApp() {
-            renderCheckboxes();
-            renderTable();
-        }
-
-        function renderCheckboxes() {
-            const container = document.getElementById("modelCheckboxes");
-            container.innerHTML = "";
-
-            iphoneData.forEach(model => {
-                const isChecked = selectedModelIds.includes(model.id);
-                const label = document.createElement("label");
-                label.className = `flex items-center space-x-2.5 p-3 rounded-xl border transition-all cursor-pointer select-none ${
-                    isChecked 
-                        ? 'border-red-600 bg-red-50/40 text-[#1d1d1f] font-medium shadow-xs' 
-                        : 'border-[#d2d2d7]/60 hover:border-[#86868b] bg-white text-[#515154]'
-                }`;
-
-                label.innerHTML = `
-                    <input type="checkbox" value="${model.id}" ${isChecked ? 'checked' : ''} onchange="handleCheckboxChange(this)" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
-                    <span class="text-xs sm:text-sm truncate">${model.name}</span>
-                `;
-                container.appendChild(label);
-            });
-        }
-
-        function handleCheckboxChange(checkbox) {
-            const id = checkbox.value;
-            if (checkbox.checked) {
-                if (selectedModelIds.length >= maxSelection) {
-                    alert(`Anda hanya dapat membandingkan maksimal ${maxSelection} model sekaligus.`);
-                    checkbox.checked = false;
-                    return;
+        function loadState() {
+            try {
+                const savedCatalog = localStorage.getItem(STORAGE_KEY);
+                products = savedCatalog ? JSON.parse(savedCatalog) : [...DEFAULT_PRODUCTS];
+                if (!Array.isArray(products) || products.length === 0) {
+                    products = [...DEFAULT_PRODUCTS];
                 }
-                selectedModelIds.push(id);
-            } else {
-                if (selectedModelIds.length <= 1) {
-                    alert("Minimal 1 model harus dipilih untuk perbandingan.");
-                    checkbox.checked = true;
-                    return;
-                }
-                selectedModelIds = selectedModelIds.filter(item => item !== id);
+            } catch (e) {
+                products = [...DEFAULT_PRODUCTS];
             }
-            renderCheckboxes();
-            renderTable();
+
+            try {
+                const savedSlots = localStorage.getItem(SLOTS_STORAGE_KEY);
+                if (savedSlots) {
+                    const parsed = JSON.parse(savedSlots);
+                    if (Array.isArray(parsed) && parsed.length === 4) {
+                        selectedSlots = parsed;
+                    }
+                }
+            } catch (e) {
+                // Keep default slots
+            }
+            ensureValidSlots();
         }
 
-        function resetSelection() {
-            selectedModelIds = ["iphone15", "iphone16", "iphone18pro"];
-            renderCheckboxes();
-            renderTable();
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+                localStorage.setItem(SLOTS_STORAGE_KEY, JSON.stringify(selectedSlots));
+            } catch (e) {
+                showToast('Penyimpanan penuh. Gunakan foto berukuran lebih kecil.', 'error');
+            }
         }
 
-        function renderTable() {
-            const table = document.getElementById("comparisonTable");
-            const modelsToCompare = iphoneData.filter(m => selectedModelIds.includes(m.id));
-            const colSpan = modelsToCompare.length + 1;
+        function ensureValidSlots() {
+            const filtered = getFilteredProducts();
+            const pool = filtered.length > 0 ? filtered : products;
+            for (let i = 0; i < 4; i++) {
+                const exists = products.some(p => p.id === selectedSlots[i]);
+                if (!exists && pool.length > 0) {
+                    selectedSlots[i] = pool[i % pool.length].id;
+                }
+            }
+        }
 
-            let html = `
-                <thead>
-                    <tr class="border-b border-[#d2d2d7]/60 bg-[#fbfbfd]">
-                        <th class="p-4 sm:p-6 text-xs font-semibold uppercase tracking-wider text-[#86868b] w-40">Spesifikasi</th>
-                        ${modelsToCompare.map(m => `
-                            <th class="p-4 sm:p-6 text-center align-top min-w-[200px]">
-                                <div class="flex flex-col items-center">
-                                    <img src="${m.image}" alt="${m.name}" class="w-24 h-28 object-contain mb-3 drop-shadow-sm">
-                                    <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full mb-1">${m.category}</span>
-                                    <h3 class="text-base sm:text-lg font-bold text-[#1d1d1f] mb-1">${m.name}</h3>
-                                    <p class="text-xs font-medium text-[#86868b] mb-4">${m.price}</p>
-                                    <button onclick="removeModel('${m.id}')" class="text-xs text-gray-400 hover:text-red-600 transition-colors">Hapus</button>
-                                </div>
-                            </th>
-                        `).join('')}
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-[#d2d2d7]/40 text-sm">
-            `;
+        function getFilteredProducts() {
+            if (activeCategory === 'Semua') return products;
+            return products.filter(p => p.category === activeCategory);
+        }
 
-            const specRows = [
-                { title: "Layar & Tampilan", key: "display" },
-                { title: "Baterai & Daya", key: "battery" },
-                { title: "Chip & Performa", key: "chip" },
-                { title: "Kamera Utama", key: "mainCamera" },
-                { title: "Kamera Depan", key: "frontCamera" },
-                { title: "Kecerdasan Buatan (AI)", key: "ai" }
+        // ==========================================
+        // 3. CLEAN VECTOR FALLBACK ILLUSTRATIONS
+        // ==========================================
+        function getFallbackVisualSVG(product) {
+            const type = product.visualType || detectVisualType(product.category, product.name);
+            const accent = product.accentColor || '#1d1d1f';
+
+            if (type === 'iphone-fold') {
+                return `
+                <svg viewBox="0 0 180 150" class="w-36 h-32 mx-auto drop-shadow-sm">
+                    <!-- Back left panel -->
+                    <rect x="22" y="24" width="44" height="102" rx="10" fill="#f5f5f7" stroke="#86868b" stroke-width="1.5"/>
+                    <rect x="28" y="31" width="14" height="26" rx="6" fill="#e5e7eb" stroke="#a1a1aa" stroke-width="1"/>
+                    <circle cx="35" cy="37" r="3" fill="#27272a"/>
+                    <circle cx="35" cy="49" r="3" fill="#27272a"/>
+                    <!-- Unfolded dual display -->
+                    <path d="M58 20 L108 24 L158 20 C162 20 165 23 165 27 L165 123 C165 127 162 130 158 130 L108 126 L58 130 C54 130 51 127 51 123 L51 27 C51 23 54 20 58 20 Z" fill="#1d1d1f"/>
+                    <defs>
+                        <linearGradient id="foldGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#dbeafe"/>
+                            <stop offset="55%" stop-color="#e7e5e4"/>
+                            <stop offset="100%" stop-color="#d6d3d1"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M61 24 L108 27 L155 24 C158 24 160 26 160 29 L160 121 C160 124 158 126 155 126 L108 123 L61 126 C58 126 56 124 56 121 L56 29 C56 26 58 24 61 24 Z" fill="url(#foldGrad)"/>
+                    <line x1="108" y1="24" x2="108" y2="126" stroke="#1d1d1f" stroke-opacity="0.18" stroke-width="1.5"/>
+                </svg>`;
+            }
+
+            if (type === 'iphone-pro') {
+                return `
+                <svg viewBox="0 0 150 150" class="w-32 h-32 mx-auto drop-shadow-sm">
+                    <!-- Back body -->
+                    <rect x="30" y="16" width="52" height="114" rx="12" fill="${accent}" stroke="#52525b" stroke-width="1.2"/>
+                    <rect x="36" y="22" width="22" height="24" rx="6" fill="#18181b" fill-opacity="0.25"/>
+                    <circle cx="42" cy="28" r="3.5" fill="#18181b"/>
+                    <circle cx="42" cy="40" r="3.5" fill="#18181b"/>
+                    <circle cx="52" cy="34" r="3.5" fill="#18181b"/>
+                    <!-- Front screen -->
+                    <rect x="66" y="22" width="54" height="112" rx="12" fill="#1d1d1f"/>
+                    <rect x="69" y="25" width="48" height="106" rx="10" fill="url(#proScreen_${product.id})"/>
+                    <defs>
+                        <linearGradient id="proScreen_${product.id}" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#27272a"/>
+                            <stop offset="50%" stop-color="${accent}"/>
+                            <stop offset="100%" stop-color="#18181b"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="86" y="29" width="14" height="4" rx="2" fill="#09090b"/>
+                </svg>`;
+            }
+
+            if (type === 'ipad') {
+                return `
+                <svg viewBox="0 0 160 150" class="w-32 h-32 mx-auto drop-shadow-sm">
+                    <rect x="34" y="14" width="92" height="122" rx="11" fill="#1d1d1f"/>
+                    <rect x="39" y="19" width="82" height="112" rx="8" fill="url(#ipadGrad_${product.id})"/>
+                    <defs>
+                        <linearGradient id="ipadGrad_${product.id}" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="${accent}"/>
+                            <stop offset="100%" stop-color="#e0f2fe"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="80" cy="16.5" r="1.2" fill="#52525b"/>
+                </svg>`;
+            }
+
+            if (type === 'macbook') {
+                return `
+                <svg viewBox="0 0 180 150" class="w-36 h-32 mx-auto drop-shadow-sm">
+                    <rect x="30" y="26" width="120" height="78" rx="7" fill="#1d1d1f"/>
+                    <rect x="34" y="30" width="112" height="70" rx="4" fill="#38bdf8"/>
+                    <path d="M16 104 L164 104 L172 112 C172 114 170 116 167 116 L13 116 C10 116 8 114 8 112 Z" fill="#d4d4d8" stroke="#a1a1aa" stroke-width="1"/>
+                    <rect x="76" y="104" width="28" height="3" rx="1.5" fill="#a1a1aa"/>
+                </svg>`;
+            }
+
+            if (type === 'starlink-mini' || type === 'starlink-std') {
+                const isMini = type === 'starlink-mini';
+                return `
+                <svg viewBox="0 0 160 150" class="w-32 h-32 mx-auto drop-shadow-sm">
+                    <!-- Kickstand -->
+                    <path d="M62 84 L48 124 M98 84 L112 124 M54 112 L106 112" stroke="#52525b" stroke-width="4" stroke-linecap="round"/>
+                    <!-- Dish Panel -->
+                    <polygon points="${isMini ? '42,34 118,34 128,86 32,86' : '30,26 130,26 142,90 18,90'}" fill="#f8fafc" stroke="#94a3b8" stroke-width="2.5" stroke-linejoin="round"/>
+                    <line x1="45" y1="86" x2="115" y2="86" stroke="#cbd5e1" stroke-width="3"/>
+                </svg>`;
+            }
+
+            // Default iPhone Standard SVG
+            return `
+            <svg viewBox="0 0 150 150" class="w-32 h-32 mx-auto drop-shadow-sm">
+                <rect x="30" y="18" width="50" height="110" rx="12" fill="#f4f4f5" stroke="#a1a1aa" stroke-width="1.2"/>
+                <circle cx="42" cy="30" r="3.5" fill="#27272a"/>
+                <circle cx="42" cy="41" r="3.5" fill="#27272a"/>
+                <rect x="66" y="22" width="52" height="110" rx="12" fill="#1d1d1f"/>
+                <rect x="69" y="25" width="46" height="104" rx="10" fill="url(#stdScreen_${product.id})"/>
+                <defs>
+                    <linearGradient id="stdScreen_${product.id}" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="${accent}"/>
+                        <stop offset="100%" stop-color="#f8fafc"/>
+                    </linearGradient>
+                </defs>
+                <rect x="85" y="29" width="14" height="4" rx="2" fill="#09090b"/>
+            </svg>`;
+        }
+
+        function detectVisualType(category, name = '') {
+            const lower = (category + ' ' + name).toLowerCase();
+            if (lower.includes('duo') || lower.includes('fold')) return 'iphone-fold';
+            if (lower.includes('pro')) return 'iphone-pro';
+            if (lower.includes('ipad')) return 'ipad';
+            if (lower.includes('mac')) return 'macbook';
+            if (lower.includes('starlink') && lower.includes('mini')) return 'starlink-mini';
+            if (lower.includes('starlink')) return 'starlink-std';
+            return 'iphone-standard';
+        }
+
+        // ==========================================
+        // 4. RENDER APPLE COMPARE TABLE
+        // ==========================================
+        function setCategoryFilter(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.dataset.cat === cat) {
+                    btn.className = 'cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#1d1d1f] text-white shadow-xs';
+                } else {
+                    btn.className = 'cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]';
+                }
+            });
+
+            const filtered = getFilteredProducts();
+            if (filtered.length > 0) {
+                for (let i = 0; i < 4; i++) {
+                    selectedSlots[i] = filtered[i % filtered.length].id;
+                }
+            }
+            saveState();
+            renderComparisonGrid();
+        }
+
+        function setColumnCount(count) {
+            columnCount = count;
+            [2, 3, 4].forEach(n => {
+                const btn = document.getElementById(`colBtn${n}`);
+                if (n === count) {
+                    btn.className = 'col-btn px-2.5 py-1 rounded-full transition-all bg-white text-[#1d1d1f] shadow-xs font-semibold';
+                } else {
+                    btn.className = 'col-btn px-2.5 py-1 rounded-full transition-all text-[#1d1d1f]';
+                }
+            });
+            renderComparisonGrid();
+        }
+
+        function handleSlotChange(slotIndex, newProductId) {
+            selectedSlots[slotIndex] = newProductId;
+            saveState();
+            renderComparisonGrid();
+        }
+
+        function renderComparisonGrid() {
+            const container = document.getElementById('comparisonGrid');
+            const activeSlots = selectedSlots.slice(0, columnCount);
+            const activeProducts = activeSlots.map(id => products.find(p => p.id === id) || products[0]);
+            const dropdownPool = getFilteredProducts().length > 0 ? getFilteredProducts() : products;
+
+            const gridColsClass = columnCount === 2 ? 'grid-cols-2' : (columnCount === 3 ? 'grid-cols-3' : 'grid-cols-4');
+
+            // Row definitions with minimalist Apple-style vector icons
+            const rows = [
+                {
+                    label: 'Layar / Dimensi',
+                    key: 'display',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2.5"/><path d="M9 6h6" stroke-linecap="round"/></svg>`
+                },
+                {
+                    label: 'Baterai / Daya',
+                    key: 'battery',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2.5"/><rect x="4.5" y="9.5" width="11" height="5" rx="1" fill="currentColor"/><path d="M22 10v4" stroke-linecap="round"/></svg>`
+                },
+                {
+                    label: 'Chipset / Performa',
+                    key: 'chip',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" stroke-linecap="round"/><text x="12" y="14" text-anchor="middle" font-size="6.5" font-weight="700" fill="currentColor" stroke="none">CPU</text></svg>`
+                },
+                {
+                    label: 'Kamera / Konektivitas',
+                    key: 'camera',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/><circle cx="9.5" cy="10" r="2"/><circle cx="15" cy="14" r="2"/><circle cx="15.5" cy="9" r="1" fill="currentColor"/></svg>`
+                },
+                {
+                    label: 'Fitur Utama / AI',
+                    key: 'features',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 3c2.5 0 4.5 2 4.5 4.5 0 .6-.1 1.2-.3 1.7 1.7.7 2.8 2.4 2.8 4.3 0 2.6-2.1 4.7-4.7 4.7-.5 0-1-.1-1.5-.2-.8 1.5-2.4 2.5-4.3 2.5-2.6 0-4.7-2.1-4.7-4.7 0-.8.2-1.5.5-2.1C3.2 12.9 2.5 11.5 2.5 10c0-2.6 2.1-4.7 4.7-4.7.6 0 1.2.1 1.7.3C9.6 4 10.7 3 12 3z"/></svg>`
+                }
             ];
 
-            specRows.forEach((row, idx) => {
-                const bgClass = idx % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]';
-                html += `
-                    <tr class="${bgClass}">
-                        <td class="p-4 sm:p-6 font-semibold text-[#1d1d1f] align-top bg-[#fbfbfd]/50">${row.title}</td>
-                        ${modelsToCompare.map(m => `
-                            <td class="p-4 sm:p-6 text-[#515154] text-center align-top whitespace-pre-line leading-relaxed">${m.specs[row.key]}</td>
-                        `).join('')}
-                    </tr>
-                `;
-            });
+            let html = `
+                <!-- Header Selectors & Product Hero Visuals -->
+                <div class="grid ${gridColsClass} gap-4 sm:gap-6 pb-8 border-b border-[#d2d2d7]/70">
+                    ${activeProducts.map((prod, idx) => `
+                        <div class="flex flex-col items-center text-center px-2">
+                            <!-- Model Dropdown -->
+                            <div class="w-full max-w-[230px] mb-6">
+                                <select aria-label="Pilih produk kolom ${idx + 1}" onchange="handleSlotChange(${idx}, this.value)"
+                                    class="apple-select w-full py-2.5 pl-3.5 pr-8 rounded-xl border border-[#d2d2d7] bg-white text-xs sm:text-sm font-semibold text-[#1d1d1f] focus:outline-none focus:border-[#dc2626] transition-colors cursor-pointer shadow-2xs">
+                                    ${dropdownPool.map(item => `
+                                        <option value="${item.id}" ${item.id === prod.id ? 'selected' : ''}>${item.name}</option>
+                                    `).join('')}
+                                    ${!dropdownPool.some(item => item.id === prod.id) ? `<option value="${prod.id}" selected>${prod.name}</option>` : ''}
+                                </select>
+                            </div>
 
-            html += `
-                </tbody>
+                            <!-- Product Photo or Crisp SVG Fallback -->
+                            <div class="h-36 flex items-center justify-center mb-4 w-full">
+                                ${prod.image 
+                                    ? `<img src="${prod.image}" alt="${prod.name}" class="max-h-36 max-w-full object-contain drop-shadow-sm rounded-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                       <div style="display:none">${getFallbackVisualSVG(prod)}</div>`
+                                    : getFallbackVisualSVG(prod)
+                                }
+                            </div>
+
+                            <!-- Category Badge & Title -->
+                            <span class="inline-block text-[11px] font-semibold tracking-wide text-[#dc2626] bg-red-50 px-2.5 py-0.5 rounded-full mb-1.5">
+                                ${prod.category}
+                            </span>
+                            <h3 class="text-lg sm:text-xl font-bold text-[#1d1d1f] tracking-tight mb-1.5">
+                                ${prod.name}
+                            </h3>
+                            <p class="text-xs text-[#86868b] max-w-[220px] leading-relaxed mb-3">
+                                ${prod.tagline || ''}
+                            </p>
+                            <button type="button" onclick="loadProductIntoEditor('${prod.id}')" class="text-[11px] font-medium text-[#86868b] hover:text-[#dc2626] underline transition-colors">
+                                Edit foto / spek
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
             `;
 
-            table.innerHTML = html;
+            // Standard Spec Rows (1 to 5)
+            rows.forEach(row => {
+                html += `
+                <div class="grid ${gridColsClass} gap-4 sm:gap-6 py-7 border-b border-[#d2d2d7]/60">
+                    ${activeProducts.map(prod => `
+                        <div class="flex flex-col items-center text-center px-2">
+                            <div class="mb-2.5">${row.icon}</div>
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#86868b] mb-1.5">${row.label}</span>
+                            <div class="text-xs sm:text-sm font-medium text-[#1d1d1f] whitespace-pre-line leading-relaxed max-w-[240px]">
+                                ${prod.specs[row.key] || '—'}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            });
+
+            // Row 6: Kelebihan (+) & Kekurangan (-)
+            html += `
+            <div class="grid ${gridColsClass} gap-4 sm:gap-6 py-7 border-b border-[#d2d2d7]/60">
+                ${activeProducts.map(prod => `
+                    <div class="flex flex-col items-center text-center px-2">
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-[#86868b] mb-3">Kelebihan & Kekurangan</span>
+                        <div class="w-full max-w-[240px] space-y-2 text-left">
+                            <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70">
+                                <span class="block text-[10px] font-bold uppercase text-emerald-700 mb-0.5">+ Kelebihan</span>
+                                <p class="text-xs text-[#1d1d1f] leading-snug">${prod.specs.pros || '—'}</p>
+                            </div>
+                            <div class="p-2.5 rounded-xl bg-red-50/60 border border-red-200/60">
+                                <span class="block text-[10px] font-bold uppercase text-[#dc2626] mb-0.5">- Kekurangan</span>
+                                <p class="text-xs text-[#1d1d1f] leading-snug">${prod.specs.cons || '—'}</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>`;
+
+            // Row 7: Sumber Referensi Resmi (Clickable Badge)
+            html += `
+            <div class="grid ${gridColsClass} gap-4 sm:gap-6 pt-7">
+                ${activeProducts.map(prod => {
+                    const url = prod.specs.sourceUrl || 'https://www.apple.com';
+                    const domain = prod.specs.sourceName || extractDomain(url);
+                    return `
+                    <div class="flex flex-col items-center text-center px-2">
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-[#86868b] mb-2">Sumber Referensi Resmi</span>
+                        <a href="${url}" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#f5f5f7] hover:bg-[#1d1d1f] text-[#1d1d1f] hover:text-white border border-[#d2d2d7] text-xs font-medium transition-all">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            <span class="truncate max-w-[160px]">${domain}</span>
+                        </a>
+                    </div>`;
+                }).join('')}
+            </div>`;
+
+            container.innerHTML = html;
         }
 
-        function removeModel(id) {
-            if (selectedModelIds.length <= 1) {
-                alert("Minimal 1 model harus tetap dipilih.");
+        function extractDomain(url) {
+            try {
+                return new URL(url).hostname.replace(/^www\./, '');
+            } catch (e) {
+                return 'apple.com';
+            }
+        }
+
+        // ==========================================
+        // 5. GEMINI API AUTO-FILL WITH SEARCH GROUNDING
+        // ==========================================
+        function quickFillExample(query) {
+            document.getElementById('aiSearchInput').value = query;
+            triggerAiAutoFill();
+        }
+
+        async function fetchWithBackoff(url, options, maxRetries = 4) {
+            let delay = 1000;
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    if (response.status === 429 || response.status >= 500) {
+                        await new Promise(res => setTimeout(res, delay));
+                        delay *= 2;
+                        continue;
+                    }
+                    return response;
+                } catch (err) {
+                    if (attempt === maxRetries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+            throw new Error('Gagal terhubung ke server AI.');
+        }
+
+        async function triggerAiAutoFill() {
+            const queryInput = document.getElementById('aiSearchInput');
+            const query = queryInput.value.trim();
+            if (!query) {
+                showToast('Masukkan nama atau tipe perangkat terlebih dahulu.', 'error');
+                queryInput.focus();
                 return;
             }
-            selectedModelIds = selectedModelIds.filter(item => item !== id);
-            renderCheckboxes();
-            renderTable();
+
+            const btn = document.getElementById('aiFetchBtn');
+            const statusBox = document.getElementById('aiStatusBox');
+            const loadingEl = document.getElementById('aiLoadingIndicator');
+            const sourcesEl = document.getElementById('aiGroundedSources');
+            const sourcePills = document.getElementById('aiSourcePills');
+
+            btn.disabled = true;
+            btn.classList.add('opacity-70', 'cursor-not-allowed');
+            statusBox.classList.remove('hidden');
+            loadingEl.classList.remove('hidden');
+            sourcesEl.classList.add('hidden');
+            sourcePills.innerHTML = '';
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+            const systemPrompt = `Anda adalah asisten spesialis katalog spesifikasi gadget & teknologi untuk toko Mahadewa.id.
+Tugas Anda: cari spesifikasi resmi, akurat, dan terbaru untuk perangkat yang diminta user menggunakan Google Search dari sumber terpercaya (seperti apple.com, starlink.com, gsmarena.com, samsung.com, dll).
+Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code block \`\`\`json) dengan struktur kunci persis berikut dalam Bahasa Indonesia yang ringkas, rapi, dan jelas:
+{
+  "name": "Nama resmi produk lengkap",
+  "category": "Pilih salah satu: iPhone, iPad, MacBook, atau Starlink / Lainnya",
+  "tagline": "1 kalimat ringkas daya tarik utama produk",
+  "display": "Ukuran & spesifikasi layar atau dimensi fisik (maksimal 2 baris)",
+  "battery": "Daya tahan baterai atau konsumsi daya watt",
+  "chip": "Nama chipset/prosesor atau spesifikasi antena",
+  "camera": "Spesifikasi kamera utama & depan, atau Wi-Fi & port konektivitas",
+  "features": "Fitur unggulan utama & dukungan AI",
+  "pros": "2-3 kelebihan utama produk secara singkat",
+  "cons": "1-2 kekurangan atau keterbatasan produk secara singkat",
+  "sourceName": "Nama domain resmi utama (misal: apple.com)",
+  "sourceUrl": "URL halaman resmi produk tersebut"
+}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: `Cari spesifikasi resmi dan terpercaya untuk produk: "${query}"` }] }],
+                tools: [{ googleSearch: {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
+            };
+
+            try {
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                const rawText = candidate?.content?.parts?.[0]?.text || '';
+
+                // Extract JSON safely
+                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('Format respons AI tidak terbaca.');
+                }
+
+                const parsed = JSON.parse(jsonMatch[0]);
+
+                // Extract Google Search grounding attributions if available
+                let groundedLinks = [];
+                const groundingMetadata = candidate?.groundingMetadata;
+                if (groundingMetadata?.groundingChunks) {
+                    groundedLinks = groundingMetadata.groundingChunks
+                        .map(chunk => ({
+                            uri: chunk.web?.uri,
+                            title: chunk.web?.title
+                        }))
+                        .filter(item => item.uri && item.title);
+                }
+
+                // Populate form fields automatically
+                document.getElementById('editingProductId').value = '';
+                document.getElementById('editorFormTitle').innerText = 'Hasil Auto-Isi AI (Siap Disimpan)';
+                document.getElementById('fieldName').value = parsed.name || query;
+
+                const validCats = ['iPhone', 'iPad', 'MacBook', 'Starlink / Lainnya'];
+                document.getElementById('fieldCategory').value = validCats.includes(parsed.category) ? parsed.category : 'Starlink / Lainnya';
+
+                document.getElementById('fieldTagline').value = parsed.tagline || '';
+                document.getElementById('fieldDisplay').value = parsed.display || '';
+                document.getElementById('fieldBattery').value = parsed.battery || '';
+                document.getElementById('fieldChip').value = parsed.chip || '';
+                document.getElementById('fieldCamera').value = parsed.camera || '';
+                document.getElementById('fieldFeatures').value = parsed.features || '';
+                document.getElementById('fieldPros').value = parsed.pros || '';
+                document.getElementById('fieldCons').value = parsed.cons || '';
+
+                const bestSourceUrl = groundedLinks[0]?.uri || parsed.sourceUrl || 'https://www.apple.com';
+                const bestSourceName = parsed.sourceName || extractDomain(bestSourceUrl);
+                document.getElementById('fieldSourceName').value = bestSourceName;
+                document.getElementById('fieldSourceUrl').value = bestSourceUrl;
+
+                // Show verified source pills
+                loadingEl.classList.add('hidden');
+                sourcesEl.classList.remove('hidden');
+
+                const linksToDisplay = groundedLinks.length > 0
+                    ? groundedLinks.slice(0, 3)
+                    : [{ uri: bestSourceUrl, title: bestSourceName }];
+
+                sourcePills.innerHTML = linksToDisplay.map(src => `
+                    <a href="${src.uri}" target="_blank" rel="noopener noreferrer"
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f5f5f7] hover:bg-emerald-50 border border-[#d2d2d7] text-xs font-medium text-[#1d1d1f] transition-colors">
+                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                        <span class="truncate max-w-[220px]">${src.title}</span>
+                    </a>
+                `).join('');
+
+                showToast(`Spesifikasi "${parsed.name || query}" berhasil diisi otomatis!`, 'success');
+                document.getElementById('productEditorForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            } catch (error) {
+                loadingEl.classList.add('hidden');
+                statusBox.classList.add('hidden');
+                showToast('Gagal mengambil spesifikasi otomatis. Coba ulangi atau isi manual.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
         }
 
-        window.onload = initApp;
+        // ==========================================
+        // 6. PHOTO UPLOAD (COMPRESSED BASE64) & CRUD
+        // ==========================================
+        function handlePhotoFileUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Resize & compress image so localStorage stays fast and lightweight
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 480;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height && width > maxDim) {
+                        height = Math.round((height * maxDim) / width);
+                        width = maxDim;
+                    } else if (height > maxDim) {
+                        width = Math.round((width * maxDim) / height);
+                        height = maxDim;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Preserve transparency if PNG/WebP, otherwise JPEG 0.85
+                    const isPng = file.type === 'image/png' || file.type === 'image/webp';
+                    const compressedDataUrl = isPng
+                        ? canvas.toDataURL('image/png')
+                        : canvas.toDataURL('image/jpeg', 0.85);
+
+                    document.getElementById('fieldImage').value = compressedDataUrl;
+                    updatePhotoPreviewFromUrl(compressedDataUrl);
+                    showToast('Foto berhasil diunggah & dioptimalkan!', 'success');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updatePhotoPreviewFromUrl(url) {
+            const preview = document.getElementById('formPhotoPreview');
+            const placeholder = document.getElementById('formPhotoPlaceholder');
+
+            if (url && url.trim() !== '') {
+                preview.src = url.trim();
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                preview.src = '';
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+
+        function clearProductPhoto() {
+            document.getElementById('fieldImage').value = '';
+            document.getElementById('photoFileInput').value = '';
+            updatePhotoPreviewFromUrl('');
+        }
+
+        function resetEditorForm() {
+            document.getElementById('productEditorForm').reset();
+            document.getElementById('editingProductId').value = '';
+            document.getElementById('editorFormTitle').innerText = 'Tambah / Edit Detail Produk';
+            clearProductPhoto();
+        }
+
+        function loadProductIntoEditor(id) {
+            const prod = products.find(p => p.id === id);
+            if (!prod) return;
+
+            document.getElementById('editingProductId').value = prod.id;
+            document.getElementById('editorFormTitle').innerText = `Edit: ${prod.name}`;
+            document.getElementById('fieldName').value = prod.name;
+            document.getElementById('fieldCategory').value = prod.category;
+            document.getElementById('fieldTagline').value = prod.tagline || '';
+            document.getElementById('fieldImage').value = prod.image || '';
+            updatePhotoPreviewFromUrl(prod.image || '');
+
+            document.getElementById('fieldDisplay').value = prod.specs.display || '';
+            document.getElementById('fieldBattery').value = prod.specs.battery || '';
+            document.getElementById('fieldChip').value = prod.specs.chip || '';
+            document.getElementById('fieldCamera').value = prod.specs.camera || '';
+            document.getElementById('fieldFeatures').value = prod.specs.features || '';
+            document.getElementById('fieldPros').value = prod.specs.pros || '';
+            document.getElementById('fieldCons').value = prod.specs.cons || '';
+            document.getElementById('fieldSourceName').value = prod.specs.sourceName || '';
+            document.getElementById('fieldSourceUrl').value = prod.specs.sourceUrl || '';
+
+            document.getElementById('adminSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function handleSaveProduct(event) {
+            event.preventDefault();
+            const existingId = document.getElementById('editingProductId').value;
+            const name = document.getElementById('fieldName').value.trim();
+            const category = document.getElementById('fieldCategory').value;
+            const imageVal = document.getElementById('fieldImage').value.trim();
+
+            const productObj = {
+                id: existingId || `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString().slice(-4)}`,
+                name: name,
+                category: category,
+                tagline: document.getElementById('fieldTagline').value.trim(),
+                image: imageVal,
+                visualType: detectVisualType(category, name),
+                accentColor: '#1d1d1f',
+                specs: {
+                    display: document.getElementById('fieldDisplay').value.trim(),
+                    battery: document.getElementById('fieldBattery').value.trim(),
+                    chip: document.getElementById('fieldChip').value.trim(),
+                    camera: document.getElementById('fieldCamera').value.trim(),
+                    features: document.getElementById('fieldFeatures').value.trim(),
+                    pros: document.getElementById('fieldPros').value.trim(),
+                    cons: document.getElementById('fieldCons').value.trim(),
+                    sourceName: document.getElementById('fieldSourceName').value.trim() || 'apple.com',
+                    sourceUrl: document.getElementById('fieldSourceUrl').value.trim() || 'https://www.apple.com'
+                }
+            };
+
+            if (existingId) {
+                const idx = products.findIndex(p => p.id === existingId);
+                if (idx !== -1) {
+                    productObj.accentColor = products[idx].accentColor;
+                    products[idx] = productObj;
+                }
+                showToast(`"${name}" berhasil diperbarui!`, 'success');
+            } else {
+                products.unshift(productObj);
+                // Put newly added product into the first comparison slot immediately
+                selectedSlots[0] = productObj.id;
+                showToast(`"${name}" ditambahkan ke tabel perbandingan!`, 'success');
+            }
+
+            saveState();
+            renderComparisonGrid();
+            renderAdminCatalog();
+            resetEditorForm();
+        }
+
+        function deleteProductById(id) {
+            const target = products.find(p => p.id === id);
+            if (!target) return;
+            if (products.length <= 2) {
+                showToast('Minimal harus tersisa 2 produk di katalog.', 'error');
+                return;
+            }
+
+            openConfirmDialog(
+                'Hapus Produk?',
+                `Produk "${target.name}" akan dihapus dari daftar perbandingan.`,
+                () => {
+                    products = products.filter(p => p.id !== id);
+                    ensureValidSlots();
+                    saveState();
+                    renderComparisonGrid();
+                    renderAdminCatalog();
+                    showToast(`"${target.name}" telah dihapus.`, 'success');
+                }
+            );
+        }
+
+        function putInFirstSlot(id) {
+            selectedSlots[0] = id;
+            saveState();
+            renderComparisonGrid();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderAdminCatalog() {
+            const listEl = document.getElementById('adminCatalogList');
+            const countEl = document.getElementById('catalogCount');
+            const filterText = (document.getElementById('catalogSearchInput')?.value || '').toLowerCase();
+
+            const visibleProducts = products.filter(p =>
+                p.name.toLowerCase().includes(filterText) ||
+                p.category.toLowerCase().includes(filterText)
+            );
+
+            countEl.innerText = products.length;
+
+            listEl.innerHTML = visibleProducts.map(prod => `
+                <div class="p-4 rounded-2xl bg-[#fbfbfd] border border-[#d2d2d7]/70 hover:border-[#86868b] transition-all flex flex-col justify-between">
+                    <div class="flex items-start gap-3.5">
+                        <div class="w-14 h-16 rounded-xl bg-white border border-[#d2d2d7]/50 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                            ${prod.image
+                                ? `<img src="${prod.image}" alt="${prod.name}" class="w-full h-full object-contain">`
+                                : `<div class="scale-50 origin-center">${getFallbackVisualSVG(prod)}</div>`
+                            }
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <span class="inline-block text-[10px] font-semibold text-[#dc2626] bg-red-50 px-2 py-0.5 rounded-full">
+                                ${prod.category}
+                            </span>
+                            <h4 class="text-sm font-bold text-[#1d1d1f] truncate mt-0.5">${prod.name}</h4>
+                            <p class="text-[11px] text-[#86868b] line-clamp-2 mt-0.5">${prod.specs.chip}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-[#d2d2d7]/50">
+                        <button type="button" onclick="putInFirstSlot('${prod.id}')" class="text-[11px] font-semibold text-[#1d1d1f] hover:text-[#dc2626] transition-colors">
+                            Tampilkan di Atas ↑
+                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="loadProductIntoEditor('${prod.id}')" class="px-2.5 py-1 rounded-lg bg-white border border-[#d2d2d7] hover:bg-gray-100 text-[11px] font-semibold text-[#1d1d1f] transition-colors">
+                                Edit
+                            </button>
+                            <button type="button" onclick="deleteProductById('${prod.id}')" class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-[11px] font-semibold text-[#dc2626] transition-colors">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // 7. EXPORT / IMPORT JSON & RESET DEFAULTS
+        // ==========================================
+        function exportCatalogJSON() {
+            const dataStr = JSON.stringify(products, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `katalog-perbandingan-mahadewa-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('File backup JSON berhasil diunduh.', 'success');
+        }
+
+        function importCatalogJSON(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!Array.isArray(imported) || imported.length === 0) {
+                        throw new Error('Format JSON tidak valid.');
+                    }
+                    products = imported;
+                    ensureValidSlots();
+                    saveState();
+                    renderComparisonGrid();
+                    renderAdminCatalog();
+                    showToast(`Berhasil mengimpor ${products.length} produk!`, 'success');
+                } catch (err) {
+                    showToast('Gagal membaca file JSON backup.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function confirmResetDefaults() {
+            openConfirmDialog(
+                'Reset ke Data Default?',
+                'Semua perubahan kustom akan dikembalikan ke daftar produk bawaan Mahadewa.id.',
+                () => {
+                    products = [...DEFAULT_PRODUCTS];
+                    selectedSlots = ['iphone-18-pro', 'iphone-duo', 'ipad-gen-11', 'starlink-mini'];
+                    saveState();
+                    renderComparisonGrid();
+                    renderAdminCatalog();
+                    resetEditorForm();
+                    showToast('Data katalog telah dikembalikan ke pengaturan awal.', 'success');
+                }
+            );
+        }
+
+        // ==========================================
+        // 8. CUSTOM TOAST & CONFIRMATION MODAL
+        // ==========================================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const bg = type === 'error' ? 'bg-[#dc2626] text-white' : 'bg-[#1d1d1f] text-white';
+            toast.className = `${bg} px-4 py-3 rounded-2xl shadow-lg text-xs sm:text-sm font-medium flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100`;
+            toast.innerHTML = `
+                <span>${type === 'error' ? '⚠️' : '✓'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        function openConfirmDialog(title, message, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = message;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            const okBtn = document.getElementById('confirmOkBtn');
+            const cancelBtn = document.getElementById('confirmCancelBtn');
+
+            const cleanup = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            };
+
+            okBtn.onclick = () => {
+                cleanup();
+                onConfirm();
+            };
+            cancelBtn.onclick = cleanup;
+        }
+
+        // Boot application
+        window.onload = function() {
+            loadState();
+            renderComparisonGrid();
+            renderAdminCatalog();
+        };
     </script>
 </body>
 </html>
