@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perbandingan Model iPhone - Mahadewa.id</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fbfbfd;
+            color: #1d1d1f;
+        }
+        /* Custom scrollbar for sleek Apple look */
+        ::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f3;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d2d2d7;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #86868b;
+        }
+    </style>
+</head>
+<body class="bg-[#fbfbfd] text-[#1d1d1f] min-h-screen flex flex-col justify-between antialiased selection:bg-red-500 selection:text-white">
+
+    <!-- Header Mahadewa.id -->
+    <header class="w-full bg-[#fbfbfd]/80 backdrop-blur-md border-b border-[#d2d2d7]/50 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 bg-red-600 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
+                    <span class="text-lg tracking-tighter">d</span>
+                </div>
+                <span class="text-xl font-semibold tracking-tight text-[#1d1d1f]">mahadewa<span class="text-red-600">.id</span></span>
+            </div>
+            <div class="text-sm font-medium text-[#86868b] hidden sm:block">
+                Katalog & Perangkat Resmi Apple
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+        
+        <!-- Hero Section -->
+        <div class="text-center max-w-3xl mx-auto mb-12">
+            <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-4">
+                Bandingkan model iPhone.
+            </h1>
+            <p class="text-lg sm:text-xl text-[#86868b]">
+                Pilih hingga 4 model sekaligus untuk melihat perbandingan spesifikasi secara berdampingan.
+            </p>
+        </div>
+
+        <!-- Model Selection Panel -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-[#d2d2d7]/60 mb-12">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-[#86868b]">
+                    Pilih Model untuk Dibandingkan (Maksimal 4)
+                </h2>
+                <button onclick="resetSelection()" class="text-xs text-red-600 hover:text-red-700 font-medium transition-colors">
+                    Reset Pilihan
+                </button>
+            </div>
+            <div id="modelCheckboxes" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                <!-- Checkboxes will be populated by JS -->
+            </div>
+        </div>
+
+        <!-- Comparison Table Container -->
+        <div class="bg-white rounded-2xl shadow-sm border border-[#d2d2d7]/60 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table id="comparisonTable" class="w-full text-left border-collapse">
+                    <!-- Dynamic Table Content -->
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Mahadewa.id -->
+    <footer class="bg-[#f5f5f7] border-t border-[#d2d2d7]/50 mt-20 py-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 pb-8 border-b border-[#d2d2d7]/50">
+                <!-- Brand Info -->
+                <div>
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-7 h-7 bg-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                            d
+                        </div>
+                        <span class="text-lg font-semibold tracking-tight">mahadewa<span class="text-red-600">.id</span></span>
+                    </div>
+                    <p class="text-sm text-[#86868b] leading-relaxed">
+                        Pusat informasi spesifikasi dan perangkat teknologi premium terlengkap dengan pelayanan profesional di Kota Palopo.
+                    </p>
+                </div>
+                <!-- Contact Info -->
+                <div>
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#1d1d1f] mb-3">Hubungi Kami</h3>
+                    <ul class="space-y-2 text-sm text-[#515154]">
+                        <li class="flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                            <span>0823-4488-8441</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            <span>mahadewa.cabpalopo@gmail.com</span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Address Info -->
+                <div>
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-[#1d1d1f] mb-3">Lokasi Toko</h3>
+                    <p class="text-sm text-[#515154] leading-relaxed flex items-start space-x-2">
+                        <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span>Tompotika, Kec. Wara, Kota Palopo, Sulawesi Selatan 91911</span>
+                    </p>
+                </div>
+            </div>
+            <div class="text-center text-xs text-[#86868b]">
+                &copy; 2026 mahadewa.id. Hak cipta dilindungi undang-undang.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Interactive Comparison -->
+    <script>
+        // Database of iPhone models
+        const iphoneData = [
+            {
+                id: "iphone15",
+                name: "iPhone 15",
+                category: "Standard",
+                price: "Mulai Rp 12.499.000",
+                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+15",
+                specs: {
+                    display: '6.1" Super Retina XDR\n60Hz, Dynamic Island',
+                    battery: "Pemutaran video hingga 20 jam",
+                    chip: "Chip A16 Bionic\nUSB-C",
+                    mainCamera: "Kamera ganda 48MP\nUtama 48MP & Ultra Wide 12MP",
+                    frontCamera: "Kamera depan 12MP TrueDepth",
+                    ai: "Tidak mendukung Apple Intelligence"
+                }
+            },
+            {
+                id: "iphone16",
+                name: "iPhone 16",
+                category: "Standard",
+                price: "Mulai Rp 14.999.000",
+                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+16",
+                specs: {
+                    display: '6.1" Super Retina XDR\n60Hz, Dynamic Island',
+                    battery: "Pemutaran video hingga 22 jam",
+                    chip: "Chip A18\nTombol Camera Control",
+                    mainCamera: "Sistem kamera ganda 48MP\nUtama 48MP & Ultra Wide 12MP",
+                    frontCamera: "Kamera depan 12MP TrueDepth",
+                    ai: "Apple Intelligence"
+                }
+            },
+            {
+                id: "iphone17",
+                name: "iPhone 17",
+                category: "Standard",
+                price: "Mulai Rp 16.999.000",
+                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+17",
+                specs: {
+                    display: '6.3" Super Retina XDR\nProMotion 120Hz, Always-On',
+                    battery: "Pemutaran video hingga 30 jam",
+                    chip: "Chip A19\nStorage mulai 256GB",
+                    mainCamera: "Sistem kamera Dual Fusion 48MP\nUtama 48MP & Ultra Wide 48MP",
+                    frontCamera: "Kamera depan 18MP Center Stage",
+                    ai: "Apple Intelligence"
+                }
+            },
+            {
+                id: "iphone18",
+                name: "iPhone 18",
+                category: "Standard",
+                price: "Mulai Rp 18.999.000",
+                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+18",
+                specs: {
+                    display: '6.3" Super Retina XDR\nProMotion 120Hz, Always-On',
+                    battery: "Pemutaran video hingga 35 jam",
+                    chip: "Chip A20 (2nm)\nModem Apple C2",
+                    mainCamera: "Sistem kamera Dual Fusion 48MP\nUtama 48MP & Ultra Wide 48MP",
+                    frontCamera: "Kamera depan 18MP Center Stage",
+                    ai: "Apple Intelligence & Siri AI"
+                }
+            },
+            {
+                id: "iphone18pro",
+                name: "iPhone 18 Pro",
+                category: "Pro",
+                price: "Mulai Rp 21.999.000",
+                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+18+Pro",
+                specs: {
+                    display: '6.3" Super Retina XDR\nProMotion 120Hz, Always-On',
+                    battery: "Pemutaran video hingga 36 jam",
+                    chip: "Chip A20 Pro (2nm)\nGPU 7-core, Pendingin Vapor Chamber",
+                    mainCamera: "Sistem kamera 48MP Pro Fusion\nUtama Variable Aperture & Telefoto 8x",
+                    frontCamera: "Kamera depan 18MP Center Stage\nDual Capture",
+                    ai: "Apple Intelligence & Siri AI"
+                }
+            },
+            {
+                id: "iphone18promax",
+                name: "iPhone 18 Pro Max",
+                category: "Pro",
+                price: "Mulai Rp 24.999.000",
+                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+18+Pro+Max",
+                specs: {
+                    display: '6.9" Super Retina XDR\nProMotion 120Hz, Always-On',
+                    battery: "Pemutaran video hingga 45 jam",
+                    chip: "Chip A20 Pro (2nm)\nGPU 7-core, Pendingin Vapor Chamber",
+                    mainCamera: "Sistem kamera 48MP Pro Fusion\nUtama Variable Aperture & Telefoto 8x",
+                    frontCamera: "Kamera depan 18MP Center Stage\nDual Capture",
+                    ai: "Apple Intelligence & Siri AI"
+                }
+            },
+            {
+                id: "iphoneduo",
+                name: "iPhone Duo",
+                category: "Foldable",
+                price: "Mulai Rp 31.999.000",
+                image: "https://placehold.co/240x280/f5f5f7/1d1d1f?text=iPhone+Duo",
+                specs: {
+                    display: '7.6" Lipat Nano-Texture\nLayar luar 5.4" Super Retina XDR',
+                    battery: "Hingga 31 jam (dalam) / 44 jam (luar)",
+                    chip: "Chip A20 Pro (2nm)\nGPU 7-core dengan Neural Accelerators",
+                    mainCamera: "Sistem kamera 48MP Dual Fusion\nUtama 48MP & Ultra Wide 48MP",
+                    frontCamera: "Kamera depan 12MP Center Stage\nKamera FaceTime bawah layar",
+                    ai: "Apple Intelligence & Siri AI"
+                }
+            }
+        ];
+
+        // Default selected models (up to 4)
+        let selectedModelIds = ["iphone15", "iphone16", "iphone18pro", "iphoneduo"];
+        const maxSelection = 4;
+
+        function initApp() {
+            renderCheckboxes();
+            renderTable();
+        }
+
+        function renderCheckboxes() {
+            const container = document.getElementById("modelCheckboxes");
+            container.innerHTML = "";
+
+            iphoneData.forEach(model => {
+                const isChecked = selectedModelIds.includes(model.id);
+                const label = document.createElement("label");
+                label.className = `flex items-center space-x-2.5 p-3 rounded-xl border transition-all cursor-pointer select-none ${
+                    isChecked 
+                        ? 'border-red-600 bg-red-50/40 text-[#1d1d1f] font-medium shadow-xs' 
+                        : 'border-[#d2d2d7]/60 hover:border-[#86868b] bg-white text-[#515154]'
+                }`;
+
+                label.innerHTML = `
+                    <input type="checkbox" value="${model.id}" ${isChecked ? 'checked' : ''} onchange="handleCheckboxChange(this)" class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500">
+                    <span class="text-xs sm:text-sm truncate">${model.name}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        function handleCheckboxChange(checkbox) {
+            const id = checkbox.value;
+            if (checkbox.checked) {
+                if (selectedModelIds.length >= maxSelection) {
+                    alert(`Anda hanya dapat membandingkan maksimal ${maxSelection} model sekaligus.`);
+                    checkbox.checked = false;
+                    return;
+                }
+                selectedModelIds.push(id);
+            } else {
+                if (selectedModelIds.length <= 1) {
+                    alert("Minimal 1 model harus dipilih untuk perbandingan.");
+                    checkbox.checked = true;
+                    return;
+                }
+                selectedModelIds = selectedModelIds.filter(item => item !== id);
+            }
+            renderCheckboxes();
+            renderTable();
+        }
+
+        function resetSelection() {
+            selectedModelIds = ["iphone15", "iphone16", "iphone18pro"];
+            renderCheckboxes();
+            renderTable();
+        }
+
+        function renderTable() {
+            const table = document.getElementById("comparisonTable");
+            const modelsToCompare = iphoneData.filter(m => selectedModelIds.includes(m.id));
+            const colSpan = modelsToCompare.length + 1;
+
+            let html = `
+                <thead>
+                    <tr class="border-b border-[#d2d2d7]/60 bg-[#fbfbfd]">
+                        <th class="p-4 sm:p-6 text-xs font-semibold uppercase tracking-wider text-[#86868b] w-40">Spesifikasi</th>
+                        ${modelsToCompare.map(m => `
+                            <th class="p-4 sm:p-6 text-center align-top min-w-[200px]">
+                                <div class="flex flex-col items-center">
+                                    <img src="${m.image}" alt="${m.name}" class="w-24 h-28 object-contain mb-3 drop-shadow-sm">
+                                    <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full mb-1">${m.category}</span>
+                                    <h3 class="text-base sm:text-lg font-bold text-[#1d1d1f] mb-1">${m.name}</h3>
+                                    <p class="text-xs font-medium text-[#86868b] mb-4">${m.price}</p>
+                                    <button onclick="removeModel('${m.id}')" class="text-xs text-gray-400 hover:text-red-600 transition-colors">Hapus</button>
+                                </div>
+                            </th>
+                        `).join('')}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#d2d2d7]/40 text-sm">
+            `;
+
+            const specRows = [
+                { title: "Layar & Tampilan", key: "display" },
+                { title: "Baterai & Daya", key: "battery" },
+                { title: "Chip & Performa", key: "chip" },
+                { title: "Kamera Utama", key: "mainCamera" },
+                { title: "Kamera Depan", key: "frontCamera" },
+                { title: "Kecerdasan Buatan (AI)", key: "ai" }
+            ];
+
+            specRows.forEach((row, idx) => {
+                const bgClass = idx % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]';
+                html += `
+                    <tr class="${bgClass}">
+                        <td class="p-4 sm:p-6 font-semibold text-[#1d1d1f] align-top bg-[#fbfbfd]/50">${row.title}</td>
+                        ${modelsToCompare.map(m => `
+                            <td class="p-4 sm:p-6 text-[#515154] text-center align-top whitespace-pre-line leading-relaxed">${m.specs[row.key]}</td>
+                        `).join('')}
+                    </tr>
+                `;
+            });
+
+            html += `
+                </tbody>
+            `;
+
+            table.innerHTML = html;
+        }
+
+        function removeModel(id) {
+            if (selectedModelIds.length <= 1) {
+                alert("Minimal 1 model harus tetap dipilih.");
+                return;
+            }
+            selectedModelIds = selectedModelIds.filter(item => item !== id);
+            renderCheckboxes();
+            renderTable();
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
