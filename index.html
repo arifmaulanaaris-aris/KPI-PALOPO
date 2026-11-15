@@ -234,7 +234,15 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="password" id="geminiApiKeyInput" class="flex-1 px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#C62828]" placeholder="Tempel kode AIzaSy... di sini">
+                        <div class="relative flex-1">
+                            <input type="text" id="geminiApiKeyInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true"
+                                style="-webkit-text-security: disc;"
+                                class="w-full pr-9 pl-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs font-mono text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#C62828]"
+                                placeholder="Tempel kode AIzaSy... (39 karakter)">
+                            <button type="button" onclick="toggleApiKeyVisibility()" class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[#86868b] hover:text-[#1d1d1f] cursor-pointer" title="Lihat / Sembunyikan Kode">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </div>
                         <button type="button" onclick="saveGeminiApiKey()" class="px-4 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold transition-colors cursor-pointer">
                             Simpan
                         </button>
@@ -1240,11 +1248,69 @@
         // ==========================================
         // 5. GEMINI API KEY MANAGEMENT & AUTO-FILL
         // ==========================================
+        function sanitizeApiKey(raw) {
+            return (raw || '').replace(/[\s\u200B-\u200D\uFEFF]/g, '').trim();
+        }
+
         function getStoredApiKey() {
             try {
-                return (localStorage.getItem(API_KEY_STORAGE_KEY) || '').trim();
+                return sanitizeApiKey(localStorage.getItem(API_KEY_STORAGE_KEY));
             } catch (e) {
                 return '';
+            }
+        }
+
+        function toggleApiKeyVisibility() {
+            const inp = document.getElementById('geminiApiKeyInput');
+            if (!inp) return;
+            const isHidden = inp.style.webkitTextSecurity === 'disc';
+            inp.style.webkitTextSecurity = isHidden ? 'none' : 'disc';
+        }
+
+        async function fetchWikipediaSpecFallback(query) {
+            try {
+                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&utf8=&format=json&origin=*`;
+                const searchRes = await fetch(searchUrl);
+                const searchData = await searchRes.json();
+                const firstHit = searchData?.query?.search?.[0];
+                if (!firstHit) return null;
+
+                const summaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(firstHit.title)}`;
+                const sumRes = await fetch(summaryUrl);
+                if (!sumRes.ok) return null;
+                const sumData = await sumRes.json();
+
+                const extract = (sumData.extract || '').trim();
+                if (!extract) return null;
+
+                const sentences = extract.split('. ');
+                const lower = (query + ' ' + extract).toLowerCase();
+                let category = 'Laptop Windows';
+                if (lower.includes('iphone')) category = 'iPhone';
+                else if (lower.includes('ipad')) category = 'iPad';
+                else if (lower.includes('macbook')) category = 'MacBook';
+                else if (lower.includes('starlink')) category = 'Starlink / Lainnya';
+
+                const displayMatch = extract.match(/(\d+(?:\.\d+)?[\s-]*(?:inch|in|"))/i);
+                const chipMatch = extract.match(/(Apple\s+M\d(?:\s+Pro|\s+Max)?|A\d+\s*(?:Pro|Bionic)?|Intel\s+Core\s+[^\s,.;]+|Snapdragon\s+[^\s,.;]+|Ryzen\s+\d+\s*[^\s,.;]+)/i);
+                const camMatch = extract.match(/(\d+\s*MP[^.,;]*)/i);
+
+                return {
+                    name: sumData.title || query,
+                    category: category,
+                    tagline: sentences[0] ? sentences[0] + '.' : `Spesifikasi ringkas ${sumData.title}`,
+                    display: displayMatch ? `Layar ${displayMatch[1]} (Cek detail resmi)` : 'Lihat detail layar pada sumber referensi',
+                    battery: 'Daya tahan standar pabrikan (sesuai kapasitas resmi)',
+                    chip: chipMatch ? chipMatch[1] : 'Prosesor / Chipset generasi resmi',
+                    camera: camMatch ? camMatch[1] : 'Kamera & konektivitas nirkabel standar',
+                    features: sentences[1] ? sentences[1].slice(0, 110) : 'Fitur resmi bawaan perangkat',
+                    pros: 'Data ditarik otomatis dari referensi ensiklopedia teknologi',
+                    cons: 'Periksa kembali detail varian penyimpanan sebelum menyimpan',
+                    sourceName: 'wikipedia.org',
+                    sourceUrl: sumData.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(firstHit.title)}`
+                };
+            } catch (e) {
+                return null;
             }
         }
 
@@ -1286,10 +1352,10 @@
 
         async function triggerAiAutoFill() {
             const queryInput = document.getElementById('aiSearchInput');
-            const query = queryInput.value.trim();
+            const query = queryInput ? queryInput.value.trim() : '';
             if (!query) {
-                showToast('Masukkan nama atau tipe perangkat terlebih dahulu.', 'error');
-                queryInput.focus();
+                showToast('Ketik nama tipe barang terlebih dahulu (contoh: iPad Pro).', 'error');
+                if (queryInput) queryInput.focus();
                 return;
             }
 
@@ -1299,16 +1365,22 @@
             const sourcesEl = document.getElementById('aiGroundedSources');
             const sourcePills = document.getElementById('aiSourcePills');
 
-            const inputFieldKey = (document.getElementById('geminiApiKeyInput')?.value || '').trim();
+            const inputFieldKey = sanitizeApiKey(document.getElementById('geminiApiKeyInput')?.value);
             const customApiKey = getStoredApiKey() || inputFieldKey;
             if (!getStoredApiKey() && inputFieldKey) {
                 localStorage.setItem(API_KEY_STORAGE_KEY, inputFieldKey);
                 initSettingsUI();
             }
 
+            if (customApiKey && !customApiKey.startsWith('AIza')) {
+                showToast('Format API Key salah (harus diawali "AIzaSy..."). Pastikan bukan password Safari yang terisi otomatis.', 'error');
+                document.getElementById('geminiApiKeyInput')?.focus();
+                return;
+            }
+
             const isLocalFile = window.location.protocol === 'file:';
 
-            if (isLocalFile && !customApiKey) {
+            if (!customApiKey) {
                 const offlineMatch = findOfflinePreset(query);
                 if (offlineMatch) {
                     applyAutoFilledSpecToForm(offlineMatch, query, [
@@ -1316,7 +1388,23 @@
                     ], true);
                     return;
                 }
-                showToast('File dibuka secara lokal tanpa API Key. Tempel Gemini API Key Anda di kotak pengaturan di bawah agar AI bisa mencari produk apa saja.', 'error');
+                if (!isLocalFile) {
+                    btn.disabled = true;
+                    statusBox.classList.remove('hidden');
+                    loadingEl.classList.remove('hidden');
+                    sourcesEl.classList.add('hidden');
+                    const wikiSpec = await fetchWikipediaSpecFallback(query);
+                    btn.disabled = false;
+                    if (wikiSpec) {
+                        applyAutoFilledSpecToForm(wikiSpec, query, [
+                            { uri: wikiSpec.sourceUrl, title: wikiSpec.sourceName }
+                        ], true);
+                        return;
+                    }
+                    loadingEl.classList.add('hidden');
+                    statusBox.classList.add('hidden');
+                }
+                showToast('Masukkan Gemini API Key yang valid (AIzaSy...) di kotak Pengaturan untuk pencarian AI penuh.', 'error');
                 document.getElementById('geminiApiKeyInput')?.focus();
                 return;
             }
@@ -1424,7 +1512,7 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
                 applyAutoFilledSpecToForm(parsed, query, groundedLinks, false);
 
             } catch (error) {
-                const offlineMatch = findOfflinePreset(query);
+                const offlineMatch = findOfflinePreset(query) || await fetchWikipediaSpecFallback(query);
                 if (offlineMatch) {
                     applyAutoFilledSpecToForm(offlineMatch, query, [
                         { uri: offlineMatch.sourceUrl, title: offlineMatch.sourceName }
@@ -1432,8 +1520,8 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
                 } else {
                     loadingEl.classList.add('hidden');
                     statusBox.classList.add('hidden');
-                    if (!customApiKey) {
-                        showToast('Masukkan Gemini API Key di kotak Pengaturan untuk mencari produk baru secara online.', 'error');
+                    if (error.message.toLowerCase().includes('api key not valid')) {
+                        showToast('API Key ditolak Google (tidak valid). Klik "Hapus", lalu tempel kode AIzaSy... dari Google AI Studio.', 'error');
                         document.getElementById('geminiApiKeyInput')?.focus();
                     } else {
                         showToast(`Gagal memuat spesifikasi AI: ${error.message}`, 'error');
@@ -1524,9 +1612,13 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
         }
 
         function saveGeminiApiKey() {
-            const val = (document.getElementById('geminiApiKeyInput')?.value || '').trim();
+            const val = sanitizeApiKey(document.getElementById('geminiApiKeyInput')?.value);
             if (!val) {
                 showToast('Masukkan kode Gemini API Key terlebih dahulu.', 'error');
+                return;
+            }
+            if (!val.startsWith('AIza')) {
+                showToast('Kode API Key harus diawali huruf "AIzaSy...". Periksa kembali salinan Anda.', 'error');
                 return;
             }
             localStorage.setItem(API_KEY_STORAGE_KEY, val);
