@@ -1299,7 +1299,13 @@
             const sourcesEl = document.getElementById('aiGroundedSources');
             const sourcePills = document.getElementById('aiSourcePills');
 
-            const customApiKey = getStoredApiKey();
+            const inputFieldKey = (document.getElementById('geminiApiKeyInput')?.value || '').trim();
+            const customApiKey = getStoredApiKey() || inputFieldKey;
+            if (!getStoredApiKey() && inputFieldKey) {
+                localStorage.setItem(API_KEY_STORAGE_KEY, inputFieldKey);
+                initSettingsUI();
+            }
+
             const isLocalFile = window.location.protocol === 'file:';
 
             if (isLocalFile && !customApiKey) {
@@ -1323,10 +1329,23 @@
             sourcePills.innerHTML = '';
 
             const runtimeApiKey = customApiKey || "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${runtimeApiKey}`;
+            const endpoints = [
+                {
+                    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${runtimeApiKey}`,
+                    useSearch: true
+                },
+                {
+                    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${runtimeApiKey}`,
+                    useSearch: true
+                },
+                {
+                    url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${runtimeApiKey}`,
+                    useSearch: false
+                }
+            ];
 
             const systemPrompt = `Anda adalah asisten spesialis katalog spesifikasi gadget & teknologi untuk toko Mahadewa.id.
-Tugas Anda: cari spesifikasi resmi, akurat, dan terbaru untuk perangkat yang diminta user menggunakan Google Search dari sumber terpercaya (seperti apple.com, starlink.com, asus.com, gsmarena.com, samsung.com, dll).
+Tugas Anda: cari spesifikasi resmi, akurat, dan terbaru untuk perangkat yang diminta user dari sumber terpercaya (seperti apple.com, starlink.com, asus.com, gsmarena.com, samsung.com, dll).
 Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code block \`\`\`json) dengan struktur kunci persis berikut dalam Bahasa Indonesia yang ringkas, rapi, dan jelas:
 {
   "name": "Nama resmi produk lengkap",
@@ -1343,26 +1362,42 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
   "sourceUrl": "URL halaman resmi produk tersebut"
 }`;
 
-            const payload = {
-                contents: [{ parts: [{ text: `Cari spesifikasi resmi dan terpercaya untuk produk: "${query}"` }] }],
-                tools: [{ googleSearch: {} }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                }
-            };
-
             try {
-                const response = await fetchWithBackoff(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                let result = null;
+                let lastErrorMessage = '';
 
-                const result = await response.json();
+                for (const ep of endpoints) {
+                    const payload = {
+                        contents: [{ parts: [{ text: `Cari spesifikasi resmi dan terpercaya untuk produk: "${query}"` }] }],
+                        systemInstruction: {
+                            parts: [{ text: systemPrompt }]
+                        }
+                    };
+                    if (ep.useSearch) {
+                        payload.tools = [{ google_search: {} }];
+                    }
 
-                if (!response.ok || result.error) {
-                    const errMsg = result.error?.message || `HTTP ${response.status}`;
-                    throw new Error(errMsg);
+                    const response = await fetchWithBackoff(ep.url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+                    if (response.ok && !data.error) {
+                        result = data;
+                        break;
+                    } else {
+                        lastErrorMessage = data.error?.message || `HTTP ${response.status}`;
+                        // Stop retrying other models if the API key itself is invalid
+                        if (lastErrorMessage.toLowerCase().includes('api key not valid') || response.status === 400 && lastErrorMessage.toLowerCase().includes('key')) {
+                            break;
+                        }
+                    }
+                }
+
+                if (!result) {
+                    throw new Error(lastErrorMessage || 'Gagal menghubungi layanan Gemini API.');
                 }
 
                 const candidate = result.candidates?.[0];
@@ -1397,8 +1432,12 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
                 } else {
                     loadingEl.classList.add('hidden');
                     statusBox.classList.add('hidden');
-                    showToast('Masukkan Gemini API Key di kotak Pengaturan untuk mencari produk baru secara online.', 'error');
-                    document.getElementById('geminiApiKeyInput')?.focus();
+                    if (!customApiKey) {
+                        showToast('Masukkan Gemini API Key di kotak Pengaturan untuk mencari produk baru secara online.', 'error');
+                        document.getElementById('geminiApiKeyInput')?.focus();
+                    } else {
+                        showToast(`Gagal memuat spesifikasi AI: ${error.message}`, 'error');
+                    }
                 }
             } finally {
                 btn.disabled = false;
