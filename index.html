@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perbandingan Produk & Spesifikasi - mahadewa.id</title>
+    <link id="pageFavicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3Cmask id='dCut'%3E%3Crect width='100' height='100' fill='white'/%3E%3Cpath d='M58 0 H72 V56 C72 71.5 60 83 45.5 83 C31 83 20 71.5 20 56 C20 40.5 31 29 45.5 29 H58 V42 H45.5 C38 42 33 48 33 56 C33 64 38 70 45.5 70 C53 70 58 64 58 56 Z' fill='black'/%3E%3C/mask%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='48' fill='%23C62828' mask='url(%23dCut)'/%3E%3C/svg%3E">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,11 +73,19 @@
         
         <!-- Brand Header (Mahadewa.id) -->
         <header class="text-center mb-10">
-            <div class="inline-flex items-center justify-center space-x-2.5 mb-6">
-                <div class="w-9 h-9 rounded-full bg-[#dc2626] flex items-center justify-center shadow-xs">
-                    <span class="text-white font-extrabold text-xl leading-none tracking-tighter" style="font-family: 'Inter', sans-serif;">d</span>
+            <div class="inline-flex items-center justify-center space-x-3 mb-6">
+                <div id="headerLogoContainer" class="w-10 h-10 flex items-center justify-center shrink-0">
+                    <svg viewBox="0 0 100 100" class="w-10 h-10" aria-label="Logo Mahadewa.id">
+                        <defs>
+                            <mask id="mahadewaHeaderCutout">
+                                <rect width="100" height="100" fill="white"/>
+                                <path d="M58 0 H72 V56 C72 71.5 60 83 45.5 83 C31 83 20 71.5 20 56 C20 40.5 31 29 45.5 29 H58 V42 H45.5 C38 42 33 48 33 56 C33 64 38 70 45.5 70 C53 70 58 64 58 56 Z" fill="black"/>
+                            </mask>
+                        </defs>
+                        <circle cx="50" cy="50" r="48" fill="#C62828" mask="url(#mahadewaHeaderCutout)"/>
+                    </svg>
                 </div>
-                <span class="text-2xl font-extrabold tracking-tight text-[#1d1d1f]">mahadewa.id</span>
+                <span class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#1d1d1f]">mahadewa.id</span>
             </div>
             <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-3">
                 Perbandingan Produk & Spesifikasi
@@ -95,6 +104,7 @@
                     <button onclick="setCategoryFilter('iPhone')" data-cat="iPhone" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">iPhone</button>
                     <button onclick="setCategoryFilter('iPad')" data-cat="iPad" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">iPad</button>
                     <button onclick="setCategoryFilter('MacBook')" data-cat="MacBook" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">MacBook</button>
+                    <button onclick="setCategoryFilter('Laptop Windows')" data-cat="Laptop Windows" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">Laptop Windows</button>
                     <button onclick="setCategoryFilter('Starlink / Lainnya')" data-cat="Starlink / Lainnya" class="cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]">Starlink / Lainnya</button>
                 </div>
 
@@ -156,15 +166,15 @@
             </div>
 
             <!-- Prominent AI Auto-Fill Search Bar -->
-            <div class="bg-[#f5f5f7] rounded-3xl p-5 sm:p-7 mb-10 border border-[#d2d2d7]/60 ai-glow">
+            <div class="bg-[#f5f5f7] rounded-3xl p-5 sm:p-7 mb-6 border border-[#d2d2d7]/60 ai-glow">
                 <label for="aiSearchInput" class="block text-sm font-bold text-[#1d1d1f] mb-1">
                     Cari & Isi Spesifikasi Otomatis (AI + Google Search Grounding)
                 </label>
                 <p class="text-xs text-[#86868b] mb-4">
                     Contoh: <button type="button" onclick="quickFillExample('iPad generasi 11')" class="underline hover:text-[#1d1d1f]">iPad generasi 11</button>, 
-                    <button type="button" onclick="quickFillExample('MacBook Air M4 13 inci')" class="underline hover:text-[#1d1d1f]">MacBook Air M4 13 inci</button>, 
-                    <button type="button" onclick="quickFillExample('Starlink Gen 3 Standard')" class="underline hover:text-[#1d1d1f]">Starlink Gen 3 Standard</button>, atau 
-                    <button type="button" onclick="quickFillExample('iPhone 17 Pro Max')" class="underline hover:text-[#1d1d1f]">iPhone 17 Pro Max</button>.
+                    <button type="button" onclick="quickFillExample('Asus Vivobook 14')" class="underline hover:text-[#1d1d1f]">Asus Vivobook 14</button>, 
+                    <button type="button" onclick="quickFillExample('MacBook Air M4 13 inci')" class="underline hover:text-[#1d1d1f]">MacBook Air M4 13 inci</button>, atau 
+                    <button type="button" onclick="quickFillExample('Starlink Gen 3 Standard')" class="underline hover:text-[#1d1d1f]">Starlink Gen 3 Standard</button>.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-3">
@@ -174,7 +184,7 @@
                         </div>
                         <input type="text" id="aiSearchInput" onkeydown="if(event.key==='Enter'){event.preventDefault(); triggerAiAutoFill();}"
                             class="w-full pl-11 pr-4 py-3.5 bg-white rounded-2xl border border-[#d2d2d7] text-sm sm:text-base text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#dc2626] focus:ring-2 focus:ring-red-500/15 transition-all"
-                            placeholder="Ketik nama tipe barang (misal: iPad generasi 11)...">
+                            placeholder="Ketik nama tipe barang (misal: Asus Vivobook 14 atau iPad generasi 11)...">
                     </div>
                     <button type="button" id="aiFetchBtn" onclick="triggerAiAutoFill()"
                         class="px-6 py-3.5 rounded-2xl bg-[#dc2626] hover:bg-red-700 active:scale-[0.99] text-white font-semibold text-sm sm:text-base transition-all shadow-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer">
@@ -193,14 +203,70 @@
                         <span>Mencari spesifikasi resmi dari sumber terpercaya...</span>
                     </div>
                     <div id="aiGroundedSources" class="hidden">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                            <span id="aiSuccessTitle" class="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 Spesifikasi Berhasil Ditemukan & Diisi Otomatis
                             </span>
                             <span class="text-[11px] text-[#86868b]">Periksa form di bawah lalu klik Simpan</span>
                         </div>
                         <div id="aiSourcePills" class="flex flex-wrap gap-2 mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Branding & Gemini API Key Settings Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                <!-- Gemini API Key Settings -->
+                <div class="bg-white rounded-2xl p-5 border border-[#d2d2d7]/80 shadow-2xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-1.5">
+                            <span class="text-xs font-bold uppercase tracking-wider text-[#1d1d1f] flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-[#C62828]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                                Pengaturan Gemini API Key
+                            </span>
+                            <span id="apiKeyStatusBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                                Mode Preset / Canvas
+                            </span>
+                        </div>
+                        <p class="text-xs text-[#86868b] mb-3 leading-relaxed">
+                            Simpan API Key dari <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="underline text-[#1d1d1f] font-medium">Google AI Studio</a> agar pencarian AI berjalan saat file diunduh atau di-hosting.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="password" id="geminiApiKeyInput" class="flex-1 px-3.5 py-2 rounded-xl border border-[#d2d2d7] text-xs text-[#1d1d1f] placeholder-[#86868b] focus:outline-none focus:border-[#C62828]" placeholder="Tempel kode AIzaSy... di sini">
+                        <button type="button" onclick="saveGeminiApiKey()" class="px-4 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold transition-colors cursor-pointer">
+                            Simpan
+                        </button>
+                        <button type="button" onclick="clearGeminiApiKey()" class="px-3 py-2 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] text-xs font-medium text-[#86868b] transition-colors cursor-pointer" title="Hapus API Key">
+                            Hapus
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Brand Logo Settings (Ganti Logo Toko) -->
+                <div class="bg-white rounded-2xl p-5 border border-[#d2d2d7]/80 shadow-2xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-1.5">
+                            <span class="text-xs font-bold uppercase tracking-wider text-[#1d1d1f] flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-[#C62828]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                Ganti Logo Toko
+                            </span>
+                            <span class="text-[11px] font-medium text-[#86868b]">Logo Resmi Mahadewa.id Aktif</span>
+                        </div>
+                        <p class="text-xs text-[#86868b] mb-3 leading-relaxed">
+                            Gunakan logo resmi bundar merah Mahadewa.id atau unggah file logo kustom baru untuk header halaman.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="adminLogoPreview" class="w-9 h-9 rounded-lg bg-[#f5f5f7] border border-[#d2d2d7]/60 flex items-center justify-center p-1 shrink-0"></div>
+                        <label class="flex-1 py-2 px-3.5 rounded-xl bg-[#f5f5f7] hover:bg-[#e8e8ed] border border-[#d2d2d7] text-xs font-semibold text-[#1d1d1f] cursor-pointer text-center transition-colors">
+                            Upload Logo Kustom
+                            <input type="file" accept="image/*" onchange="handleCustomLogoUpload(event)" class="hidden">
+                        </label>
+                        <button type="button" onclick="resetOfficialLogo()" class="px-3.5 py-2 rounded-xl border border-[#d2d2d7] hover:bg-red-50 hover:text-[#C62828] text-xs font-medium text-[#1d1d1f] transition-colors cursor-pointer">
+                            Logo Resmi
+                        </button>
                     </div>
                 </div>
             </div>
@@ -261,6 +327,7 @@
                                     <option value="iPhone">iPhone</option>
                                     <option value="iPad">iPad</option>
                                     <option value="MacBook">MacBook</option>
+                                    <option value="Laptop Windows">Laptop Windows</option>
                                     <option value="Starlink / Lainnya">Starlink / Lainnya</option>
                                 </select>
                             </div>
@@ -396,8 +463,89 @@
         // ==========================================
         // 1. DEFAULT PRE-POPULATED PRODUCT DATABASE
         // ==========================================
-        const STORAGE_KEY = 'mahadewa_compare_catalog_v2';
-        const SLOTS_STORAGE_KEY = 'mahadewa_compare_slots_v2';
+        const STORAGE_KEY = 'mahadewa_compare_catalog_v3';
+        const SLOTS_STORAGE_KEY = 'mahadewa_compare_slots_v3';
+        const API_KEY_STORAGE_KEY = 'mahadewa_gemini_api_key_v1';
+        const CUSTOM_LOGO_STORAGE_KEY = 'mahadewa_custom_logo_v1';
+
+        const OFFICIAL_LOGO_SVG = `
+            <svg viewBox="0 0 100 100" class="w-full h-full" aria-label="Logo Resmi Mahadewa.id">
+                <defs>
+                    <mask id="mahadewaOfficialCutout_${Math.random().toString(36).slice(2, 7)}">
+                        <rect width="100" height="100" fill="white"/>
+                        <path d="M58 0 H72 V56 C72 71.5 60 83 45.5 83 C31 83 20 71.5 20 56 C20 40.5 31 29 45.5 29 H58 V42 H45.5 C38 42 33 48 33 56 C33 64 38 70 45.5 70 C53 70 58 64 58 56 Z" fill="black"/>
+                    </mask>
+                </defs>
+                <circle cx="50" cy="50" r="48" fill="#C62828" mask="url(#mahadewaOfficialCutout_${Math.random().toString(36).slice(2, 7)})"/>
+            </svg>
+        `;
+
+        function getOfficialLogoMarkup() {
+            const uid = 'mhd_' + Math.random().toString(36).slice(2, 8);
+            return `<svg viewBox="0 0 100 100" class="w-full h-full" aria-label="Logo Resmi Mahadewa.id">
+                <defs>
+                    <mask id="${uid}">
+                        <rect width="100" height="100" fill="white"/>
+                        <path d="M58 0 H72 V56 C72 71.5 60 83 45.5 83 C31 83 20 71.5 20 56 C20 40.5 31 29 45.5 29 H58 V42 H45.5 C38 42 33 48 33 56 C33 64 38 70 45.5 70 C53 70 58 64 58 56 Z" fill="black"/>
+                    </mask>
+                </defs>
+                <circle cx="50" cy="50" r="48" fill="#C62828" mask="url(#${uid})"/>
+            </svg>`;
+        }
+
+        const OFFLINE_PRESET_LOOKUP = [
+            {
+                keywords: ['vivobook', 'asus vivobook 14', 'a1404'],
+                data: {
+                    name: 'ASUS Vivobook 14 (A1404)',
+                    category: 'Laptop Windows',
+                    tagline: 'Laptop harian ringkas dengan engsel 180° dan sertifikasi ketahanan militer.',
+                    display: '14.0" FHD (1920 x 1080) IPS-level\nAnti-glare, 60Hz, rasio 16:9, sertifikasi TÜV Rheinland',
+                    battery: '42WHrs, 3-cell Li-ion (Fast charging 60% dalam 49 menit)',
+                    chip: 'Intel® Core™ i5-1335U / i7-1355U (Gen 13)\nIntel® Iris® Xe Graphics',
+                    camera: 'Kamera 720p HD dengan privacy shutter\nWi-Fi 6E, USB-C 3.2, HDMI 1.4',
+                    features: 'Engsel lay-flat 180°, ASUS Antimicrobial Guard Plus, MIL-STD 810H',
+                    pros: 'Bodi ringan 1.4 kg, tahan banting standar militer, penutup kamera fisik',
+                    cons: 'Kecerahan layar standar 250 nit untuk penggunaan dalam ruangan',
+                    sourceName: 'asus.com',
+                    sourceUrl: 'https://www.asus.com/id/laptops/for-home/vivobook/vivobook-14-a1404/'
+                }
+            },
+            {
+                keywords: ['macbook air m4', 'macbook air 13', 'macbook air'],
+                data: {
+                    name: 'MacBook Air 13" (Chip M4)',
+                    category: 'MacBook',
+                    tagline: 'Laptop tipis dan ringan bertenaga super cepat dengan chip Apple M4.',
+                    display: '13.6" Liquid Retina\nResolusi 2560 x 1664, 500 nit, 1 miliar warna, True Tone',
+                    battery: 'Hingga 18 jam pemutaran film / 15 jam web nirkabel',
+                    chip: 'Chip Apple M4 (CPU 10-core, GPU hingga 10-core)\nNeural Engine 16-core',
+                    camera: 'Kamera 12MP Center Stage dengan Desk View\n2x Thunderbolt 4, MagSafe 3, Wi-Fi 6E',
+                    features: 'Apple Intelligence, Touch ID, desain tanpa kipas yang senyap',
+                    pros: 'Performa M4 sangat kencang, baterai seharian penuh, mendukung 2 layar eksternal',
+                    cons: 'Refresh rate layar 60Hz dan kapasitas port terbatas tanpa hub',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/macbook-air/'
+                }
+            },
+            {
+                keywords: ['ipad generasi 11', 'ipad 11', 'ipad gen 11'],
+                data: {
+                    name: 'iPad (Generasi ke-11)',
+                    category: 'iPad',
+                    tagline: 'iPad serba bisa dengan chip A16 dan penyimpanan dasar 128GB.',
+                    display: '11" Liquid Retina\nResolusi 2360 x 1640 piksel, True Tone, 500 nit',
+                    battery: 'Hingga 10 jam menjelajah web via Wi-Fi',
+                    chip: 'Chip A16 Bionic (CPU 5-core, GPU 4-core)',
+                    camera: 'Kamera belakang 12MP Wide (4K video)\nKamera depan 12MP Landscape Center Stage, Wi-Fi 6',
+                    features: 'Touch ID di tombol atas, USB-C, dukung Apple Pencil (USB-C)',
+                    pros: 'Kapasitas awal 128GB, harga sangat ekonomis untuk pelajar & kerja',
+                    cons: 'Belum mendukung Apple Intelligence & layar belum laminated',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/ipad/compare/'
+                }
+            }
+        ];
 
         const DEFAULT_PRODUCTS = [
             {
@@ -622,6 +770,112 @@
             }
         ];
 
+        // Offline / Local Smart Preset Database (Works even without an API key)
+        const OFFLINE_SPEC_PRESETS = [
+            {
+                keywords: ['asus vivobook 14', 'vivobook 14', 'a1404', 'asus a1404vap'],
+                data: {
+                    name: 'ASUS Vivobook 14 (A1404)',
+                    category: 'Laptop Windows',
+                    tagline: 'Laptop harian ringkas dengan engsel 180° dan sertifikasi militer.',
+                    display: '14.0" FHD (1920 x 1080) 16:9 Anti-Glare\nPanel IPS-level, 60Hz, TÜV Rheinland-certified',
+                    battery: '42WHrs, 3S1P, 3-cell Li-ion (Adapter 45W)',
+                    chip: 'Intel® Core™ i5-1335U / Core™ 5 120U\nIntel® Iris® Xe Graphics, RAM hingga 16GB DDR4',
+                    camera: 'Kamera HD 720p dengan penutup privasi fisik\nWi-Fi 6E, USB-C 3.2 Gen 1, HDMI 1.4',
+                    features: 'Engsel lay-flat 180°, ASUS Antimicrobial Guard Plus, MIL-STD-810H',
+                    pros: 'Bodi ringan 1.4 kg, standar ketahanan militer, penutup kamera privasi',
+                    cons: 'Kapasitas baterai 42Wh standar untuk pemakaian ringan-menengah',
+                    sourceName: 'asus.com',
+                    sourceUrl: 'https://www.asus.com/id/laptops/for-home/vivobook/asus-vivobook-14-a1404/'
+                }
+            },
+            {
+                keywords: ['macbook air m4', 'macbook air 13', 'macbook air m3'],
+                data: {
+                    name: 'MacBook Air 13" (Chip M4)',
+                    category: 'MacBook',
+                    tagline: 'Super tipis, tanpa kipas, bertenaga chip Apple M4 dengan Apple Intelligence.',
+                    display: '13.6" Liquid Retina (2560 x 1664)\n500 nit, P3 Wide Color, True Tone',
+                    battery: 'Pemutaran film hingga 18 jam (MagSafe 3)',
+                    chip: 'Chip Apple M4 (CPU 10-core, GPU hingga 10-core)\nRAM mulai 16GB Unified Memory',
+                    camera: 'Kamera 12MP Center Stage dengan Desk View\nWi-Fi 6E, 2x Thunderbolt 4, Jack 3.5mm',
+                    features: 'Apple Intelligence, Touch ID, mendukung hingga 2 layar eksternal',
+                    pros: 'Baterai awet seharian, performa M4 sangat kencang, RAM dasar 16GB',
+                    cons: 'Hanya tersedia 2 port Thunderbolt USB-C',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/id/macbook-air/'
+                }
+            },
+            {
+                keywords: ['ipad generasi 11', 'ipad gen 11', 'ipad 11', 'ipad a16'],
+                data: {
+                    name: 'iPad (Generasi ke-11)',
+                    category: 'iPad',
+                    tagline: 'iPad serba bisa dengan layar Liquid Retina 11 inci dan chip A16.',
+                    display: '11" Liquid Retina (2360 x 1640)\nTrue Tone, kecerahan 500 nit',
+                    battery: 'Hingga 10 jam menjelajah web via Wi-Fi',
+                    chip: 'Chip A16 Bionic (CPU 5-core, GPU 4-core)',
+                    camera: 'Kamera belakang 12MP Wide (Video 4K)\nKamera depan 12MP Landscape Center Stage, Wi-Fi 6',
+                    features: 'Touch ID, USB-C, mendukung Apple Pencil (USB-C) & Magic Keyboard Folio',
+                    pros: 'Storage awal mulai 128GB, layar lega 11 inci, harga terjangkau',
+                    cons: 'Belum mendukung Apple Intelligence dan Apple Pencil Pro',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/id/ipad-11/'
+                }
+            },
+            {
+                keywords: ['starlink gen 3', 'starlink standard', 'starlink v4'],
+                data: {
+                    name: 'Starlink Standard Gen 3 (V4)',
+                    category: 'Starlink / Lainnya',
+                    tagline: 'Internet satelit kecepatan tinggi dengan router Wi-Fi 6 jangkauan luas.',
+                    display: 'Dimensi: 594 x 383 x 39.7 mm\nBerat: 2.9 kg (dengan penyangga kickstand)',
+                    battery: 'Konsumsi daya rata-rata 75 - 100W (AC 100-240V)',
+                    chip: 'Antena Electronic Phased Array\nBidang pandang luas 110°',
+                    camera: 'Router Gen 3 Wi-Fi 6 Tri-Band (hingga 297 m²)\n2 Port Ethernet LAN internal',
+                    features: 'Ketahanan cuaca ekstrem IP67, tahan angin 96+ kpj',
+                    pros: 'Jangkauan Wi-Fi 6 sangat luas, sudah dilengkapi 2 port LAN bawaan',
+                    cons: 'Arah antena disetel manual melalui panduan aplikasi',
+                    sourceName: 'starlink.com',
+                    sourceUrl: 'https://www.starlink.com/specifications'
+                }
+            },
+            {
+                keywords: ['starlink mini'],
+                data: {
+                    name: 'Starlink Mini',
+                    category: 'Starlink / Lainnya',
+                    tagline: 'Kit internet satelit ringkas dengan router Wi-Fi terintegrasi.',
+                    display: 'Dimensi: 298.5 x 259 x 38.5 mm\nBerat: 1.1 kg (muat di ransel)',
+                    battery: 'Konsumsi daya hemat 25 - 40W (Support USB-C PD 100W)',
+                    chip: 'Antena Electronic Phased Array (Bidang pandang 110°)',
+                    camera: 'Wi-Fi 5 Terintegrasi di dalam antena (hingga 112 m²)\n1 Port Ethernet LAN',
+                    features: 'Ketahanan cuaca IP67, bisa dinyalakan memakai power bank PD',
+                    pros: 'Sangat ringan dan portabel, konsumsi daya rendah, router built-in',
+                    cons: 'Jangkauan sinyal Wi-Fi lebih pendek dibanding Standard Gen 3',
+                    sourceName: 'starlink.com',
+                    sourceUrl: 'https://www.starlink.com/specifications'
+                }
+            },
+            {
+                keywords: ['iphone 17 pro max', '17 pro max'],
+                data: {
+                    name: 'iPhone 17 Pro Max',
+                    category: 'iPhone',
+                    tagline: 'Kamera Pro Fusion 48MP dengan 8x Optical Zoom dan pendingin Vapor Chamber.',
+                    display: '6.9" Super Retina XDR\nProMotion 120Hz, Always-On Display, 3000 nit',
+                    battery: 'Pemutaran video hingga 39 jam',
+                    chip: 'Chip A19 Pro + Pendingin Vapor Chamber',
+                    camera: 'Sistem Triple 48MP Pro Fusion (8x Optical Zoom)\nKamera depan 18MP Center Stage Dual Capture',
+                    features: 'Apple Intelligence, tombol Camera Control, USB 3 10Gbps',
+                    pros: 'Zoom optik 8x tajam, suhu stabil saat gaming/rekam ProRes',
+                    cons: 'Ukuran besar dan bobot cukup berat',
+                    sourceName: 'apple.com',
+                    sourceUrl: 'https://www.apple.com/iphone/compare/'
+                }
+            }
+        ];
+
         // ==========================================
         // 2. APPLICATION STATE & INITIALIZATION
         // ==========================================
@@ -792,29 +1046,31 @@
             if (lower.includes('duo') || lower.includes('fold')) return 'iphone-fold';
             if (lower.includes('pro')) return 'iphone-pro';
             if (lower.includes('ipad')) return 'ipad';
-            if (lower.includes('mac')) return 'macbook';
+            if (lower.includes('mac') || lower.includes('laptop') || lower.includes('vivobook') || lower.includes('asus')) return 'macbook';
             if (lower.includes('starlink') && lower.includes('mini')) return 'starlink-mini';
             if (lower.includes('starlink')) return 'starlink-std';
             return 'iphone-standard';
         }
 
         // ==========================================
-        // 4. RENDER APPLE COMPARE TABLE
+        // 4. COMPARISON MATRIX RENDERING & FILTERS
         // ==========================================
-        function setCategoryFilter(cat) {
-            activeCategory = cat;
+        function setCategoryFilter(category) {
+            activeCategory = category;
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                if (btn.dataset.cat === cat) {
-                    btn.className = 'cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#1d1d1f] text-white shadow-xs';
-                } else {
-                    btn.className = 'cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]';
-                }
+                const isSelected = btn.getAttribute('data-cat') === category;
+                btn.className = isSelected
+                    ? 'cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#1d1d1f] text-white shadow-xs'
+                    : 'cat-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all bg-[#f5f5f7] text-[#1d1d1f] hover:bg-[#e8e8ed]';
             });
 
             const filtered = getFilteredProducts();
             if (filtered.length > 0) {
-                for (let i = 0; i < 4; i++) {
-                    selectedSlots[i] = filtered[i % filtered.length].id;
+                for (let i = 0; i < columnCount; i++) {
+                    const current = products.find(p => p.id === selectedSlots[i]);
+                    if (category !== 'Semua' && (!current || current.category !== category)) {
+                        selectedSlots[i] = filtered[i % filtered.length].id;
+                    }
                 }
             }
             saveState();
@@ -823,13 +1079,12 @@
 
         function setColumnCount(count) {
             columnCount = count;
-            [2, 3, 4].forEach(n => {
-                const btn = document.getElementById(`colBtn${n}`);
-                if (n === count) {
-                    btn.className = 'col-btn px-2.5 py-1 rounded-full transition-all bg-white text-[#1d1d1f] shadow-xs font-semibold';
-                } else {
-                    btn.className = 'col-btn px-2.5 py-1 rounded-full transition-all text-[#1d1d1f]';
-                }
+            [2, 3, 4].forEach(num => {
+                const btn = document.getElementById(`colBtn${num}`);
+                if (!btn) return;
+                btn.className = num === count
+                    ? 'col-btn px-2.5 py-1 rounded-full transition-all bg-white text-[#1d1d1f] shadow-xs font-semibold'
+                    : 'col-btn px-2.5 py-1 rounded-full transition-all text-[#1d1d1f]';
             });
             renderComparisonGrid();
         }
@@ -840,165 +1095,180 @@
             renderComparisonGrid();
         }
 
-        function renderComparisonGrid() {
-            const container = document.getElementById('comparisonGrid');
-            const activeSlots = selectedSlots.slice(0, columnCount);
-            const activeProducts = activeSlots.map(id => products.find(p => p.id === id) || products[0]);
-            const dropdownPool = getFilteredProducts().length > 0 ? getFilteredProducts() : products;
-
-            const gridColsClass = columnCount === 2 ? 'grid-cols-2' : (columnCount === 3 ? 'grid-cols-3' : 'grid-cols-4');
-
-            // Row definitions with minimalist Apple-style vector icons
-            const rows = [
-                {
-                    label: 'Layar / Dimensi',
-                    key: 'display',
-                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2.5"/><path d="M9 6h6" stroke-linecap="round"/></svg>`
-                },
-                {
-                    label: 'Baterai / Daya',
-                    key: 'battery',
-                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2.5"/><rect x="4.5" y="9.5" width="11" height="5" rx="1" fill="currentColor"/><path d="M22 10v4" stroke-linecap="round"/></svg>`
-                },
-                {
-                    label: 'Chipset / Performa',
-                    key: 'chip',
-                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" stroke-linecap="round"/><text x="12" y="14" text-anchor="middle" font-size="6.5" font-weight="700" fill="currentColor" stroke="none">CPU</text></svg>`
-                },
-                {
-                    label: 'Kamera / Konektivitas',
-                    key: 'camera',
-                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="4"/><circle cx="9.5" cy="10" r="2"/><circle cx="15" cy="14" r="2"/><circle cx="15.5" cy="9" r="1" fill="currentColor"/></svg>`
-                },
-                {
-                    label: 'Fitur Utama / AI',
-                    key: 'features',
-                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 3c2.5 0 4.5 2 4.5 4.5 0 .6-.1 1.2-.3 1.7 1.7.7 2.8 2.4 2.8 4.3 0 2.6-2.1 4.7-4.7 4.7-.5 0-1-.1-1.5-.2-.8 1.5-2.4 2.5-4.3 2.5-2.6 0-4.7-2.1-4.7-4.7 0-.8.2-1.5.5-2.1C3.2 12.9 2.5 11.5 2.5 10c0-2.6 2.1-4.7 4.7-4.7.6 0 1.2.1 1.7.3C9.6 4 10.7 3 12 3z"/></svg>`
-                }
-            ];
-
-            let html = `
-                <!-- Header Selectors & Product Hero Visuals -->
-                <div class="grid ${gridColsClass} gap-4 sm:gap-6 pb-8 border-b border-[#d2d2d7]/70">
-                    ${activeProducts.map((prod, idx) => `
-                        <div class="flex flex-col items-center text-center px-2">
-                            <!-- Model Dropdown -->
-                            <div class="w-full max-w-[230px] mb-6">
-                                <select aria-label="Pilih produk kolom ${idx + 1}" onchange="handleSlotChange(${idx}, this.value)"
-                                    class="apple-select w-full py-2.5 pl-3.5 pr-8 rounded-xl border border-[#d2d2d7] bg-white text-xs sm:text-sm font-semibold text-[#1d1d1f] focus:outline-none focus:border-[#dc2626] transition-colors cursor-pointer shadow-2xs">
-                                    ${dropdownPool.map(item => `
-                                        <option value="${item.id}" ${item.id === prod.id ? 'selected' : ''}>${item.name}</option>
-                                    `).join('')}
-                                    ${!dropdownPool.some(item => item.id === prod.id) ? `<option value="${prod.id}" selected>${prod.name}</option>` : ''}
-                                </select>
-                            </div>
-
-                            <!-- Product Photo or Crisp SVG Fallback -->
-                            <div class="h-36 flex items-center justify-center mb-4 w-full">
-                                ${prod.image 
-                                    ? `<img src="${prod.image}" alt="${prod.name}" class="max-h-36 max-w-full object-contain drop-shadow-sm rounded-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                       <div style="display:none">${getFallbackVisualSVG(prod)}</div>`
-                                    : getFallbackVisualSVG(prod)
-                                }
-                            </div>
-
-                            <!-- Category Badge & Title -->
-                            <span class="inline-block text-[11px] font-semibold tracking-wide text-[#dc2626] bg-red-50 px-2.5 py-0.5 rounded-full mb-1.5">
-                                ${prod.category}
-                            </span>
-                            <h3 class="text-lg sm:text-xl font-bold text-[#1d1d1f] tracking-tight mb-1.5">
-                                ${prod.name}
-                            </h3>
-                            <p class="text-xs text-[#86868b] max-w-[220px] leading-relaxed mb-3">
-                                ${prod.tagline || ''}
-                            </p>
-                            <button type="button" onclick="loadProductIntoEditor('${prod.id}')" class="text-[11px] font-medium text-[#86868b] hover:text-[#dc2626] underline transition-colors">
-                                Edit foto / spek
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-
-            // Standard Spec Rows (1 to 5)
-            rows.forEach(row => {
-                html += `
-                <div class="grid ${gridColsClass} gap-4 sm:gap-6 py-7 border-b border-[#d2d2d7]/60">
-                    ${activeProducts.map(prod => `
-                        <div class="flex flex-col items-center text-center px-2">
-                            <div class="mb-2.5">${row.icon}</div>
-                            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#86868b] mb-1.5">${row.label}</span>
-                            <div class="text-xs sm:text-sm font-medium text-[#1d1d1f] whitespace-pre-line leading-relaxed max-w-[240px]">
-                                ${prod.specs[row.key] || '—'}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>`;
-            });
-
-            // Row 6: Kelebihan (+) & Kekurangan (-)
-            html += `
-            <div class="grid ${gridColsClass} gap-4 sm:gap-6 py-7 border-b border-[#d2d2d7]/60">
-                ${activeProducts.map(prod => `
-                    <div class="flex flex-col items-center text-center px-2">
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-[#86868b] mb-3">Kelebihan & Kekurangan</span>
-                        <div class="w-full max-w-[240px] space-y-2 text-left">
-                            <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/70">
-                                <span class="block text-[10px] font-bold uppercase text-emerald-700 mb-0.5">+ Kelebihan</span>
-                                <p class="text-xs text-[#1d1d1f] leading-snug">${prod.specs.pros || '—'}</p>
-                            </div>
-                            <div class="p-2.5 rounded-xl bg-red-50/60 border border-red-200/60">
-                                <span class="block text-[10px] font-bold uppercase text-[#dc2626] mb-0.5">- Kekurangan</span>
-                                <p class="text-xs text-[#1d1d1f] leading-snug">${prod.specs.cons || '—'}</p>
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>`;
-
-            // Row 7: Sumber Referensi Resmi (Clickable Badge)
-            html += `
-            <div class="grid ${gridColsClass} gap-4 sm:gap-6 pt-7">
-                ${activeProducts.map(prod => {
-                    const url = prod.specs.sourceUrl || 'https://www.apple.com';
-                    const domain = prod.specs.sourceName || extractDomain(url);
-                    return `
-                    <div class="flex flex-col items-center text-center px-2">
-                        <span class="text-[10px] font-semibold uppercase tracking-wider text-[#86868b] mb-2">Sumber Referensi Resmi</span>
-                        <a href="${url}" target="_blank" rel="noopener noreferrer"
-                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#f5f5f7] hover:bg-[#1d1d1f] text-[#1d1d1f] hover:text-white border border-[#d2d2d7] text-xs font-medium transition-all">
-                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                            <span class="truncate max-w-[160px]">${domain}</span>
-                        </a>
-                    </div>`;
-                }).join('')}
-            </div>`;
-
-            container.innerHTML = html;
+        function formatMultiline(text) {
+            if (!text) return '<span class="text-[#86868b]">—</span>';
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .split('\n')
+                .map((line, idx) => idx === 0
+                    ? `<span class="block font-medium text-[#1d1d1f]">${line}</span>`
+                    : `<span class="block text-xs text-[#86868b] mt-0.5">${line}</span>`
+                ).join('');
         }
 
         function extractDomain(url) {
             try {
                 return new URL(url).hostname.replace(/^www\./, '');
             } catch (e) {
-                return 'apple.com';
+                return 'sumber resmi';
             }
         }
 
+        function renderComparisonGrid() {
+            const grid = document.getElementById('comparisonGrid');
+            if (!grid) return;
+
+            const filteredPool = getFilteredProducts();
+            const dropdownPool = filteredPool.length > 0 ? filteredPool : products;
+
+            const activeItems = [];
+            for (let i = 0; i < columnCount; i++) {
+                let item = products.find(p => p.id === selectedSlots[i]);
+                if (!item && dropdownPool.length > 0) {
+                    item = dropdownPool[i % dropdownPool.length];
+                    selectedSlots[i] = item.id;
+                }
+                if (item) activeItems.push(item);
+            }
+
+            const gridColsClass = columnCount === 2
+                ? 'grid-cols-2 max-w-3xl mx-auto'
+                : columnCount === 3
+                    ? 'grid-cols-3 max-w-5xl mx-auto'
+                    : 'grid-cols-4';
+
+            const specRows = [
+                {
+                    label: 'Layar & Dimensi',
+                    icon: `<svg class="w-6 h-6 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5" stroke-width="1.6"/><line x1="10" y1="5" x2="14" y2="5" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+                    render: p => formatMultiline(p.specs.display)
+                },
+                {
+                    label: 'Baterai & Daya',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2.5" stroke-width="1.6"/><rect x="4.5" y="9.5" width="13" height="5" rx="1" fill="currentColor"/><path d="M22 10v4" stroke-width="2" stroke-linecap="round"/></svg>`,
+                    render: p => formatMultiline(p.specs.battery)
+                },
+                {
+                    label: 'Chipset & Performa',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" stroke-width="1.6"/><rect x="9" y="9" width="6" height="6" rx="1" stroke-width="1.5"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+                    render: p => formatMultiline(p.specs.chip)
+                },
+                {
+                    label: 'Kamera & Konektivitas',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3" stroke-width="1.6"/><circle cx="12" cy="12.5" r="3.2" stroke-width="1.6"/><circle cx="17.5" cy="9" r="1" fill="currentColor"/></svg>`,
+                    render: p => formatMultiline(p.specs.camera)
+                },
+                {
+                    label: 'Fitur & Kecerdasan AI',
+                    icon: `<svg class="w-7 h-7 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z" stroke-width="1.6" stroke-linejoin="round"/><path d="M18.5 15l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1z" stroke-width="1.4" stroke-linejoin="round"/></svg>`,
+                    render: p => formatMultiline(p.specs.features)
+                },
+                {
+                    label: 'Kelebihan & Kekurangan',
+                    icon: `<svg class="w-6 h-6 mx-auto text-[#1d1d1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="1.6"/></svg>`,
+                    render: p => `
+                        <div class="space-y-1.5 text-left max-w-[230px] mx-auto bg-[#fbfbfd] p-2.5 rounded-xl border border-[#d2d2d7]/40">
+                            <p class="text-xs text-emerald-700 leading-snug"><span class="font-bold">+</span> ${p.specs.pros || '—'}</p>
+                            <p class="text-xs text-[#dc2626] leading-snug"><span class="font-bold">−</span> ${p.specs.cons || '—'}</p>
+                        </div>`
+                },
+                {
+                    label: 'Sumber Referensi Resmi',
+                    icon: null,
+                    render: p => {
+                        const url = p.specs.sourceUrl || 'https://www.apple.com';
+                        const label = p.specs.sourceName || extractDomain(url);
+                        return `
+                            <span class="block text-[10px] uppercase tracking-wider text-[#86868b] mb-1">Sumber Referensi Resmi</span>
+                            <a href="${url}" target="_blank" rel="noopener noreferrer"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#d2d2d7] hover:border-[#1d1d1f] bg-white text-xs font-medium text-[#1d1d1f] transition-colors">
+                                <svg class="w-3.5 h-3.5 text-[#86868b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                <span>${label}</span>
+                            </a>`;
+                    }
+                }
+            ];
+
+            let html = `<div class="grid ${gridColsClass} gap-6">`;
+            activeItems.forEach((prod, idx) => {
+                const optionsHtml = dropdownPool.map(opt =>
+                    `<option value="${opt.id}" ${opt.id === prod.id ? 'selected' : ''}>${opt.name}</option>`
+                ).join('');
+
+                html += `
+                <div class="flex flex-col items-center text-center px-2">
+                    <div class="w-full max-w-[230px] mb-5">
+                        <select aria-label="Pilih produk kolom ${idx + 1}" onchange="handleSlotChange(${idx}, this.value)"
+                            class="apple-select w-full px-3.5 py-2.5 pr-8 rounded-xl border border-[#d2d2d7] bg-white text-xs sm:text-sm font-semibold text-[#1d1d1f] focus:outline-none focus:border-[#1d1d1f] cursor-pointer transition-colors">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                    <div class="h-36 w-full flex items-center justify-center mb-4">
+                        ${prod.image
+                            ? `<img src="${prod.image}" alt="${prod.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" class="max-h-36 max-w-[180px] object-contain mx-auto"><div style="display:none;">${getFallbackVisualSVG(prod)}</div>`
+                            : getFallbackVisualSVG(prod)
+                        }
+                    </div>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider text-[#dc2626] mb-1">${prod.category}</span>
+                    <h2 class="text-lg sm:text-xl font-bold text-[#1d1d1f] tracking-tight">${prod.name}</h2>
+                    <p class="text-xs text-[#86868b] mt-1 line-clamp-2 max-w-[230px] min-h-[32px]">${prod.tagline || ''}</p>
+                    <button type="button" onclick="loadProductIntoEditor('${prod.id}')"
+                        class="mt-3 text-xs font-medium text-[#0066cc] hover:underline">
+                        Edit Foto / Spesifikasi ›
+                    </button>
+                </div>`;
+            });
+            html += `</div>`;
+
+            specRows.forEach(row => {
+                html += `
+                <div class="grid ${gridColsClass} gap-6 border-t border-[#d2d2d7]/70 mt-7 pt-7">
+                    ${activeItems.map(prod => `
+                        <div class="text-center px-2 flex flex-col items-center justify-start">
+                            ${row.icon ? `<div class="mb-2.5">${row.icon}</div>` : ''}
+                            <div class="text-xs sm:text-sm leading-relaxed">${row.render(prod)}</div>
+                        </div>
+                    `).join('')}
+                </div>`;
+            });
+
+            grid.innerHTML = html;
+        }
+
         // ==========================================
-        // 5. GEMINI API AUTO-FILL WITH SEARCH GROUNDING
+        // 5. GEMINI API KEY MANAGEMENT & AUTO-FILL
         // ==========================================
+        function getStoredApiKey() {
+            try {
+                return (localStorage.getItem(API_KEY_STORAGE_KEY) || '').trim();
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function findOfflinePreset(query) {
+            const q = query.toLowerCase().trim();
+            return OFFLINE_SPEC_PRESETS.find(preset =>
+                preset.keywords.some(kw => q.includes(kw) || kw.includes(q))
+            )?.data || null;
+        }
+
         function quickFillExample(query) {
             document.getElementById('aiSearchInput').value = query;
             triggerAiAutoFill();
         }
 
-        async function fetchWithBackoff(url, options, maxRetries = 4) {
+        async function fetchWithBackoff(url, options, maxRetries = 3) {
             let delay = 1000;
             for (let attempt = 0; attempt < maxRetries; attempt++) {
                 try {
                     const response = await fetch(url, options);
                     if (response.ok) return response;
+                    if (response.status === 400 || response.status === 401 || response.status === 403) {
+                        return response;
+                    }
                     if (response.status === 429 || response.status >= 500) {
                         await new Promise(res => setTimeout(res, delay));
                         delay *= 2;
@@ -1029,6 +1299,22 @@
             const sourcesEl = document.getElementById('aiGroundedSources');
             const sourcePills = document.getElementById('aiSourcePills');
 
+            const customApiKey = getStoredApiKey();
+            const isLocalFile = window.location.protocol === 'file:';
+
+            if (isLocalFile && !customApiKey) {
+                const offlineMatch = findOfflinePreset(query);
+                if (offlineMatch) {
+                    applyAutoFilledSpecToForm(offlineMatch, query, [
+                        { uri: offlineMatch.sourceUrl, title: offlineMatch.sourceName }
+                    ], true);
+                    return;
+                }
+                showToast('File dibuka secara lokal tanpa API Key. Tempel Gemini API Key Anda di kotak pengaturan di bawah agar AI bisa mencari produk apa saja.', 'error');
+                document.getElementById('geminiApiKeyInput')?.focus();
+                return;
+            }
+
             btn.disabled = true;
             btn.classList.add('opacity-70', 'cursor-not-allowed');
             statusBox.classList.remove('hidden');
@@ -1036,15 +1322,15 @@
             sourcesEl.classList.add('hidden');
             sourcePills.innerHTML = '';
 
-            const apiKey = "";
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const runtimeApiKey = customApiKey || "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${runtimeApiKey}`;
 
             const systemPrompt = `Anda adalah asisten spesialis katalog spesifikasi gadget & teknologi untuk toko Mahadewa.id.
-Tugas Anda: cari spesifikasi resmi, akurat, dan terbaru untuk perangkat yang diminta user menggunakan Google Search dari sumber terpercaya (seperti apple.com, starlink.com, gsmarena.com, samsung.com, dll).
+Tugas Anda: cari spesifikasi resmi, akurat, dan terbaru untuk perangkat yang diminta user menggunakan Google Search dari sumber terpercaya (seperti apple.com, starlink.com, asus.com, gsmarena.com, samsung.com, dll).
 Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code block \`\`\`json) dengan struktur kunci persis berikut dalam Bahasa Indonesia yang ringkas, rapi, dan jelas:
 {
   "name": "Nama resmi produk lengkap",
-  "category": "Pilih salah satu: iPhone, iPad, MacBook, atau Starlink / Lainnya",
+  "category": "Pilih salah satu: iPhone, iPad, MacBook, Laptop Windows, atau Starlink / Lainnya",
   "tagline": "1 kalimat ringkas daya tarik utama produk",
   "display": "Ukuran & spesifikasi layar atau dimensi fisik (maksimal 2 baris)",
   "battery": "Daya tahan baterai atau konsumsi daya watt",
@@ -1073,10 +1359,15 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
                 });
 
                 const result = await response.json();
+
+                if (!response.ok || result.error) {
+                    const errMsg = result.error?.message || `HTTP ${response.status}`;
+                    throw new Error(errMsg);
+                }
+
                 const candidate = result.candidates?.[0];
                 const rawText = candidate?.content?.parts?.[0]?.text || '';
 
-                // Extract JSON safely
                 const jsonMatch = rawText.match(/\{[\s\S]*\}/);
                 if (!jsonMatch) {
                     throw new Error('Format respons AI tidak terbaca.');
@@ -1084,7 +1375,6 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
 
                 const parsed = JSON.parse(jsonMatch[0]);
 
-                // Extract Google Search grounding attributions if available
                 let groundedLinks = [];
                 const groundingMetadata = candidate?.groundingMetadata;
                 if (groundingMetadata?.groundingChunks) {
@@ -1096,55 +1386,165 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
                         .filter(item => item.uri && item.title);
                 }
 
-                // Populate form fields automatically
-                document.getElementById('editingProductId').value = '';
-                document.getElementById('editorFormTitle').innerText = 'Hasil Auto-Isi AI (Siap Disimpan)';
-                document.getElementById('fieldName').value = parsed.name || query;
-
-                const validCats = ['iPhone', 'iPad', 'MacBook', 'Starlink / Lainnya'];
-                document.getElementById('fieldCategory').value = validCats.includes(parsed.category) ? parsed.category : 'Starlink / Lainnya';
-
-                document.getElementById('fieldTagline').value = parsed.tagline || '';
-                document.getElementById('fieldDisplay').value = parsed.display || '';
-                document.getElementById('fieldBattery').value = parsed.battery || '';
-                document.getElementById('fieldChip').value = parsed.chip || '';
-                document.getElementById('fieldCamera').value = parsed.camera || '';
-                document.getElementById('fieldFeatures').value = parsed.features || '';
-                document.getElementById('fieldPros').value = parsed.pros || '';
-                document.getElementById('fieldCons').value = parsed.cons || '';
-
-                const bestSourceUrl = groundedLinks[0]?.uri || parsed.sourceUrl || 'https://www.apple.com';
-                const bestSourceName = parsed.sourceName || extractDomain(bestSourceUrl);
-                document.getElementById('fieldSourceName').value = bestSourceName;
-                document.getElementById('fieldSourceUrl').value = bestSourceUrl;
-
-                // Show verified source pills
-                loadingEl.classList.add('hidden');
-                sourcesEl.classList.remove('hidden');
-
-                const linksToDisplay = groundedLinks.length > 0
-                    ? groundedLinks.slice(0, 3)
-                    : [{ uri: bestSourceUrl, title: bestSourceName }];
-
-                sourcePills.innerHTML = linksToDisplay.map(src => `
-                    <a href="${src.uri}" target="_blank" rel="noopener noreferrer"
-                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f5f5f7] hover:bg-emerald-50 border border-[#d2d2d7] text-xs font-medium text-[#1d1d1f] transition-colors">
-                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                        <span class="truncate max-w-[220px]">${src.title}</span>
-                    </a>
-                `).join('');
-
-                showToast(`Spesifikasi "${parsed.name || query}" berhasil diisi otomatis!`, 'success');
-                document.getElementById('productEditorForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                applyAutoFilledSpecToForm(parsed, query, groundedLinks, false);
 
             } catch (error) {
-                loadingEl.classList.add('hidden');
-                statusBox.classList.add('hidden');
-                showToast('Gagal mengambil spesifikasi otomatis. Coba ulangi atau isi manual.', 'error');
+                const offlineMatch = findOfflinePreset(query);
+                if (offlineMatch) {
+                    applyAutoFilledSpecToForm(offlineMatch, query, [
+                        { uri: offlineMatch.sourceUrl, title: offlineMatch.sourceName }
+                    ], true);
+                } else {
+                    loadingEl.classList.add('hidden');
+                    statusBox.classList.add('hidden');
+                    showToast('Masukkan Gemini API Key di kotak Pengaturan untuk mencari produk baru secara online.', 'error');
+                    document.getElementById('geminiApiKeyInput')?.focus();
+                }
             } finally {
                 btn.disabled = false;
                 btn.classList.remove('opacity-70', 'cursor-not-allowed');
             }
+        }
+
+        function applyAutoFilledSpecToForm(parsed, originalQuery, groundedLinks = [], isOfflineFallback = false) {
+            const statusBox = document.getElementById('aiStatusBox');
+            const loadingEl = document.getElementById('aiLoadingIndicator');
+            const sourcesEl = document.getElementById('aiGroundedSources');
+            const sourcePills = document.getElementById('aiSourcePills');
+            const successTitle = document.getElementById('aiSuccessTitle');
+
+            document.getElementById('editingProductId').value = '';
+            document.getElementById('editorFormTitle').innerText = isOfflineFallback
+                ? 'Hasil Database Lokal (Siap Disimpan)'
+                : 'Hasil Auto-Isi AI (Siap Disimpan)';
+            document.getElementById('fieldName').value = parsed.name || originalQuery;
+
+            const validCats = ['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink / Lainnya'];
+            document.getElementById('fieldCategory').value = validCats.includes(parsed.category) ? parsed.category : 'Laptop Windows';
+
+            document.getElementById('fieldTagline').value = parsed.tagline || '';
+            document.getElementById('fieldDisplay').value = parsed.display || '';
+            document.getElementById('fieldBattery').value = parsed.battery || '';
+            document.getElementById('fieldChip').value = parsed.chip || '';
+            document.getElementById('fieldCamera').value = parsed.camera || '';
+            document.getElementById('fieldFeatures').value = parsed.features || '';
+            document.getElementById('fieldPros').value = parsed.pros || '';
+            document.getElementById('fieldCons').value = parsed.cons || '';
+
+            const bestSourceUrl = groundedLinks[0]?.uri || parsed.sourceUrl || 'https://www.apple.com';
+            const bestSourceName = parsed.sourceName || extractDomain(bestSourceUrl);
+            document.getElementById('fieldSourceName').value = bestSourceName;
+            document.getElementById('fieldSourceUrl').value = bestSourceUrl;
+
+            statusBox.classList.remove('hidden');
+            loadingEl.classList.add('hidden');
+            sourcesEl.classList.remove('hidden');
+
+            if (successTitle) {
+                successTitle.innerHTML = isOfflineFallback
+                    ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Spesifikasi Ditemukan (Database Lokal Terpercaya)`
+                    : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Spesifikasi Berhasil Ditemukan & Diisi Otomatis`;
+            }
+
+            const linksToDisplay = groundedLinks.length > 0
+                ? groundedLinks.slice(0, 3)
+                : [{ uri: bestSourceUrl, title: bestSourceName }];
+
+            sourcePills.innerHTML = linksToDisplay.map(src => `
+                <a href="${src.uri}" target="_blank" rel="noopener noreferrer"
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f5f5f7] hover:bg-emerald-50 border border-[#d2d2d7] text-xs font-medium text-[#1d1d1f] transition-colors">
+                    <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    <span class="truncate max-w-[220px]">${src.title}</span>
+                </a>
+            `).join('');
+
+            showToast(`Spesifikasi "${parsed.name || originalQuery}" berhasil diisi otomatis!`, 'success');
+            document.getElementById('productEditorForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // ==========================================
+        // 5B. GEMINI API KEY & CUSTOM BRAND LOGO
+        // ==========================================
+        function initSettingsUI() {
+            const savedKey = localStorage.getItem(API_KEY_STORAGE_KEY) || '';
+            const keyInput = document.getElementById('geminiApiKeyInput');
+            const statusBadge = document.getElementById('apiKeyStatusBadge');
+
+            if (keyInput) keyInput.value = savedKey;
+            if (statusBadge) {
+                if (savedKey) {
+                    statusBadge.innerText = 'API Key Tersimpan ✓';
+                    statusBadge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700';
+                } else {
+                    statusBadge.innerText = 'Mode Preset / Canvas';
+                    statusBadge.className = 'text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700';
+                }
+            }
+
+            renderBrandLogo();
+        }
+
+        function saveGeminiApiKey() {
+            const val = (document.getElementById('geminiApiKeyInput')?.value || '').trim();
+            if (!val) {
+                showToast('Masukkan kode Gemini API Key terlebih dahulu.', 'error');
+                return;
+            }
+            localStorage.setItem(API_KEY_STORAGE_KEY, val);
+            initSettingsUI();
+            showToast('Gemini API Key berhasil disimpan ke browser!', 'success');
+        }
+
+        function clearGeminiApiKey() {
+            localStorage.removeItem(API_KEY_STORAGE_KEY);
+            initSettingsUI();
+            showToast('Gemini API Key dihapus.', 'success');
+        }
+
+        function renderBrandLogo() {
+            const customLogo = localStorage.getItem(CUSTOM_LOGO_STORAGE_KEY);
+            const headerEl = document.getElementById('headerLogoContainer');
+            const previewEl = document.getElementById('adminLogoPreview');
+            const faviconEl = document.getElementById('pageFavicon');
+
+            if (customLogo) {
+                const imgHtml = `<img src="${customLogo}" alt="Logo Mahadewa.id" class="w-full h-full object-contain rounded-full">`;
+                if (headerEl) headerEl.innerHTML = imgHtml;
+                if (previewEl) previewEl.innerHTML = imgHtml;
+                if (faviconEl) faviconEl.href = customLogo;
+            } else {
+                if (headerEl) headerEl.innerHTML = getOfficialLogoMarkup();
+                if (previewEl) previewEl.innerHTML = getOfficialLogoMarkup();
+            }
+        }
+
+        function handleCustomLogoUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 160;
+                    canvas.height = 160;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 160, 160);
+                    const logoDataUrl = canvas.toDataURL('image/png');
+                    localStorage.setItem(CUSTOM_LOGO_STORAGE_KEY, logoDataUrl);
+                    renderBrandLogo();
+                    showToast('Logo toko kustom berhasil diperbarui!', 'success');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function resetOfficialLogo() {
+            localStorage.removeItem(CUSTOM_LOGO_STORAGE_KEY);
+            renderBrandLogo();
+            showToast('Logo dikembalikan ke logo resmi Mahadewa.id.', 'success');
         }
 
         // ==========================================
@@ -1469,6 +1869,7 @@ Kembalikan jawaban HANYA dalam format objek JSON valid (tanpa markdown code bloc
         // Boot application
         window.onload = function() {
             loadState();
+            initSettingsUI();
             renderComparisonGrid();
             renderAdminCatalog();
         };
