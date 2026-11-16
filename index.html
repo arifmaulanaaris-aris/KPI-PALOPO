@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- SheetJS untuk membaca file Excel (.xlsx / .xls / .csv) -->
+  <!-- SheetJS untuk membaca & membuat file Excel (.xlsx / .xls / .csv) -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
   <style>
     body {
@@ -82,7 +82,7 @@
       <nav class="flex items-center gap-1 sm:gap-3 flex-shrink-0">
         <!-- Menu 1: Perbandingan Produk -->
         <button onclick="switchMenu('compare')" id="nav-btn-compare"
-          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-white/15 transition-all whitespace-nowrap">
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-white/20 shadow-sm transition-all whitespace-nowrap">
           <i data-lucide="columns-3" class="w-4 h-4"></i>
           <span>Perbandingan</span>
         </button>
@@ -100,18 +100,18 @@
         <!-- Indikator Titik Status Sync -->
         <div id="sync-status-badge" title="Status Sinkronisasi Google Sheets"
           class="hidden xl:flex items-center gap-1.5 pl-2.5 ml-1 border-l border-white/30 text-[11px] font-medium text-white/90 whitespace-nowrap">
-          <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-300"></span>
-          <span id="sync-status-text">Sync Aktif</span>
+          <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-amber-300 animate-ping"></span>
+          <span id="sync-status-text">Memuat Cloud...</span>
         </div>
       </nav>
 
     </div>
   </header>
+
   <!-- ======================================================================= -->
   <!-- VIEW 1: MENU PERBANDINGAN PRODUK (PUBLIK / STAF)                         -->
   <!-- ======================================================================= -->
   <div id="view-compare">
-    <!-- Hero Section & Filter Kategori -->
     <section class="pt-10 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
       <p class="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#C62828] mb-2">Katalog Resmi Mahadewa.id</p>
       <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-3">
@@ -165,7 +165,7 @@
             <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Mode Administrator Terbuka
           </span>
           <h2 class="text-2xl font-bold text-[#1d1d1f] mt-2">Kelola Produk & Sinkronisasi Google Sheets</h2>
-          <p class="text-sm text-[#6e6e73]">Perubahan di halaman ini otomatis tersimpan ke Google Sheets utama Mahadewa.id.</p>
+          <p class="text-sm text-[#6e6e73]">Perubahan produk dan PIN Admin otomatis tersimpan ke Google Sheets utama Mahadewa.id.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -183,17 +183,13 @@
             <i data-lucide="upload" class="w-4 h-4 text-gray-600"></i> Import JSON
             <input type="file" accept=".json" onchange="importProductsJSON(event)" class="hidden" />
           </label>
-          <label class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-gray-100 text-[#1d1d1f] border border-gray-300 shadow-sm transition cursor-pointer">
-            <i data-lucide="image" class="w-4 h-4 text-[#C62828]"></i> Ganti Logo
-            <input type="file" accept="image/*" onchange="handleLogoUpload(event)" class="hidden" />
-          </label>
           <button onclick="lockAdminSession()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#1d1d1f] hover:bg-black text-white shadow-sm transition">
             <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i> Kunci & Keluar Admin
           </button>
         </div>
       </div>
 
-      <!-- KARTU 1: Integrasi Database Real-Time Google Sheets (URL Dipatenkan) & Pengaturan PIN -->
+      <!-- KARTU 1: Integrasi Database Real-Time Google Sheets (URL Dipatenkan) & Pengaturan PIN Cloud -->
       <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200/90 space-y-5">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div class="flex items-start gap-3.5">
@@ -202,13 +198,13 @@
             </div>
             <div>
               <div class="flex items-center gap-2.5 flex-wrap">
-                <h3 class="text-lg font-bold text-[#1d1d1f]">Database Google Sheets (Permanen)</h3>
+                <h3 class="text-lg font-bold text-[#1d1d1f]">Database Google Sheets & PIN Global</h3>
                 <span id="gsheet-badge-card" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   Terhubung Permanen
                 </span>
               </div>
               <p class="text-xs sm:text-sm text-[#6e6e73] mt-0.5">
-                Link Google Apps Script sudah dipatenkan di sistem sehingga otomatis sinkron di semua HP & komputer toko tanpa perlu setting ulang.
+                Link Google Apps Script dipatenkan di sistem. Saat HP/laptop baru membuka web ini, katalog dan PIN Admin terbaru langsung ditarik otomatis.
               </p>
             </div>
           </div>
@@ -216,25 +212,23 @@
           <div class="flex flex-wrap gap-2 flex-shrink-0">
             <button onclick="openAppsScriptModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] border border-gray-300 transition">
               <i data-lucide="code-2" class="w-4 h-4 text-emerald-600"></i>
-              <span>Kode Apps Script</span>
+              <span>Kode Apps Script (Update PIN Cloud)</span>
             </button>
             <button onclick="resetToDefaultCatalog()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 text-[#C62828] border border-red-200 transition">
               <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-              <span>Reset Katalog Default</span>
+              <span>Reset Default</span>
             </button>
           </div>
         </div>
 
-        <!-- Baris URL Dipatenkan & Tombol Sync + Ubah PIN Admin -->
+        <!-- Baris URL Dipatenkan & Tombol Sync + Ubah PIN Admin Global -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end bg-[#f5f5f7] p-4 rounded-2xl border border-gray-200">
           <div class="lg:col-span-5">
             <label for="gsheet-url-input" class="block text-xs font-semibold text-gray-700 mb-1.5">
               URL Google Apps Script Web App (Terkunci Permanen)
             </label>
-            <div class="flex gap-2">
-              <input type="url" id="gsheet-url-input" readonly
-                class="w-full px-3.5 py-2.5 rounded-xl bg-gray-100 border border-gray-300 text-xs text-gray-600 font-mono focus:outline-none cursor-not-allowed" />
-            </div>
+            <input type="url" id="gsheet-url-input" readonly
+              class="w-full px-3.5 py-2.5 rounded-xl bg-gray-100 border border-gray-300 text-xs text-gray-600 font-mono focus:outline-none cursor-not-allowed" />
           </div>
 
           <div class="lg:col-span-4 flex gap-2">
@@ -248,10 +242,10 @@
             </button>
           </div>
 
-          <!-- Pengaturan Ganti PIN Admin -->
+          <!-- Pengaturan Ganti PIN Admin Global (Tersimpan ke Google Sheets) -->
           <div class="lg:col-span-3">
             <label for="new-admin-pin" class="block text-xs font-semibold text-gray-700 mb-1.5">
-              Ubah PIN Akses Admin
+              Ubah PIN Admin (Semua Perangkat)
             </label>
             <div class="flex gap-1.5">
               <input type="password" id="new-admin-pin" maxlength="12" placeholder="PIN Baru..."
@@ -444,11 +438,18 @@
   <footer class="bg-[#f5f5f7] border-t border-gray-200 text-[#6e6e73] text-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-gray-200">
-        
-        <!-- Kolom 1: Logo & Deskripsi -->
+        <!-- Kolom 1: Brand Info -->
         <div class="space-y-3">
-          <div class="h-8 w-auto">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7AxgxbeY8DnnnygTKScq8BkF0O29aeTsBCWqBDQOYtg&s=10" alt="Logo Mahadewa.id" class="h-full w-auto object-contain" />
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7">
+              <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="46" fill="#C62828" />
+                <path d="M62 20 V76 H52 V70 C48.5 74.5 43.2 77 37 77 C25.5 77 18 68.5 18 56.5 C18 44.5 25.5 36 37 36 C43.2 36 48.5 38.5 52 43 V20 H62 Z M39.5 45 C32.5 45 28.2 49.8 28.2 56.5 C28.2 63.2 32.5 68 39.5 68 C46.5 68 51.5 63.2 51.5 56.5 C51.5 49.8 46.5 45 39.5 45 Z" fill="#FFFFFF"/>
+                <polygon points="48,26 67,18 67,25 48,33" fill="#C62828"/>
+                <circle cx="71" cy="71" r="5" fill="#FFFFFF"/>
+              </svg>
+            </div>
+            <span class="text-base font-extrabold text-[#1d1d1f]">mahadewa<span class="text-[#C62828]">.id</span></span>
           </div>
           <p class="leading-relaxed text-gray-600">
             Pusat penjualan iPhone, iPad, MacBook, Laptop Windows, dan Starlink terpercaya di Kota Palopo. Bandingkan spesifikasi resmi sebelum membeli.
@@ -476,7 +477,6 @@
             <a href="mailto:mahadewa.cabpalopo@gmail.com" class="hover:text-[#C62828] font-medium">mahadewa.cabpalopo@gmail.com</a>
           </p>
         </div>
-
       </div>
 
       <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-500">
@@ -497,7 +497,7 @@
       <div>
         <h3 class="text-lg font-bold text-[#1d1d1f]">Akses Terbatas</h3>
         <p class="text-xs text-[#6e6e73] mt-1">
-          Menu <strong>Kelola Produk & Sync</strong> hanya dapat diakses oleh Owner / Admin yang memiliki izin.
+          Menu <strong>Kelola Produk</strong> hanya dapat diakses oleh Owner / Admin yang memiliki izin.
         </p>
       </div>
 
@@ -505,7 +505,6 @@
         <div>
           <input type="password" id="pin-auth-input" required placeholder="Masukkan PIN Akses..."
             class="w-full px-4 py-3 rounded-2xl bg-[#f5f5f7] border border-gray-300 text-center text-base font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-          <p class="text-[11px] text-gray-400 mt-1.5">PIN Default Awal: <code class="text-gray-600 font-semibold">2026</code></p>
         </div>
         <div class="flex gap-2">
           <button type="button" onclick="closePinModal()" class="w-1/2 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] text-xs font-semibold transition">
@@ -529,7 +528,7 @@
           </div>
           <div>
             <h3 class="text-base font-bold text-[#1d1d1f]">Kode Google Apps Script (Code.gs)</h3>
-            <p class="text-xs text-[#6e6e73]">Skrip backend Google Sheets Mahadewa.id</p>
+            <p class="text-xs text-[#6e6e73]">Mendukung sinkronisasi produk + PIN Admin lintas perangkat</p>
           </div>
         </div>
         <button onclick="closeAppsScriptModal()" class="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition">
@@ -538,6 +537,10 @@
       </div>
 
       <div class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-gray-700">
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-950 text-xs leading-relaxed">
+          <strong>Penting:</strong> Jika Anda ingin perubahan <strong>PIN Admin</strong> otomatis berlaku di semua HP/Laptop, pastikan kode <code>Code.gs</code> di Google Apps Script Anda sudah diperbarui dengan kode di bawah ini lalu klik <strong>Terapkan &rarr; Kelola deployment &rarr; Edit &rarr; Versi baru</strong>.
+        </div>
+
         <div class="relative">
           <div class="flex items-center justify-between bg-[#1d1d1f] text-gray-300 px-4 py-2.5 rounded-t-2xl text-xs font-mono">
             <span>Code.gs</span>
@@ -570,17 +573,17 @@
     const DEFAULT_ADMIN_PIN = '2026';
 
     const STORAGE_KEY_PRODUCTS = 'mahadewa_compare_products_v2';
-    const STORAGE_KEY_LOGO = 'mahadewa_custom_logo_v1';
     const STORAGE_KEY_GEMINI = 'mahadewa_gemini_apikey_v1';
     const STORAGE_KEY_ADMIN_PIN = 'mahadewa_admin_pin_v1';
     const SESSION_KEY_UNLOCKED = 'mahadewa_admin_unlocked_session';
     const WHATSAPP_NUMBER = '6282344888441';
 
     const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
-// GOOGLE APPS SCRIPT DATABASE SYNC UNTUK MAHADEWA.ID
+// GOOGLE APPS SCRIPT DATABASE SYNC UNTUK MAHADEWA.ID (PRODUK + PIN ADMIN)
 // ============================================================================
 
 const SHEET_NAME = 'KatalogProduk';
+const CONFIG_SHEET_NAME = 'Pengaturan';
 const HEADERS = [
   'id', 'name', 'category', 'tagline', 'image',
   'display', 'chip', 'camera', 'battery',
@@ -599,12 +602,47 @@ function getOrCreateSheet() {
   return sheet;
 }
 
+function getOrCreateConfigSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(CONFIG_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(CONFIG_SHEET_NAME);
+    sheet.appendRow(['key', 'value']);
+    sheet.appendRow(['admin_pin', '2026']);
+  }
+  return sheet;
+}
+
+function getStoredPin() {
+  const cfg = getOrCreateConfigSheet();
+  const data = cfg.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === 'admin_pin' && data[i][1]) {
+      return String(data[i][1]);
+    }
+  }
+  return '2026';
+}
+
+function setStoredPin(newPin) {
+  const cfg = getOrCreateConfigSheet();
+  const data = cfg.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === 'admin_pin') {
+      cfg.getRange(i + 1, 2).setValue(String(newPin));
+      return;
+    }
+  }
+  cfg.appendRow(['admin_pin', String(newPin)]);
+}
+
 function doGet(e) {
   try {
     const sheet = getOrCreateSheet();
     const data = sheet.getDataRange().getValues();
+    const adminPin = getStoredPin();
     if (data.length <= 1) {
-      return jsonResponse({ status: 'success', products: [] });
+      return jsonResponse({ status: 'success', products: [], adminPin: adminPin });
     }
     const headers = data[0];
     const products = [];
@@ -617,7 +655,7 @@ function doGet(e) {
       });
       products.push(item);
     }
-    return jsonResponse({ status: 'success', products: products });
+    return jsonResponse({ status: 'success', products: products, adminPin: adminPin });
   } catch (err) {
     return jsonResponse({ status: 'error', message: err.toString() });
   }
@@ -628,6 +666,11 @@ function doPost(e) {
     const payload = JSON.parse(e.postData.contents);
     const action = payload.action || 'syncAll';
     const sheet = getOrCreateSheet();
+
+    if (action === 'updatePin' && payload.pin) {
+      setStoredPin(payload.pin);
+      return jsonResponse({ status: 'success', message: 'PIN berhasil disimpan ke Cloud' });
+    }
 
     if (action === 'syncAll' && Array.isArray(payload.products)) {
       sheet.clearContents();
@@ -923,11 +966,11 @@ function jsonResponse(obj) {
     let columnCount = 3;
     let selectedProductIds = ['iphone-18-pro-max', 'iphone-18-pro', 'iphone-17', 'macbook-air-m4-13'];
     let isApiKeyHidden = false;
-    let activeMenu = 'compare'; // 'compare' | 'admin'
-    let headerSearchKeyword = ''; // <-- Tambahkan baris ini di sini
+    let activeMenu = 'compare';
+    let headerSearchKeyword = '';
 
     // =========================================================================
-    // 3. SISTEM 2 MENU & KONTROL AKSES PIN ADMIN
+    // 3. SISTEM 2 MENU & KONTROL AKSES PIN ADMIN (TERSINKRON KE CLOUD)
     // =========================================================================
     function getStoredAdminPin() {
       return localStorage.getItem(STORAGE_KEY_ADMIN_PIN) || DEFAULT_ADMIN_PIN;
@@ -935,6 +978,11 @@ function jsonResponse(obj) {
 
     function isAdminUnlocked() {
       return sessionStorage.getItem(SESSION_KEY_UNLOCKED) === 'true';
+    }
+
+    function handleHeaderSearch(keyword) {
+      headerSearchKeyword = (keyword || '').trim().toLowerCase();
+      renderComparisonTable();
     }
 
     function switchMenu(menuName, event) {
@@ -955,14 +1003,14 @@ function jsonResponse(obj) {
         compareView.classList.add('hidden');
         adminView.classList.remove('hidden');
 
-        btnCompare.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] transition-all border border-gray-200/80';
-        btnAdmin.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#C62828] text-white shadow-sm transition-all';
+        btnCompare.className = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white/90 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap';
+        btnAdmin.className = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-white/20 shadow-sm transition-all whitespace-nowrap';
       } else {
         adminView.classList.add('hidden');
         compareView.classList.remove('hidden');
 
-        btnCompare.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#1d1d1f] text-white shadow-sm transition-all';
-        btnAdmin.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] transition-all border border-gray-200/80';
+        btnCompare.className = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-white/20 shadow-sm transition-all whitespace-nowrap';
+        btnAdmin.className = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white/90 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap';
       }
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -986,9 +1034,12 @@ function jsonResponse(obj) {
       document.getElementById('pin-auth-modal').classList.add('hidden');
     }
 
-    function verifyAdminPin(e) {
+    async function verifyAdminPin(e) {
       e.preventDefault();
       const entered = document.getElementById('pin-auth-input').value.trim();
+
+      // Pastikan menarik PIN terbaru dari Google Sheets terlebih dahulu jika belum pernah sync
+      await syncFromGoogleSheets(true);
       const validPin = getStoredAdminPin();
 
       if (entered === validPin) {
@@ -996,7 +1047,7 @@ function jsonResponse(obj) {
         updateAdminLockIcon();
         closePinModal();
         switchMenu('admin');
-        showToast('Akses diberikan. Selamat datang di Menu Kelola Produk & Sync.', 'success');
+        showToast('Akses diberikan. Selamat datang di Menu Kelola Produk.', 'success');
       } else {
         showToast('PIN akses salah! Silakan hubungi Owner Mahadewa.id.', 'error');
         document.getElementById('pin-auth-input').value = '';
@@ -1016,36 +1067,49 @@ function jsonResponse(obj) {
       if (!iconEl) return;
       if (isAdminUnlocked()) {
         iconEl.setAttribute('data-lucide', 'unlock');
-        iconEl.classList.remove('text-[#C62828]');
-        iconEl.classList.add('text-emerald-600');
+        iconEl.className = 'w-4 h-4 text-emerald-300';
       } else {
         iconEl.setAttribute('data-lucide', 'lock');
-        iconEl.classList.remove('text-emerald-600');
-        iconEl.classList.add('text-[#C62828]');
+        iconEl.className = 'w-4 h-4 text-white';
       }
       lucide.createIcons();
     }
 
-    function updateAdminPin() {
+    async function updateAdminPin() {
       const newPin = document.getElementById('new-admin-pin').value.trim();
       if (!newPin || newPin.length < 4) {
         showToast('PIN baru minimal 4 karakter/angka.', 'error');
         return;
       }
+
+      // Simpan secara lokal & kirim ke Google Sheets agar berlaku di semua HP/Laptop
       localStorage.setItem(STORAGE_KEY_ADMIN_PIN, newPin);
       document.getElementById('new-admin-pin').value = '';
-      showToast('PIN Akses Admin berhasil diperbarui!', 'success');
+      showToast('Menyimpan PIN Admin ke Google Sheets...', 'info');
+
+      try {
+        const response = await fetch(HARDCODED_GSHEET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'updatePin', pin: newPin })
+        });
+        const result = await response.json();
+        if (result && result.status === 'success') {
+          showToast('PIN Admin berhasil diperbarui untuk semua perangkat!', 'success');
+        } else {
+          showToast('PIN tersimpan lokal. Pastikan Code.gs sudah di-update untuk sync PIN global.', 'info');
+        }
+      } catch (err) {
+        showToast('PIN tersimpan di perangkat ini, namun gagal kirim ke server.', 'error');
+      }
     }
 
     // =========================================================================
-    // 4. INISIALISASI & PENYIMPANAN LOKAL + GOOGLE SHEETS SYNC (DIPATENKAN)
+    // 4. INISIALISASI & AUTO-SYNC GOOGLE SHEETS SAAT DIBUKA DI DEVICE BARU
     // =========================================================================
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('footer-year').textContent = new Date().getFullYear();
       document.getElementById('apps-script-code-box').value = GOOGLE_APPS_SCRIPT_TEMPLATE;
-
-      const savedLogo = localStorage.getItem(STORAGE_KEY_LOGO);
-      if (savedLogo) applyCustomLogo(savedLogo);
 
       const savedGeminiKey = localStorage.getItem(STORAGE_KEY_GEMINI) || '';
       if (savedGeminiKey) {
@@ -1054,9 +1118,7 @@ function jsonResponse(obj) {
 
       loadLocalProducts();
 
-      // URL Google Sheets dipatenkan langsung dari konstanta HARDCODED_GSHEET_URL
       document.getElementById('gsheet-url-input').value = HARDCODED_GSHEET_URL;
-      updateSyncStatusUI('connected', 'Cloud Sync Aktif');
       updateAdminLockIcon();
 
       renderCategoryFilters();
@@ -1065,7 +1127,7 @@ function jsonResponse(obj) {
       renderAdminProductList();
       lucide.createIcons();
 
-      // Otomatis tarik data terbaru dari Google Sheets saat web dibuka di perangkat mana pun
+      // Otomatis tarik data & PIN terbaru dari Google Sheets setiap kali dibuka
       syncFromGoogleSheets(true);
     });
 
@@ -1092,7 +1154,6 @@ function jsonResponse(obj) {
         console.warn('Gagal membaca localStorage:', e);
       }
       products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-      saveLocalProducts();
     }
 
     function saveLocalProducts() {
@@ -1104,7 +1165,152 @@ function jsonResponse(obj) {
     }
 
     // =========================================================================
-    // 5. LOGIKA UPLOAD & TEMPLATE EXCEL / CSV (.XLSX / .XLS / .CSV)
+    // 5. LOGIKA SINKRONISASI GOOGLE SHEETS (URL PATEN)
+    // =========================================================================
+    function updateSyncStatusUI(state, text) {
+      const dot = document.getElementById('sync-status-dot');
+      const label = document.getElementById('sync-status-text');
+      const cardBadge = document.getElementById('gsheet-badge-card');
+
+      if (label) label.textContent = text;
+      if (cardBadge) cardBadge.textContent = text;
+
+      if (state === 'syncing') {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-ping';
+        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200';
+      } else if (state === 'connected') {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-300';
+        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
+      } else if (state === 'error') {
+        dot.className = 'w-2 h-2 rounded-full bg-red-300';
+        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-gray-300';
+      }
+    }
+
+    async function syncFromGoogleSheets(silent = false) {
+      updateSyncStatusUI('syncing', 'Menyinkronkan...');
+      try {
+        // Tambahkan timestamp nocache agar browser HP/Laptop baru selalu mendapat data paling segar
+        const fetchUrl = `${HARDCODED_GSHEET_URL}?t=${Date.now()}`;
+        const response = await fetch(fetchUrl, { method: 'GET', cache: 'no-store' });
+        const data = await response.json();
+
+        if (data && data.status === 'success') {
+          // Sinkronkan PIN Admin dari Google Sheets jika tersedia
+          if (data.adminPin && String(data.adminPin).trim() !== '') {
+            localStorage.setItem(STORAGE_KEY_ADMIN_PIN, String(data.adminPin).trim());
+          }
+
+          if (Array.isArray(data.products) && data.products.length > 0) {
+            products = data.products.map(p => ({
+              ...p,
+              image: p.image && p.image.trim() !== '' ? p.image : getFallbackImageByCategory(p.category, p.name)
+            }));
+            saveLocalProducts();
+            renderCategoryFilters();
+            renderComparisonTable();
+            renderAdminProductList();
+            if (!silent) showToast(`Data terbaru berhasil ditarik (${products.length} produk)!`, 'success');
+          } else {
+            if (!silent) showToast('Database Google Sheets masih kosong.', 'info');
+          }
+
+          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          updateSyncStatusUI('connected', 'Sync Aktif');
+          const syncTextEl = document.getElementById('gsheet-last-sync');
+          if (syncTextEl) {
+            syncTextEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Terakhir sinkronisasi otomatis pukul <strong>${timeStr}</strong> (${products.length} produk).</span>`;
+            lucide.createIcons();
+          }
+        } else {
+          throw new Error(data.message || 'Format respons Google Sheets tidak valid');
+        }
+      } catch (err) {
+        console.error('Sync GET error:', err);
+        updateSyncStatusUI('error', 'Mode Offline');
+        if (!silent) {
+          showToast('Gagal memuat dari cloud. Menampilkan data lokal tersimpan.', 'error');
+        }
+      }
+    }
+
+    async function pushAllToGoogleSheets() {
+      updateSyncStatusUI('syncing', 'Mengirim ke Sheets...');
+      try {
+        const response = await fetch(HARDCODED_GSHEET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'syncAll',
+            products: products
+          })
+        });
+        const result = await response.json();
+        if (result && result.status === 'success') {
+          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          updateSyncStatusUI('connected', 'Sync Aktif');
+          document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Seluruh katalog (${products.length} produk) berhasil dikirim ke Sheets pukul <strong>${timeStr}</strong>.</span>`;
+          lucide.createIcons();
+          showToast(`Berhasil mengunggah ${products.length} produk ke Google Sheets!`, 'success');
+        } else {
+          throw new Error(result.message || 'Gagal menyimpan ke Sheets');
+        }
+      } catch (err) {
+        console.error('Push POST error:', err);
+        updateSyncStatusUI('error', 'Gagal Sinkronisasi');
+        showToast('Gagal mengirim data ke Google Sheets.', 'error');
+      }
+    }
+
+    async function syncSingleMutationToSheets(action, payloadObj) {
+      updateSyncStatusUI('syncing', 'Menyimpan ke Sheets...');
+      try {
+        const response = await fetch(HARDCODED_GSHEET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, ...payloadObj })
+        });
+        const result = await response.json();
+        if (result && result.status === 'success') {
+          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+          updateSyncStatusUI('connected', 'Sync Aktif');
+          document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Perubahan otomatis tersinkron ke Google Sheets pukul <strong>${timeStr}</strong>.</span>`;
+          lucide.createIcons();
+        } else {
+          throw new Error(result.message || 'Gagal sinkron');
+        }
+      } catch (err) {
+        console.warn('Auto-sync mutation error:', err);
+        updateSyncStatusUI('error', 'Sinkron Tertunda');
+        showToast('Tersimpan lokal, namun gagal menyinkronkan ke Google Sheets.', 'error');
+      }
+    }
+
+    function openAppsScriptModal() {
+      document.getElementById('apps-script-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeAppsScriptModal() {
+      document.getElementById('apps-script-modal').classList.add('hidden');
+    }
+
+    function copyAppsScriptCode() {
+      const textarea = document.getElementById('apps-script-code-box');
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        showToast('Kode Google Apps Script (Code.gs) berhasil disalin!', 'success');
+      } catch (e) {
+        showToast('Gagal menyalin otomatis. Silakan blok kode dan tekan Ctrl+C / Cmd+C.', 'error');
+      }
+    }
+
+    // =========================================================================
+    // 6. LOGIKA UPLOAD & TEMPLATE EXCEL / CSV (.XLSX / .XLS / .CSV)
     // =========================================================================
     function downloadExcelTemplate() {
       if (typeof XLSX === 'undefined') {
@@ -1229,161 +1435,38 @@ function jsonResponse(obj) {
     }
 
     // =========================================================================
-    // 6. LOGIKA SINKRONISASI GOOGLE SHEETS (URL PATEN)
-    // =========================================================================
-    function updateSyncStatusUI(state, text) {
-      const dot = document.getElementById('sync-status-dot');
-      const label = document.getElementById('sync-status-text');
-      const cardBadge = document.getElementById('gsheet-badge-card');
-
-      if (label) label.textContent = text;
-      if (cardBadge) cardBadge.textContent = text;
-
-      if (state === 'syncing') {
-        dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-ping';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200';
-      } else if (state === 'connected') {
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
-      } else if (state === 'error') {
-        dot.className = 'w-2 h-2 rounded-full bg-red-500';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200';
-      } else {
-        dot.className = 'w-2 h-2 rounded-full bg-gray-400';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200';
-      }
-    }
-
-    async function syncFromGoogleSheets(silent = false) {
-      updateSyncStatusUI('syncing', 'Menyinkronkan...');
-      try {
-        const response = await fetch(HARDCODED_GSHEET_URL, { method: 'GET' });
-        const data = await response.json();
-
-        if (data && data.status === 'success' && Array.isArray(data.products)) {
-          if (data.products.length > 0) {
-            products = data.products.map(p => ({
-              ...p,
-              image: p.image && p.image.trim() !== '' ? p.image : getFallbackImageByCategory(p.category, p.name)
-            }));
-            saveLocalProducts();
-            renderCategoryFilters();
-            renderComparisonTable();
-            renderAdminProductList();
-            if (!silent) showToast(`Data terbaru berhasil ditarik (${products.length} produk)!`, 'success');
-          } else {
-            if (!silent) showToast('Database Google Sheets masih kosong.', 'info');
-          }
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
-          const syncTextEl = document.getElementById('gsheet-last-sync');
-          if (syncTextEl) {
-            syncTextEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Terakhir sinkronisasi pukul <strong>${timeStr}</strong> (${products.length} produk).</span>`;
-            lucide.createIcons();
-          }
-        } else {
-          throw new Error(data.message || 'Format respons Google Sheets tidak valid');
-        }
-      } catch (err) {
-        console.error('Sync GET error:', err);
-        updateSyncStatusUI('error', 'Mode Offline');
-        if (!silent) {
-          showToast('Gagal memuat dari cloud. Menampilkan data lokal tersimpan.', 'error');
-        }
-      }
-    }
-
-    async function pushAllToGoogleSheets() {
-      updateSyncStatusUI('syncing', 'Mengirim ke Sheets...');
-      try {
-        const response = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'syncAll',
-            products: products
-          })
-        });
-        const result = await response.json();
-        if (result && result.status === 'success') {
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
-          document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Seluruh katalog (${products.length} produk) berhasil dikirim ke Sheets pukul <strong>${timeStr}</strong>.</span>`;
-          lucide.createIcons();
-          showToast(`Berhasil mengunggah ${products.length} produk ke Google Sheets!`, 'success');
-        } else {
-          throw new Error(result.message || 'Gagal menyimpan ke Sheets');
-        }
-      } catch (err) {
-        console.error('Push POST error:', err);
-        updateSyncStatusUI('error', 'Gagal Sinkronisasi');
-        showToast('Gagal mengirim data ke Google Sheets.', 'error');
-      }
-    }
-
-    async function syncSingleMutationToSheets(action, payloadObj) {
-      updateSyncStatusUI('syncing', 'Menyimpan ke Sheets...');
-      try {
-        const response = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action, ...payloadObj })
-        });
-        const result = await response.json();
-        if (result && result.status === 'success') {
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
-          document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Perubahan otomatis tersinkron ke Google Sheets pukul <strong>${timeStr}</strong>.</span>`;
-          lucide.createIcons();
-        } else {
-          throw new Error(result.message || 'Gagal sinkron');
-        }
-      } catch (err) {
-        console.warn('Auto-sync mutation error:', err);
-        updateSyncStatusUI('error', 'Sinkron Tertunda');
-        showToast('Tersimpan lokal, namun gagal menyinkronkan ke Google Sheets.', 'error');
-      }
-    }
-
-    function openAppsScriptModal() {
-      document.getElementById('apps-script-modal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function closeAppsScriptModal() {
-      document.getElementById('apps-script-modal').classList.add('hidden');
-    }
-
-    function copyAppsScriptCode() {
-      const textarea = document.getElementById('apps-script-code-box');
-      textarea.select();
-      textarea.setSelectionRange(0, 99999);
-      try {
-        document.execCommand('copy');
-        showToast('Kode Google Apps Script (Code.gs) berhasil disalin!', 'success');
-      } catch (e) {
-        showToast('Gagal menyalin otomatis. Silakan blok kode dan tekan Ctrl+C / Cmd+C.', 'error');
-      }
-    }
-
-    // =========================================================================
     // 7. RENDER TAMPILAN PERBANDINGAN GAYA APPLE COMPARE
     // =========================================================================
-    function handleHeaderSearch(keyword) {
-  headerSearchKeyword = (keyword || '').trim().toLowerCase();
-  renderComparisonTable();
-}
+    function getFilteredProducts() {
+      return products.filter(p => {
+        const matchCat = selectedCategory === 'Semua' || p.category === selectedCategory;
+        const matchSearch = !headerSearchKeyword ||
+          p.name.toLowerCase().includes(headerSearchKeyword) ||
+          p.category.toLowerCase().includes(headerSearchKeyword) ||
+          (p.chip && p.chip.toLowerCase().includes(headerSearchKeyword));
+        return matchCat && matchSearch;
+      });
+    }
 
-function getFilteredProducts() {
-  return products.filter(p => {
-    const matchCat = selectedCategory === 'Semua' || p.category === selectedCategory;
-    const matchSearch = !headerSearchKeyword ||
-      p.name.toLowerCase().includes(headerSearchKeyword) ||
-      p.category.toLowerCase().includes(headerSearchKeyword) ||
-      (p.chip && p.chip.toLowerCase().includes(headerSearchKeyword));
-    return matchCat && matchSearch;
-  });
-}
+    function renderCategoryFilters() {
+      const categories = ['Semua', 'iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink'];
+      const container = document.getElementById('category-filters');
+      container.innerHTML = categories.map(cat => {
+        const isActive = selectedCategory === cat;
+        const count = cat === 'Semua' ? products.length : products.filter(p => p.category === cat).length;
+        return `
+          <button onclick="selectCategory('${cat}')"
+            class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+              isActive
+                ? 'bg-[#1d1d1f] text-white shadow-sm'
+                : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-white/70'
+            }">
+            <span>${cat}</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-gray-200/80 text-gray-600'}">${count}</span>
+          </button>
+        `;
+      }).join('');
+    }
 
     function selectCategory(cat) {
       selectedCategory = cat;
@@ -1704,24 +1787,6 @@ function getFilteredProducts() {
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
-    }
-
-    function handleLogoUpload(event) {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const dataUrl = e.target.result;
-        localStorage.setItem(STORAGE_KEY_LOGO, dataUrl);
-        applyCustomLogo(dataUrl);
-        showToast('Logo toko berhasil diperbarui!', 'success');
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function applyCustomLogo(dataUrl) {
-      const container = document.getElementById('header-logo-container');
-      container.innerHTML = `<img src="${dataUrl}" alt="Logo Mahadewa.id" class="w-full h-full object-contain rounded-full" />`;
     }
 
     function exportProductsJSON() {
