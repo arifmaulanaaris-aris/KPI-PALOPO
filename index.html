@@ -54,15 +54,12 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       <!-- Brand Logo Mahadewa.id -->
       <a href="#" onclick="switchMenu('compare', event)" class="flex items-center gap-2.5 group focus:outline-none">
-        <div id="header-logo-container" class="w-9 h-9 flex-shrink-0 transition-transform duration-200 group-hover:scale-105 rounded-full overflow-hidden bg-white border border-gray-100">
-          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7AxgxbeY8DnnnygTKScq8BkF0O29aeTsBCWqBDQOYtg&s=10" alt="Logo Mahadewa.id" class="w-full h-full object-cover" />
+        <div id="header-logo-container" class="h-9 w-auto flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7AxgxbeY8DnnnygTKScq8BkF0O29aeTsBCWqBDQOYtg&s=10" alt="Logo Mahadewa.id" class="h-full w-auto object-contain" />
         </div>
-        <div class="flex flex-col">
-          <span class="text-xl font-extrabold tracking-tight text-[#1d1d1f] leading-none">
-            mahadewa<span class="text-[#C62828]">.id</span>
-          </span>
-          <span class="text-[10px] font-medium text-gray-500 tracking-wider uppercase mt-0.5">Apple & Tech Store Palopo</span>
-        </div>
+        <span class="hidden sm:inline-block text-[10px] font-medium text-gray-500 tracking-wider uppercase border-l border-gray-300 pl-2.5">
+          Apple & Tech Store Palopo
+        </span>
       </a>
 
       <!-- Navigasi 2 Menu Utama + Indikator Sync -->
@@ -427,20 +424,18 @@
   <footer class="bg-[#f5f5f7] border-t border-gray-200 text-[#6e6e73] text-xs">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-gray-200">
+        
+        <!-- Kolom 1: Logo & Deskripsi -->
         <div class="space-y-3">
-          <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 rounded-full overflow-hidden bg-white border border-gray-200 flex-shrink-0">
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7AxgxbeY8DnnnygTKScq8BkF0O29aeTsBCWqBDQOYtg&s=10" alt="Logo Mahadewa.id" class="w-full h-full object-cover" />
-            </div>
-            <span class="text-base font-extrabold text-[#1d1d1f]">mahadewa<span class="text-[#C62828]">.id</span></span>
-          </div>
-            <span class="text-base font-extrabold text-[#1d1d1f]">mahadewa<span class="text-[#C62828]">.id</span></span>
+          <div class="h-8 w-auto">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7AxgxbeY8DnnnygTKScq8BkF0O29aeTsBCWqBDQOYtg&s=10" alt="Logo Mahadewa.id" class="h-full w-auto object-contain" />
           </div>
           <p class="leading-relaxed text-gray-600">
-            Pusat IT terpercaya di Kota Palopo. Bandingkan spesifikasi resmi sebelum membeli.
+            Pusat penjualan iPhone, iPad, MacBook, Laptop Windows, dan Starlink terpercaya di Kota Palopo. Bandingkan spesifikasi resmi sebelum membeli.
           </p>
         </div>
 
+        <!-- Kolom 2: Lokasi Toko -->
         <div class="space-y-2">
           <h4 class="font-bold text-[#1d1d1f] uppercase tracking-wider text-[11px]">Lokasi Toko</h4>
           <p class="flex items-start gap-2 text-gray-600 leading-relaxed">
@@ -449,6 +444,7 @@
           </p>
         </div>
 
+        <!-- Kolom 3: Hubungi Kami -->
         <div class="space-y-2">
           <h4 class="font-bold text-[#1d1d1f] uppercase tracking-wider text-[11px]">Hubungi Kami</h4>
           <p class="flex items-center gap-2 text-gray-600">
@@ -460,6 +456,7 @@
             <a href="mailto:mahadewa.cabpalopo@gmail.com" class="hover:text-[#C62828] font-medium">mahadewa.cabpalopo@gmail.com</a>
           </p>
         </div>
+
       </div>
 
       <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-500">
