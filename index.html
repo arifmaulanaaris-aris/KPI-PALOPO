@@ -924,6 +924,7 @@ function jsonResponse(obj) {
     let selectedProductIds = ['iphone-18-pro-max', 'iphone-18-pro', 'iphone-17', 'macbook-air-m4-13'];
     let isApiKeyHidden = false;
     let activeMenu = 'compare'; // 'compare' | 'admin'
+    let headerSearchKeyword = ''; // <-- Tambahkan baris ini di sini
 
     // =========================================================================
     // 3. SISTEM 2 MENU & KONTROL AKSES PIN ADMIN
@@ -1368,30 +1369,21 @@ function jsonResponse(obj) {
     // =========================================================================
     // 7. RENDER TAMPILAN PERBANDINGAN GAYA APPLE COMPARE
     // =========================================================================
-    function getFilteredProducts() {
-      if (selectedCategory === 'Semua') return products;
-      return products.filter(p => p.category === selectedCategory);
-    }
+    function handleHeaderSearch(keyword) {
+  headerSearchKeyword = (keyword || '').trim().toLowerCase();
+  renderComparisonTable();
+}
 
-    function renderCategoryFilters() {
-      const categories = ['Semua', 'iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink'];
-      const container = document.getElementById('category-filters');
-      container.innerHTML = categories.map(cat => {
-        const isActive = selectedCategory === cat;
-        const count = cat === 'Semua' ? products.length : products.filter(p => p.category === cat).length;
-        return `
-          <button onclick="selectCategory('${cat}')"
-            class="px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${
-              isActive
-                ? 'bg-[#1d1d1f] text-white shadow-sm'
-                : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-white/70'
-            }">
-            <span>${cat}</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-gray-200/80 text-gray-600'}">${count}</span>
-          </button>
-        `;
-      }).join('');
-    }
+function getFilteredProducts() {
+  return products.filter(p => {
+    const matchCat = selectedCategory === 'Semua' || p.category === selectedCategory;
+    const matchSearch = !headerSearchKeyword ||
+      p.name.toLowerCase().includes(headerSearchKeyword) ||
+      p.category.toLowerCase().includes(headerSearchKeyword) ||
+      (p.chip && p.chip.toLowerCase().includes(headerSearchKeyword));
+    return matchCat && matchSearch;
+  });
+}
 
     function selectCategory(cat) {
       selectedCategory = cat;
