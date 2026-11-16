@@ -152,6 +152,59 @@
           </div>
         </div>
       </div>
+
+      <!-- KONSULTAN REKOMENDASI AI INTERAKTIF (KHUSUS DI HALAMAN BANDINGKAN) -->
+      <div class="mt-4 text-left bg-gradient-to-r from-[#fff5f5] via-white to-[#f5f5f7] p-3.5 sm:p-5 rounded-2xl border border-red-200/80 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-[#C62828] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </span>
+            <div>
+              <h2 class="text-xs sm:text-sm font-bold text-[#1d1d1f]">Tanya AI Mahadewa.id — Rekomendasi Perangkat Sesuai Kebutuhan</h2>
+              <p class="text-[11px] text-[#6e6e73]">Ceritakan jurusan kuliah, profesi, atau spesifikasi yang dicari dari katalog spreadsheet kami.</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="setAiConsultantPrompt('Saya seorang mahasiswa jurusan teknik, manakah laptop yang sesuai dengan saya?')"
+              class="text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full bg-white hover:bg-red-50 text-[#1d1d1f] border border-gray-200 font-medium transition">
+              ⚙️ Mahasiswa Teknik
+            </button>
+            <button type="button" onclick="setAiConsultantPrompt('Saya mahasiswa jurusan kedokteran, laptop, iPad, atau iPhone mana yang paling sesuai untuk mencatat kuliah?')"
+              class="text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full bg-white hover:bg-red-50 text-[#1d1d1f] border border-gray-200 font-medium transition">
+              🩺 Mahasiswa Kedokteran
+            </button>
+            <button type="button" onclick="setAiConsultantPrompt('Saya content creator & editor video, perangkat mana yang kameranya paling bagus dan kencang?')"
+              class="text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full bg-white hover:bg-red-50 text-[#1d1d1f] border border-gray-200 font-medium transition">
+              🎬 Content Creator
+            </button>
+          </div>
+        </div>
+
+        <form onsubmit="askAiProductConsultant(event)" class="flex flex-col sm:flex-row gap-2">
+          <input type="text" id="ai-consultant-input"
+            placeholder="Contoh: Saya mahasiswa jurusan teknik, manakah laptop yang sesuai dengan saya?"
+            class="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-xs sm:text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
+          <button type="submit" id="btn-ask-consultant"
+            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs sm:text-sm font-semibold shadow-sm transition flex-shrink-0">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            <span>Tanya AI</span>
+          </button>
+        </form>
+
+        <!-- Hasil Jawaban & Rekomendasi Produk AI -->
+        <div id="ai-consultant-result" class="hidden mt-3.5 pt-3.5 border-t border-red-200/70 space-y-3">
+          <div class="flex items-start justify-between gap-2">
+            <div id="ai-consultant-answer" class="text-xs sm:text-sm text-[#1d1d1f] leading-relaxed"></div>
+            <button type="button" onclick="closeAiConsultantResult()" title="Tutup rekomendasi"
+              class="p-1 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 flex-shrink-0">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <div id="ai-consultant-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5"></div>
+          <div id="ai-consultant-apply-wrap" class="pt-1 flex justify-end"></div>
+        </div>
+      </div>
     </section>
 
     <!-- Area Utama Tabel Perbandingan (Pas di layar HP untuk 2 kolom, geser halus jika >2 kolom) -->
@@ -166,7 +219,7 @@
   </div>
 
   <!-- ======================================================================= -->
-  <!-- VIEW 2: MENU KELOLA PRODUK & SYNC (KHUSUS PEMILIK / AKSES PIN)          -->
+  <!-- VIEW 2: MENU KELOLA PRODUK & SYNC (PRIVAT — HANYA TAMPIL SETELAH PIN)    -->
   <!-- ======================================================================= -->
   <section id="view-admin" class="hidden bg-[#f5f5f7] min-h-[80vh] py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto space-y-8">
@@ -222,14 +275,42 @@
             </div>
           </div>
 
-          <!-- Pengaturan Kategori Dinamis (Otomatis Sinkron ke Semua Perangkat) -->
-          <div class="lg:col-span-12 pt-3 border-t border-gray-200/80">
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="openAppsScriptModal()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] border border-gray-300 transition">
+              <i data-lucide="code-2" class="w-3.5 h-3.5 text-emerald-600"></i> Kode Apps Script
+            </button>
+            <button type="button" onclick="pushAllToGoogleSheets()"
+              class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition">
+              <i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i> Push Semua ke Sheets
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-3 border-t border-gray-200/80">
+          <!-- Pengaturan Ganti PIN Admin Global -->
+          <div class="lg:col-span-5">
+            <label for="new-admin-pin" class="block text-xs font-semibold text-gray-700 mb-1.5">
+              Ubah PIN Akses Admin (Otomatis Sinkron ke Semua Perangkat)
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="new-admin-pin" maxlength="20" placeholder="Ketik PIN baru (min. 4 digit)..."
+                class="w-full px-3.5 py-2 rounded-xl bg-white border border-gray-300 text-xs focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
+              <button type="button" onclick="updateAdminPin()"
+                class="px-4 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition flex-shrink-0">
+                Simpan PIN
+              </button>
+            </div>
+          </div>
+
+          <!-- Pengaturan Kategori Dinamis -->
+          <div class="lg:col-span-7">
             <label for="new-category-input" class="block text-xs font-semibold text-gray-700 mb-1.5">
-              Kelola Kategori Produk (Otomatis Muncul di Filter Utama & Form Produk)
+              Kelola Kategori Produk (Muncul di Filter Utama & Form Produk)
             </label>
             <div class="flex flex-col sm:flex-row gap-2 mb-2.5">
               <input type="text" id="new-category-input" maxlength="30"
-                placeholder="Ketik nama kategori baru, misal: Apple Watch, AirPods, Aksesoris..."
+                placeholder="Ketik nama kategori baru atau pilih ikon pensil untuk ubah..."
                 class="w-full px-3.5 py-2 rounded-xl bg-white border border-gray-300 text-xs focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
               <button type="button" onclick="addNewCategory()"
                 class="px-4 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition flex-shrink-0">
@@ -1039,11 +1120,16 @@ function jsonResponse(obj) {
       if (!container) return;
       container.innerHTML = categoriesList.map(cat => {
         const isDefault = DEFAULT_CATEGORIES.includes(cat);
+        const safeCat = cat.replace(/'/g, "\\'");
         return `
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white border border-gray-300 text-[#1d1d1f]">
             <span>${cat}</span>
+            <button type="button" onclick="editCategoryName('${safeCat}')" title="Ubah nama kategori"
+              class="text-gray-400 hover:text-blue-600 transition">
+              <i data-lucide="pencil" class="w-3 h-3"></i>
+            </button>
             ${!isDefault ? `
-              <button type="button" onclick="deleteCustomCategory('${cat.replace(/'/g, "\\'")}')" title="Hapus kategori"
+              <button type="button" onclick="deleteCustomCategory('${safeCat}')" title="Hapus kategori"
                 class="text-gray-400 hover:text-[#C62828] transition">
                 <i data-lucide="x" class="w-3 h-3"></i>
               </button>
@@ -1054,33 +1140,67 @@ function jsonResponse(obj) {
       lucide.createIcons();
     }
 
-    async function addNewCategory() {
+    async function editCategoryName(oldName) {
       const input = document.getElementById('new-category-input');
-      const newCat = (input.value || '').trim();
-      if (!newCat) {
-        showToast('Ketik nama kategori terlebih dahulu.', 'error');
+      const typedName = (input.value || '').trim();
+      if (!typedName) {
+        input.value = oldName;
+        input.focus();
+        input.select();
+        showToast(`Ubah teks "${oldName}" di kotak input lalu klik ikon pensil lagi untuk menyimpan.`, 'info');
         return;
       }
-      if (categoriesList.some(c => c.toLowerCase() === newCat.toLowerCase())) {
-        showToast(`Kategori "${newCat}" sudah ada.`, 'info');
+      if (typedName === oldName) {
         input.value = '';
         return;
       }
+      if (categoriesList.some(c => c.toLowerCase() === typedName.toLowerCase() && c !== oldName)) {
+        showToast(`Kategori "${typedName}" sudah digunakan.`, 'error');
+        return;
+      }
 
-      categoriesList.push(newCat);
+      const idx = categoriesList.indexOf(oldName);
+      if (idx === -1) return;
+      categoriesList[idx] = typedName;
+
+      // Perbarui kategori pada seluruh produk yang memakai kategori lama
+      let updatedProductsCount = 0;
+      products.forEach(p => {
+        if (p.category === oldName) {
+          p.category = typedName;
+          updatedProductsCount++;
+        }
+      });
+
+      if (selectedCategory === oldName) selectedCategory = typedName;
       input.value = '';
+
       saveCategoriesLocally();
-      showToast(`Kategori "${newCat}" berhasil ditambahkan!`, 'success');
+      if (updatedProductsCount > 0) {
+        saveLocalProducts();
+        renderComparisonTable();
+        renderAdminProductList();
+        pushAllToGoogleSheets();
+      }
+      showToast(`Kategori "${oldName}" diubah menjadi "${typedName}"!`, 'success');
       await syncCategoriesToSheets();
     }
 
-    async function deleteCustomCategory(catName) {
-      if (DEFAULT_CATEGORIES.includes(catName)) return;
-      categoriesList = categoriesList.filter(c => c !== catName);
-      if (selectedCategory === catName) selectedCategory = 'Semua';
+    async function addNewCategory() {
+      const input = document.getElementById('new-category-input');
+      const rawName = (input ? input.value : '').trim();
+      if (!rawName) {
+        showToast('Ketik nama kategori baru terlebih dahulu.', 'error');
+        return;
+      }
+      if (categoriesList.some(c => c.toLowerCase() === rawName.toLowerCase())) {
+        showToast(`Kategori "${rawName}" sudah ada.`, 'info');
+        return;
+      }
+      categoriesList.push(rawName);
+      input.value = '';
       saveCategoriesLocally();
-      renderComparisonTable();
-      showToast(`Kategori "${catName}" dihapus.`, 'info');
+      showToast(`Kategori "${rawName}" berhasil ditambahkan!`, 'success');
       await syncCategoriesToSheets();
     }
 
@@ -2268,6 +2388,311 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
       if (spec.pros) document.getElementById('prod-pros').value = spec.pros;
       if (spec.cons) document.getElementById('prod-cons').value = spec.cons;
       if (spec.source) document.getElementById('prod-source').value = spec.source;
+    }
+
+    // =========================================================================
+    // 9B. FITUR KONSULTAN AI INTERAKTIF REKOMENDASI PRODUK UNTUK PELANGGAN
+    // =========================================================================
+    let lastAiRecommendedIds = [];
+
+    function setAiConsultantPrompt(text) {
+      const input = document.getElementById('ai-consultant-input');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    }
+
+    function closeAiConsultantResult() {
+      const box = document.getElementById('ai-consultant-result');
+      if (box) box.classList.add('hidden');
+    }
+
+    function applyAiRecommendationsToTable() {
+      if (!lastAiRecommendedIds || lastAiRecommendedIds.length === 0) return;
+      selectedCategory = 'Semua';
+      renderCategoryFilters();
+
+      const countToUse = Math.min(Math.max(lastAiRecommendedIds.length, 2), 4);
+      columnCount = countToUse;
+      updateColumnButtonsUI();
+
+      for (let i = 0; i < countToUse; i++) {
+        if (lastAiRecommendedIds[i]) {
+          selectedProductIds[i] = lastAiRecommendedIds[i];
+        }
+      }
+      renderComparisonTable();
+      const tableEl = document.getElementById('comparison-wrapper');
+      if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Produk rekomendasi AI telah dimuat ke tabel perbandingan!', 'success');
+    }
+
+    async function askAiProductConsultant(event) {
+      if (event) event.preventDefault();
+      const inputEl = document.getElementById('ai-consultant-input');
+      const userQuestion = (inputEl ? inputEl.value : '').trim();
+      if (!userQuestion) {
+        showToast('Silakan ketik pertanyaan atau kebutuhan Anda terlebih dahulu.', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-ask-consultant');
+      const resultBox = document.getElementById('ai-consultant-result');
+      const answerEl = document.getElementById('ai-consultant-answer');
+      const cardsEl = document.getElementById('ai-consultant-cards');
+      const applyWrapEl = document.getElementById('ai-consultant-apply-wrap');
+
+      const originalBtnHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Menganalisis...</span>`;
+      lucide.createIcons();
+
+      try {
+        const apiKey = (localStorage.getItem(STORAGE_KEY_GEMINI) || '').trim();
+        let adviceText = '';
+        let recommendedItems = [];
+
+        if (apiKey) {
+          // Kirim ringkasan lengkap seluruh katalog & kategori asli dari spreadsheet ke Gemini
+          const catalogSummary = products.map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            tagline: p.tagline,
+            display: p.display,
+            chip: p.chip,
+            pros: p.pros
+          }));
+          const prompt = `Kamu adalah konsultan produk senior toko gadget Mahadewa.id Palopo.
+Pertanyaan pelanggan: "${userQuestion}"
+
+Daftar kategori yang tersedia di spreadsheet kami: ${JSON.stringify(categoriesList)}
+Daftar produk asli yang tersedia di spreadsheet kami (perhatikan kolom "pros" / Kelebihan Utama setiap produk):
+${JSON.stringify(catalogSummary)}
+
+Aturan utama:
+1. HANYA pilih 2 sampai 3 produk yang BENAR-BENAR ADA di daftar produk di atas (gunakan field "id" yang persis sama).
+2. Jadikan kolom "pros" (Kelebihan Utama) dari setiap produk sebagai dasar utama dalam menentukan dan menjelaskan rekomendasi agar terasa natural dan sesuai fakta katalog—jangan memaksakan satu merek saja jika ada merek lain yang kelebihan utamanya sangat relevan dengan kebutuhan pelanggan.
+3. Sesuaikan kelas spesifikasi dengan beban kerja pelanggan (misalnya untuk jurusan teknik/rendering/editing berat, hindari prosesor ringan/Celeron).
+4. Balas HANYA dalam format JSON valid tanpa markdown:
+{
+  "advice": "Penjelasan rekomendasi ramah, natural, dan merujuk pada kelebihan utama produk yang dipilih dalam 2-3 kalimat Bahasa Indonesia.",
+  "recommendations": [
+    { "id": "id-produk-persis-dari-daftar", "reason": "Alasan yang merujuk langsung pada Kelebihan Utama (pros) produk ini sesuai kebutuhan pelanggan" }
+  ]
+}`;
+
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: 'application/json' }
+            })
+          });
+
+          if (!res.ok) throw new Error('API Gemini tidak merespons');
+          const data = await res.json();
+          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+          const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+
+          adviceText = parsed.advice || '';
+          if (Array.isArray(parsed.recommendations)) {
+            parsed.recommendations.forEach(rec => {
+              const foundProd = products.find(p => p.id === rec.id);
+              if (foundProd) {
+                recommendedItems.push({ product: foundProd, reason: rec.reason || foundProd.tagline });
+              }
+            });
+          }
+        }
+
+        // Mode Pintar Berbasis Analisis Katalog Spreadsheet Asli (jika tanpa API Key atau API limit)
+        if (recommendedItems.length === 0) {
+          const smartLocal = generateSmartLocalRecommendation(userQuestion);
+          adviceText = smartLocal.advice;
+          recommendedItems = smartLocal.items;
+        }
+
+        renderConsultantCards(adviceText, recommendedItems, answerEl, cardsEl, applyWrapEl, resultBox);
+      } catch (err) {
+        const smartLocal = generateSmartLocalRecommendation(userQuestion);
+        renderConsultantCards(smartLocal.advice, smartLocal.items, answerEl, cardsEl, applyWrapEl, resultBox);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnHtml;
+        lucide.createIcons();
+      }
+    }
+
+    function renderConsultantCards(adviceText, recommendedItems, answerEl, cardsEl, applyWrapEl, resultBox) {
+      lastAiRecommendedIds = recommendedItems.map(item => item.product.id);
+      answerEl.innerHTML = `<span class="font-bold text-[#C62828]">Saran AI Mahadewa.id:</span> ${adviceText}`;
+
+      cardsEl.innerHTML = recommendedItems.map(item => {
+        const p = item.product;
+        const fallbackImg = getFallbackImageByCategory(p.category, p.name);
+        return `
+          <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200 shadow-xs">
+            <img src="${p.image || fallbackImg}" alt="${p.name}"
+              onerror="this.onerror=null;this.src='${fallbackImg}';"
+              class="w-11 h-11 rounded-lg object-contain bg-[#f5f5f7] p-1 flex-shrink-0" />
+            <div class="min-w-0">
+              <span class="text-[10px] font-bold uppercase text-[#C62828] block">${p.category}</span>
+              <p class="text-xs font-bold text-[#1d1d1f] truncate">${p.name}</p>
+              <p class="text-[11px] text-[#6e6e73] line-clamp-2 mt-0.5">${item.reason}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      applyWrapEl.innerHTML = `
+        <button type="button" onclick="applyAiRecommendationsToTable()"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition">
+          <i data-lucide="columns-3" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Bandingkan ${recommendedItems.length} Produk Ini di Tabel</span>
+        </button>
+      `;
+
+      resultBox.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function generateSmartLocalRecommendation(question) {
+      const q = question.toLowerCase();
+
+      // Kamus sinonim kebutuhan pelanggan untuk dicocokkan langsung ke kolom "Kelebihan Utama" (pros) setiap produk
+      const intentExpansions = [
+        { triggers: ['teknik', 'informatika', 'coding', 'arsitektur', 'desain', '3d', 'render', 'berat', 'cad', 'simulasi'], keywords: ['kencang', 'berat', 'gaming', 'editing', 'grafis', 'render', 'multitasking', 'performa', 'pro', 'gpu', 'rtx', 'ryzen', 'i7', 'm4', 'm3', 'desain'] },
+        { triggers: ['kedokteran', 'medis', 'dokter', 'farmasi', 'keperawatan', 'kuliah', 'mahasiswa', 'pelajar', 'kampus'], keywords: ['ringan', 'portabel', 'baterai', 'awet', 'seharian', 'kuliah', 'pelajar', 'mahasiswa', 'mencatat', 'pencil', 'tipis', 'praktis', 'multitasking'] },
+        { triggers: ['kantor', 'admin', 'administrasi', 'kerja', 'bisnis', 'excel', 'word', 'hemat', 'murah', 'ekonomis'], keywords: ['kantor', 'ekonomis', 'hemat', 'terjangkau', 'port', 'lengkap', 'hdmi', 'ringkas', 'harian', 'mengetik', 'baterai'] },
+        { triggers: ['creator', 'video', 'foto', 'kamera', 'editing', 'konten', 'youtube', 'tiktok'], keywords: ['kamera', 'video', 'editing', 'layar', 'warna', 'tajam', 'prores', 'sinematik', 'kencang', '48 mp'] },
+        { triggers: ['pelosok', 'internet', 'sinyal', 'tambang', 'lapangan', 'starlink', 'proyek'], keywords: ['satelit', 'pelosok', 'tambang', 'sinyal', 'kencang', 'stabil', 'tahan', 'cuaca', 'baterai', 'awet'] }
+      ];
+
+      // Kumpulkan kata kunci kebutuhan pelanggan + perluasan sinonimnya
+      const rawTokens = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !['saya', 'seorang', 'manakah', 'yang', 'sesuai', 'dengan', 'untuk', 'buat', 'mau', 'cari', 'rekomendasi', 'produk', 'apa', 'mana'].includes(w));
+      const expandedTokens = new Set(rawTokens);
+      intentExpansions.forEach(group => {
+        if (group.triggers.some(t => q.includes(t))) {
+          group.keywords.forEach(kw => expandedTokens.add(kw));
+        }
+      });
+
+      const isHeavyWorkload = /(teknik|informatika|coding|arsitektur|3d|render|berat|cad|simulasi|gaming|editing\s*video)/i.test(q);
+      const wantsLaptopOnly = /(laptop|macbook|notebook)/i.test(q);
+      const wantsPhoneOnly = /(iphone|hp|smartphone)/i.test(q);
+      const wantsTabletOnly = /(ipad|tablet|tab)/i.test(q);
+
+      // Filter kandidat awal bila pelanggan menyebut jenis perangkat spesifik
+      let candidatePool = [...products];
+      if (wantsLaptopOnly && !wantsPhoneOnly && !wantsTabletOnly) {
+        const laptops = products.filter(p => {
+          const blob = `${p.category} ${p.name}`.toLowerCase();
+          return blob.includes('macbook') || blob.includes('laptop') || blob.includes('windows') ||
+                 blob.includes('asus') || blob.includes('lenovo') || blob.includes('acer') ||
+                 blob.includes('msi') || blob.includes('hp ') || blob.includes('dell') || blob.includes('axioo') || blob.includes('spc');
+        });
+        if (laptops.length > 0) candidatePool = laptops;
+      } else if (wantsTabletOnly && !wantsLaptopOnly) {
+        const tabs = products.filter(p => `${p.category} ${p.name}`.toLowerCase().match(/(ipad|tablet|pad)/));
+        if (tabs.length > 0) candidatePool = tabs;
+      } else if (wantsPhoneOnly && !wantsLaptopOnly) {
+        const phones = products.filter(p => `${p.category} ${p.name}`.toLowerCase().match(/(iphone|smartphone)/));
+        if (phones.length > 0) candidatePool = phones;
+      }
+
+      // Hitung skor kecocokan berbasis KOLOM KELEBIHAN UTAMA (pros) + spesifikasi pendukung
+      const scoredCandidates = candidatePool.map(p => {
+        const prosText = (p.pros || '').toLowerCase();
+        const consText = (p.cons || '').toLowerCase();
+        const specBlob = `${p.name} ${p.category} ${p.tagline} ${p.chip} ${p.features}`.toLowerCase();
+        const fullHardwareText = `${p.name} ${p.chip} ${prosText} ${consText}`.toLowerCase();
+
+        let score = 0;
+        const matchedProsKeywords = [];
+
+        // 1. Bobot paling tinggi: kecocokan dengan KOLOM KELEBIHAN UTAMA (pros)
+        expandedTokens.forEach(token => {
+          if (prosText.includes(token)) {
+            score += 12;
+            matchedProsKeywords.push(token);
+          } else if (specBlob.includes(token)) {
+            score += 4;
+          }
+          // Penalti jika kata kebutuhan justru tertulis di kolom Kekurangan (cons)
+          if (consText.includes(token)) {
+            score -= 6;
+          }
+        });
+
+        // 2. Penyesuaian kelayakan beban kerja berat agar tetap realistis
+        const isEntryLevel = /(celeron|n4020|n4500|n4505|n5095|n5100|n100|pentium|athlon)/i.test(fullHardwareText);
+        if (isHeavyWorkload) {
+          if (isEntryLevel) {
+            score -= 80; // Hindari Celeron/entry-level untuk beban berat
+          } else if (/(rtx|gtx|ryzen\s*[579]|core\s*i[579]|ultra\s*[579]|m[1234])/i.test(fullHardwareText)) {
+            score += 20;
+          }
+        }
+
+        // 3. Bonus jika kategori spreadsheet cocok langsung dengan pertanyaan
+        if (p.category && q.includes(p.category.toLowerCase())) {
+          score += 15;
+        }
+
+        return { product: p, score, matchedProsKeywords, isEntryLevel };
+      });
+
+      // Urutkan berdasarkan skor tertinggi dan jaga keragaman seri agar tidak memaksakan 1 merek saja
+      scoredCandidates.sort((a, b) => b.score - a.score);
+
+      const selected = [];
+      const usedPrefixes = new Set();
+
+      for (const item of scoredCandidates) {
+        if (selected.length >= 3) break;
+        if (isHeavyWorkload && item.isEntryLevel && scoredCandidates.some(c => !c.isEntryLevel)) continue;
+
+        // Ambil 2 kata pertama nama produk untuk menjaga variasi antar merek/seri jika skornya berdekatan
+        const brandPrefix = item.product.name.split(/\s+/).slice(0, 2).join(' ').toLowerCase();
+        if (usedPrefixes.has(brandPrefix) && scoredCandidates.filter(c => !c.isEntryLevel).length > 3) {
+          continue;
+        }
+        usedPrefixes.add(brandPrefix);
+        selected.push(item);
+      }
+
+      // Jika masih kurang dari 3, lengkapi dari peringkat berikutnya
+      if (selected.length < 3) {
+        for (const item of scoredCandidates) {
+          if (selected.length >= 3) break;
+          if (isHeavyWorkload && item.isEntryLevel && scoredCandidates.some(c => !c.isEntryLevel)) continue;
+          if (!selected.some(s => s.product.id === item.product.id)) {
+            selected.push(item);
+          }
+        }
+      }
+
+      const finalItems = (selected.length > 0 ? selected : scoredCandidates.slice(0, 3)).map(item => {
+        const p = item.product;
+        const mainStrength = (p.pros && p.pros !== '-') ? p.pros : (p.tagline || p.chip);
+        return {
+          product: p,
+          reason: `Kelebihan utama: ${mainStrength}`
+        };
+      });
+
+      const highlightedStrengths = finalItems
+        .map(it => it.product.name)
+        .join(', ');
+
+      return {
+        advice: `Berdasarkan analisis Kelebihan Utama setiap produk di katalog spreadsheet Mahadewa.id yang paling selaras dengan kebutuhan Anda, kami merekomendasikan ${highlightedStrengths}:`,
+        items: finalItems
+      };
     }
 
     // =========================================================================
