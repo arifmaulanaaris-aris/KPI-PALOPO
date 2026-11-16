@@ -1075,7 +1075,7 @@ function jsonResponse(obj) {
     // =========================================================================
     // 3. SISTEM 2 MENU, KATEGORI DINAMIS & KONTROL AKSES PIN ADMIN
     // =========================================================================
-    function loadCategories() {
+    function loadCategories(mergeFromProducts = true) {
       try {
         const raw = localStorage.getItem(STORAGE_KEY_CATEGORIES);
         if (raw) {
@@ -1087,11 +1087,13 @@ function jsonResponse(obj) {
       } catch (e) {
         categoriesList = [...DEFAULT_CATEGORIES];
       }
-      products.forEach(p => {
-        if (p.category && !categoriesList.includes(p.category)) {
-          categoriesList.push(p.category);
-        }
-      });
+      if (mergeFromProducts) {
+        products.forEach(p => {
+          if (p.category && !categoriesList.includes(p.category)) {
+            categoriesList.push(p.category);
+          }
+        });
+      }
       renderCategorySelectOptions();
       renderAdminCategoryTags();
     }
@@ -1118,8 +1120,8 @@ function jsonResponse(obj) {
     function renderAdminCategoryTags() {
       const container = document.getElementById('admin-category-tags');
       if (!container) return;
+      const canDelete = categoriesList.length > 1;
       container.innerHTML = categoriesList.map(cat => {
-        const isDefault = DEFAULT_CATEGORIES.includes(cat);
         const safeCat = cat.replace(/'/g, "\\'");
         return `
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white border border-gray-300 text-[#1d1d1f]">
@@ -1128,8 +1130,8 @@ function jsonResponse(obj) {
               class="text-gray-400 hover:text-blue-600 transition">
               <i data-lucide="pencil" class="w-3 h-3"></i>
             </button>
-            ${!isDefault ? `
-              <button type="button" onclick="deleteCustomCategory('${safeCat}')" title="Hapus kategori"
+            ${canDelete ? `
+              <button type="button" onclick="deleteCategory('${safeCat}')" title="Hapus kategori"
                 class="text-gray-400 hover:text-[#C62828] transition">
                 <i data-lucide="x" class="w-3 h-3"></i>
               </button>
@@ -1138,6 +1140,41 @@ function jsonResponse(obj) {
         `;
       }).join('');
       lucide.createIcons();
+    }
+
+    async function deleteCategory(catName) {
+      if (categoriesList.length <= 1) {
+        showToast('Minimal harus tersisa 1 kategori produk.', 'error');
+        return;
+      }
+      categoriesList = categoriesList.filter(c => c !== catName);
+      const fallbackCat = categoriesList[0];
+
+      // Pindahkan produk yang memakai kategori terhapus ke kategori pertama yang masih aktif
+      let movedCount = 0;
+      products.forEach(p => {
+        if (p.category === catName) {
+          p.category = fallbackCat;
+          movedCount++;
+        }
+      });
+
+      if (selectedCategory === catName) selectedCategory = 'Semua';
+
+      saveCategoriesLocally();
+      if (movedCount > 0) {
+        saveLocalProducts();
+        renderComparisonTable();
+        renderAdminProductList();
+        await pushAllToGoogleSheets();
+      }
+      await syncCategoriesToSheets();
+      showToast(
+        movedCount > 0
+          ? `Kategori "${catName}" dihapus & ${movedCount} produk dipindahkan ke "${fallbackCat}" (Tersinkron ke Sheets).`
+          : `Kategori "${catName}" berhasil dihapus & disinkronkan ke Google Sheets!`,
+        'success'
+      );
     }
 
     async function editCategoryName(oldName) {
@@ -1642,6 +1679,7 @@ function jsonResponse(obj) {
             applyBrandLogo(String(data.brandLogo).trim());
           }
 
+          let hasCloudCategories = false;
           if (data.brandCategories) {
             try {
               const cloudCats = typeof data.brandCategories === 'string'
@@ -1649,6 +1687,7 @@ function jsonResponse(obj) {
                 : data.brandCategories;
               if (Array.isArray(cloudCats) && cloudCats.length > 0) {
                 categoriesList = cloudCats;
+                hasCloudCategories = true;
                 saveCategoriesLocally();
               }
             } catch (e) {}
@@ -1660,7 +1699,7 @@ function jsonResponse(obj) {
               image: p.image && p.image.trim() !== '' ? p.image : getFallbackImageByCategory(p.category, p.name)
             }));
             saveLocalProducts();
-            loadCategories();
+            loadCategories(!hasCloudCategories);
             renderCategoryFilters();
             renderComparisonTable();
             renderAdminProductList();
