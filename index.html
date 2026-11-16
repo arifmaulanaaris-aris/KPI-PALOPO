@@ -49,44 +49,64 @@
   <!-- Toast Notification -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- Navbar / Header Resmi Mahadewa.id dengan 2 Menu Terpisah -->
-  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200/80">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-      <!-- Brand Logo Mahadewa.id -->
-      <a href="#" onclick="switchMenu('compare', event)" class="flex items-center gap-2.5 group focus:outline-none">
-        <div id="header-logo-container" class="h-9 w-auto flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
-          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7AxgxbeY8DnnnygTKScq8BkF0O29aeTsBCWqBDQOYtg&s=10" alt="Logo Mahadewa.id" class="h-full w-auto object-contain" />
+  <!-- Navbar / Header Resmi Gaya Store Mahadewa.id -->
+  <header class="sticky top-0 z-40 bg-[#C62828] text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-[70px] flex items-center justify-between gap-4">
+      
+      <!-- Kiri: Logo Putih Mahadewa.id -->
+      <a href="#" onclick="switchMenu('compare', event)" class="flex items-center gap-2.5 flex-shrink-0 group focus:outline-none">
+        <div id="header-logo-container" class="w-9 h-9 flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
+          <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Mahadewa.id">
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#FFFFFF" stroke-width="6" />
+            <path d="M62 22 V75 H52.5 V69.5 C49 73.8 43.8 76 37.8 76 C26.5 76 19 67.8 19 56 C19 44.2 26.5 36 37.8 36 C43.8 36 49 38.2 52.5 42.5 V22 H62 Z M40 44.8 C33.2 44.8 29 49.4 29 56 C29 62.6 33.2 67.2 40 67.2 C46.8 67.2 51.5 62.6 51.5 56 C51.5 49.4 46.8 44.8 40 44.8 Z" fill="#FFFFFF"/>
+            <polygon points="48,27 66,19 66,26 48,34" fill="#C62828"/>
+            <circle cx="70" cy="70" r="4.5" fill="#FFFFFF"/>
+          </svg>
         </div>
-        <span class="hidden sm:inline-block text-[10px] font-medium text-gray-500 tracking-wider uppercase border-l border-gray-300 pl-2.5">
-          Apple & Tech Store Palopo
+        <span class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">
+          mahadewa.id
         </span>
       </a>
 
-      <!-- Navigasi 2 Menu Utama + Indikator Sync -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Indikator Status Database -->
-        <div id="sync-status-badge" class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span id="sync-status-text">Cloud Sync Aktif</span>
+      <!-- Tengah: Kolom Pencarian Produk Kapsul Putih -->
+      <div class="hidden md:flex flex-1 max-w-md mx-4">
+        <div class="relative w-full">
+          <i data-lucide="search" class="w-4 h-4 text-[#C62828] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <input type="text" id="header-search-input" oninput="handleHeaderSearch(this.value)"
+            placeholder="Cari produk di mahadewa.id..."
+            class="w-full pl-10 pr-4 py-2 rounded-full bg-white text-[#1d1d1f] placeholder-gray-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/60 shadow-inner" />
         </div>
-
-        <!-- Menu 1: Perbandingan Produk (Akses Terbuka untuk Staf & Pelanggan) -->
-        <button onclick="switchMenu('compare')" id="nav-btn-compare"
-          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#1d1d1f] text-white shadow-sm transition-all">
-          <i data-lucide="columns-3" class="w-4 h-4"></i>
-          <span>Perbandingan Produk</span>
-        </button>
-
-        <!-- Menu 2: Kelola Produk & Sync (Terkunci PIN Admin) -->
-        <button onclick="requestAdminAccess()" id="nav-btn-admin"
-          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] transition-all border border-gray-200/80">
-          <i data-lucide="lock" id="nav-admin-icon" class="w-4 h-4 text-[#C62828]"></i>
-          <span>Kelola Produk & Sync</span>
-        </button>
       </div>
+
+      <!-- Kanan: Menu Navigasi Minimalis dengan Pemisah Vertikal -->
+      <nav class="flex items-center gap-1 sm:gap-3 flex-shrink-0">
+        <!-- Menu 1: Perbandingan Produk -->
+        <button onclick="switchMenu('compare')" id="nav-btn-compare"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white bg-white/15 transition-all whitespace-nowrap">
+          <i data-lucide="columns-3" class="w-4 h-4"></i>
+          <span>Perbandingan</span>
+        </button>
+
+        <!-- Garis Pemisah Vertikal -->
+        <span class="h-5 w-[1px] bg-white/30 mx-0.5"></span>
+
+        <!-- Menu 2: Kelola Produk & Sync (Terkunci PIN) -->
+        <button onclick="requestAdminAccess()" id="nav-btn-admin"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-white/90 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap">
+          <i data-lucide="lock" id="nav-admin-icon" class="w-4 h-4 text-white"></i>
+          <span>Kelola Produk</span>
+        </button>
+
+        <!-- Indikator Titik Status Sync -->
+        <div id="sync-status-badge" title="Status Sinkronisasi Google Sheets"
+          class="hidden xl:flex items-center gap-1.5 pl-2.5 ml-1 border-l border-white/30 text-[11px] font-medium text-white/90 whitespace-nowrap">
+          <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-300"></span>
+          <span id="sync-status-text">Sync Aktif</span>
+        </div>
+      </nav>
+
     </div>
   </header>
-
   <!-- ======================================================================= -->
   <!-- VIEW 1: MENU PERBANDINGAN PRODUK (PUBLIK / STAF)                         -->
   <!-- ======================================================================= -->
