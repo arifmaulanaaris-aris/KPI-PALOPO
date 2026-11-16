@@ -28,7 +28,6 @@
       background-position: right 0.75rem center;
       background-size: 1rem;
     }
-    /* Custom scrollbar untuk tabel responsif */
     ::-webkit-scrollbar {
       height: 6px;
       width: 6px;
@@ -47,16 +46,15 @@
 </head>
 <body class="bg-white text-[#1d1d1f] selection:bg-[#C62828] selection:text-white">
 
-  <!-- Toast Notification (Pengganti alert) -->
+  <!-- Toast Notification -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- Navbar / Header Resmi Mahadewa.id -->
+  <!-- Navbar / Header Resmi Mahadewa.id dengan 2 Menu Terpisah -->
   <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       <!-- Brand Logo Mahadewa.id -->
-      <a href="#" onclick="resetToPublicView(event)" class="flex items-center gap-2.5 group focus:outline-none">
+      <a href="#" onclick="switchMenu('compare', event)" class="flex items-center gap-2.5 group focus:outline-none">
         <div id="header-logo-container" class="w-9 h-9 flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
-          <!-- Logo SVG Resmi Bundar Merah #C62828 berpotongan huruf 'd' -->
           <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-label="Logo Mahadewa.id">
             <circle cx="50" cy="50" r="46" fill="#C62828" />
             <path d="M62 20 V76 H52 V70 C48.5 74.5 43.2 77 37 77 C25.5 77 18 68.5 18 56.5 C18 44.5 25.5 36 37 36 C43.2 36 48.5 38.5 52 43 V20 H62 Z M39.5 45 C32.5 45 28.2 49.8 28.2 56.5 C28.2 63.2 32.5 68 39.5 68 C46.5 68 51.5 63.2 51.5 56.5 C51.5 49.8 46.5 45 39.5 45 Z" fill="#FFFFFF"/>
@@ -72,69 +70,92 @@
         </div>
       </a>
 
-      <!-- Status Sinkronisasi & Tombol Kelola Katalog -->
+      <!-- Navigasi 2 Menu Utama + Indikator Sync -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <div id="sync-status-badge" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-          <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-gray-400"></span>
-          <span id="sync-status-text">Mode Lokal</span>
+        <!-- Indikator Status Database -->
+        <div id="sync-status-badge" class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span id="sync-status-text">Cloud Sync Aktif</span>
         </div>
 
-        <button onclick="toggleAdminPanel()" id="btn-toggle-admin" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] transition-colors border border-gray-200/80">
-          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-[#C62828]"></i>
+        <!-- Menu 1: Perbandingan Produk (Akses Terbuka untuk Staf & Pelanggan) -->
+        <button onclick="switchMenu('compare')" id="nav-btn-compare"
+          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#1d1d1f] text-white shadow-sm transition-all">
+          <i data-lucide="columns-3" class="w-4 h-4"></i>
+          <span>Perbandingan Produk</span>
+        </button>
+
+        <!-- Menu 2: Kelola Produk & Sync (Terkunci PIN Admin) -->
+        <button onclick="requestAdminAccess()" id="nav-btn-admin"
+          class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] transition-all border border-gray-200/80">
+          <i data-lucide="lock" id="nav-admin-icon" class="w-4 h-4 text-[#C62828]"></i>
           <span>Kelola Produk & Sync</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Hero Section & Filter Kategori (Gaya Apple Compare) -->
-  <section class="pt-10 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-    <p class="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#C62828] mb-2">Katalog Resmi Mahadewa.id</p>
-    <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-3">
-      Perbandingan Produk
-    </h1>
-    <p class="text-sm sm:text-base text-[#6e6e73] max-w-2xl mx-auto mb-8">
-      Bandingkan spesifikasi teknis, keunggulan, hingga rekomendasi pemakaian secara berdampingan untuk menemukan perangkat terbaik sesuai kebutuhan Anda.
-    </p>
+  <!-- ======================================================================= -->
+  <!-- VIEW 1: MENU PERBANDINGAN PRODUK (PUBLIK / STAF)                         -->
+  <!-- ======================================================================= -->
+  <div id="view-compare">
+    <!-- Hero Section & Filter Kategori -->
+    <section class="pt-10 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+      <p class="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#C62828] mb-2">Katalog Resmi Mahadewa.id</p>
+      <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-3">
+        Perbandingan Produk
+      </h1>
+      <p class="text-sm sm:text-base text-[#6e6e73] max-w-2xl mx-auto mb-8">
+        Bandingkan spesifikasi teknis, keunggulan, hingga rekomendasi pemakaian secara berdampingan untuk menemukan perangkat terbaik sesuai kebutuhan Anda.
+      </p>
 
-    <!-- Kontrol Filter Kategori & Jumlah Kolom -->
-    <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#f5f5f7] p-3 rounded-2xl border border-gray-200/70">
-      <div id="category-filters" class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 justify-start md:justify-center"></div>
+      <!-- Kontrol Filter Kategori & Jumlah Kolom -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-[#f5f5f7] p-3 rounded-2xl border border-gray-200/70">
+        <div id="category-filters" class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 justify-start md:justify-center"></div>
 
-      <div class="flex items-center gap-2 self-end md:self-auto flex-shrink-0">
-        <span class="text-xs font-medium text-[#6e6e73]">Tampilkan:</span>
-        <div class="inline-flex bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
-          <button onclick="setColumnCount(2)" id="col-btn-2" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">2 Produk</button>
-          <button onclick="setColumnCount(3)" id="col-btn-3" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">3 Produk</button>
-          <button onclick="setColumnCount(4)" id="col-btn-4" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">4 Produk</button>
+        <div class="flex items-center gap-2 self-end md:self-auto flex-shrink-0">
+          <button onclick="syncFromGoogleSheets(false)" title="Perbarui data terbaru dari Google Sheets"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-gray-100 text-[#1d1d1f] border border-gray-200 text-xs font-semibold shadow-sm transition">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span class="hidden sm:inline">Refresh Stok</span>
+          </button>
+          <span class="text-xs font-medium text-[#6e6e73]">Tampilkan:</span>
+          <div class="inline-flex bg-white p-1 rounded-xl border border-gray-200 shadow-sm">
+            <button onclick="setColumnCount(2)" id="col-btn-2" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">2 Produk</button>
+            <button onclick="setColumnCount(3)" id="col-btn-3" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">3 Produk</button>
+            <button onclick="setColumnCount(4)" id="col-btn-4" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all">4 Produk</button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Area Utama Tabel Perbandingan (Gaya Apple Compare) -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-    <div class="overflow-x-auto pb-4">
-      <div id="comparison-wrapper" class="min-w-[680px]">
-        <div id="compare-header-grid" class="grid gap-4 sm:gap-6 border-b border-gray-200 pb-8 pt-2"></div>
-        <div id="compare-specs-container" class="divide-y divide-gray-200"></div>
+    <!-- Area Utama Tabel Perbandingan -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <div class="overflow-x-auto pb-4">
+        <div id="comparison-wrapper" class="min-w-[680px]">
+          <div id="compare-header-grid" class="grid gap-4 sm:gap-6 border-b border-gray-200 pb-8 pt-2"></div>
+          <div id="compare-specs-container" class="divide-y divide-gray-200"></div>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 
-  <!-- PANEL ADMIN: Kelola Katalog, Sinkronisasi Google Sheets, Excel/CSV & AI Auto-Isi -->
-  <section id="admin-panel" class="hidden bg-[#f5f5f7] border-t border-gray-200 py-12 px-4 sm:px-6 lg:px-8">
+  <!-- ======================================================================= -->
+  <!-- VIEW 2: MENU KELOLA PRODUK & SYNC (KHUSUS PEMILIK / AKSES PIN)          -->
+  <!-- ======================================================================= -->
+  <section id="view-admin" class="hidden bg-[#f5f5f7] min-h-[80vh] py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto space-y-8">
       
-      <!-- Header Panel Admin -->
+      <!-- Header Panel Admin & Tombol Kunci Sesi -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-300 pb-5">
         <div>
-          <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#C62828]">
-            <i data-lucide="database" class="w-3.5 h-3.5"></i> Manajemen Katalog & Cloud Sync
+          <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-full">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Mode Administrator Terbuka
           </span>
-          <h2 class="text-2xl font-bold text-[#1d1d1f] mt-1">Kelola Produk & Sinkronisasi Google Sheets</h2>
-          <p class="text-sm text-[#6e6e73]">Tambahkan produk secara manual, upload file Excel/CSV, gunakan AI Auto-Isi, atau sinkronkan via Google Sheets.</p>
+          <h2 class="text-2xl font-bold text-[#1d1d1f] mt-2">Kelola Produk & Sinkronisasi Google Sheets</h2>
+          <p class="text-sm text-[#6e6e73]">Perubahan di halaman ini otomatis tersimpan ke Google Sheets utama Mahadewa.id.</p>
         </div>
+
         <div class="flex flex-wrap items-center gap-2">
           <button onclick="downloadExcelTemplate()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm transition">
             <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Template Excel
@@ -154,66 +175,85 @@
             <i data-lucide="image" class="w-4 h-4 text-[#C62828]"></i> Ganti Logo
             <input type="file" accept="image/*" onchange="handleLogoUpload(event)" class="hidden" />
           </label>
-          <button onclick="resetToDefaultCatalog()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 text-[#C62828] border border-red-200 transition">
-            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset
+          <button onclick="lockAdminSession()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-[#1d1d1f] hover:bg-black text-white shadow-sm transition">
+            <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i> Kunci & Keluar Admin
           </button>
         </div>
       </div>
 
-      <!-- KARTU 1: Integrasi Database Real-Time Google Sheets (Apps Script) -->
-      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200/90">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5">
+      <!-- KARTU 1: Integrasi Database Real-Time Google Sheets (URL Dipatenkan) & Pengaturan PIN -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200/90 space-y-5">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div class="flex items-start gap-3.5">
             <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0">
               <i data-lucide="sheet" class="w-6 h-6 text-emerald-600"></i>
             </div>
             <div>
               <div class="flex items-center gap-2.5 flex-wrap">
-                <h3 class="text-lg font-bold text-[#1d1d1f]">Sinkronisasi Database Google Sheets</h3>
-                <span id="gsheet-badge-card" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 border border-gray-200">
-                  Belum Terhubung
+                <h3 class="text-lg font-bold text-[#1d1d1f]">Database Google Sheets (Permanen)</h3>
+                <span id="gsheet-badge-card" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Terhubung Permanen
                 </span>
               </div>
               <p class="text-xs sm:text-sm text-[#6e6e73] mt-0.5">
-                Hubungkan ke Google Sheets agar setiap perubahan produk otomatis tersimpan dan tampil di semua HP & komputer kasir Mahadewa.id.
+                Link Google Apps Script sudah dipatenkan di sistem sehingga otomatis sinkron di semua HP & komputer toko tanpa perlu setting ulang.
               </p>
             </div>
           </div>
 
-          <button onclick="openAppsScriptModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex-shrink-0">
-            <i data-lucide="code-2" class="w-4 h-4"></i>
-            <span>Lihat & Salin Kode Google Apps Script (Code.gs)</span>
-          </button>
+          <div class="flex flex-wrap gap-2 flex-shrink-0">
+            <button onclick="openAppsScriptModal()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] border border-gray-300 transition">
+              <i data-lucide="code-2" class="w-4 h-4 text-emerald-600"></i>
+              <span>Kode Apps Script</span>
+            </button>
+            <button onclick="resetToDefaultCatalog()" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 text-[#C62828] border border-red-200 transition">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              <span>Reset Katalog Default</span>
+            </button>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end bg-[#f5f5f7] p-4 rounded-2xl border border-gray-200">
-          <div class="lg:col-span-6">
+        <!-- Baris URL Dipatenkan & Tombol Sync + Ubah PIN Admin -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-end bg-[#f5f5f7] p-4 rounded-2xl border border-gray-200">
+          <div class="lg:col-span-5">
             <label for="gsheet-url-input" class="block text-xs font-semibold text-gray-700 mb-1.5">
-              URL Google Apps Script Web App (<code class="text-[#C62828]">.../exec</code>)
+              URL Google Apps Script Web App (Terkunci Permanen)
             </label>
             <div class="flex gap-2">
-              <input type="url" id="gsheet-url-input" placeholder="https://script.google.com/macros/s/AKfycb.../exec"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-              <button onclick="saveGoogleSheetUrl()" class="px-4 py-2.5 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs sm:text-sm font-semibold transition flex-shrink-0">
-                Simpan URL
-              </button>
+              <input type="url" id="gsheet-url-input" readonly
+                class="w-full px-3.5 py-2.5 rounded-xl bg-gray-100 border border-gray-300 text-xs text-gray-600 font-mono focus:outline-none cursor-not-allowed" />
             </div>
           </div>
 
-          <div class="lg:col-span-6 flex flex-wrap sm:flex-nowrap gap-2">
-            <button onclick="syncFromGoogleSheets(false)" id="btn-sync-pull" class="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-[#1d1d1f] border border-gray-300 text-xs sm:text-sm font-semibold shadow-sm transition">
+          <div class="lg:col-span-4 flex gap-2">
+            <button onclick="syncFromGoogleSheets(false)" id="btn-sync-pull" class="w-1/2 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-[#1d1d1f] border border-gray-300 text-xs font-semibold shadow-sm transition">
               <i data-lucide="cloud-download" class="w-4 h-4 text-blue-600"></i>
-              <span>Tarik Data dari Sheets (Sync)</span>
+              <span>Tarik Data</span>
             </button>
-            <button onclick="pushAllToGoogleSheets()" id="btn-sync-push" class="w-full sm:w-1/2 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs sm:text-sm font-semibold shadow-sm transition">
+            <button onclick="pushAllToGoogleSheets()" id="btn-sync-push" class="w-1/2 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold shadow-sm transition">
               <i data-lucide="cloud-upload" class="w-4 h-4"></i>
-              <span>Kirim Semua ke Sheets (Push)</span>
+              <span>Push ke Sheets</span>
             </button>
           </div>
+
+          <!-- Pengaturan Ganti PIN Admin -->
+          <div class="lg:col-span-3">
+            <label for="new-admin-pin" class="block text-xs font-semibold text-gray-700 mb-1.5">
+              Ubah PIN Akses Admin
+            </label>
+            <div class="flex gap-1.5">
+              <input type="password" id="new-admin-pin" maxlength="12" placeholder="PIN Baru..."
+                class="w-full px-3 py-2.5 rounded-xl bg-white border border-gray-300 text-xs focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
+              <button onclick="updateAdminPin()" class="px-3 py-2.5 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold transition flex-shrink-0">
+                Simpan
+              </button>
+            </div>
+          </div>
         </div>
-        <p id="gsheet-last-sync" class="text-[11px] text-gray-500 mt-2.5 flex items-center gap-1.5">
-          <i data-lucide="info" class="w-3.5 h-3.5"></i>
-          <span>Tips: Setelah URL disimpan, setiap aksi Tambah, Edit, Upload Excel, atau Hapus produk akan otomatis dikirim ke Google Sheets.</span>
+
+        <p id="gsheet-last-sync" class="text-[11px] text-gray-500 flex items-center gap-1.5">
+          <i data-lucide="info" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Terhubung ke server Google Sheets Mahadewa.id. Setiap perubahan otomatis tersimpan ke cloud.</span>
         </p>
       </div>
 
@@ -232,7 +272,7 @@
             </button>
           </div>
 
-          <!-- Kotak AI Auto-Isi Spesifikasi (Kebal Safari AutoFill + Auto-Save Key) -->
+          <!-- Kotak AI Auto-Isi Spesifikasi -->
           <div class="bg-gradient-to-br from-red-50/70 via-white to-gray-50 p-4 sm:p-5 rounded-2xl border border-red-200/80 space-y-3">
             <div class="flex items-center justify-between">
               <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#C62828]">
@@ -259,7 +299,7 @@
             </div>
 
             <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-              <p class="text-[11px] text-gray-500">API Key otomatis tersimpan di browser ini setelah Anda menempelkannya.</p>
+              <p class="text-[11px] text-gray-500">API Key otomatis tersimpan di browser perangkat admin ini.</p>
               <button type="button" onclick="autoFillWithAI()" id="btn-ai-autofill"
                 class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition">
                 <i data-lucide="wand-2" class="w-3.5 h-3.5 text-amber-400"></i>
@@ -437,6 +477,39 @@
     </div>
   </footer>
 
+  <!-- ======================================================================= -->
+  <!-- MODAL KEAMANAN: VERIFIKASI PIN AKSES KELOLA PRODUK & SYNC               -->
+  <!-- ======================================================================= -->
+  <div id="pin-auth-modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 shadow-2xl border border-gray-200 text-center space-y-5">
+      <div class="w-12 h-12 rounded-2xl bg-red-50 border border-red-200 text-[#C62828] flex items-center justify-center mx-auto">
+        <i data-lucide="shield-alert" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 class="text-lg font-bold text-[#1d1d1f]">Akses Terbatas</h3>
+        <p class="text-xs text-[#6e6e73] mt-1">
+          Menu <strong>Kelola Produk & Sync</strong> hanya dapat diakses oleh Owner / Admin yang memiliki izin.
+        </p>
+      </div>
+
+      <form onsubmit="verifyAdminPin(event)" class="space-y-4">
+        <div>
+          <input type="password" id="pin-auth-input" required placeholder="Masukkan PIN Akses..."
+            class="w-full px-4 py-3 rounded-2xl bg-[#f5f5f7] border border-gray-300 text-center text-base font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
+          <p class="text-[11px] text-gray-400 mt-1.5">PIN Default Awal: <code class="text-gray-600 font-semibold">2026</code></p>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" onclick="closePinModal()" class="w-1/2 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] text-xs font-semibold transition">
+            Batal
+          </button>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold shadow-sm transition">
+            Buka Akses
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL POP-UP: Kode Google Apps Script (Code.gs) -->
   <div id="apps-script-modal" class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
@@ -447,7 +520,7 @@
           </div>
           <div>
             <h3 class="text-base font-bold text-[#1d1d1f]">Kode Google Apps Script (Code.gs)</h3>
-            <p class="text-xs text-[#6e6e73]">Pasang sekali di Google Sheets untuk sinkronisasi otomatis semua perangkat</p>
+            <p class="text-xs text-[#6e6e73]">Skrip backend Google Sheets Mahadewa.id</p>
           </div>
         </div>
         <button onclick="closeAppsScriptModal()" class="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition">
@@ -456,18 +529,6 @@
       </div>
 
       <div class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-gray-700">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-1.5 text-emerald-950">
-          <p class="font-bold text-emerald-900">Cara Pemasangan (Hanya 2 Menit):</p>
-          <ol class="list-decimal list-inside space-y-1 text-xs leading-relaxed">
-            <li>Buka <strong>Google Sheets</strong> baru di akun Google Anda (<a href="https://sheets.new" target="_blank" class="underline font-semibold text-emerald-700">sheets.new</a>).</li>
-            <li>Klik menu <strong>Ekstensi (Extensions) &rarr; Apps Script</strong>.</li>
-            <li>Hapus semua kode bawaan di editor, lalu tempel kode <code>Code.gs</code> di bawah ini dan klik ikon <strong>Simpan (Ctrl+S / Cmd+S)</strong>.</li>
-            <li>Klik tombol biru <strong>Terapkan (Deploy) &rarr; Deployment baru (New deployment)</strong>.</li>
-            <li>Pilih jenis: <strong>Aplikasi web (Web app)</strong> &bull; Jalankan sebagai: <strong>Saya (Me)</strong> &bull; Yang memiliki akses: <strong>Siapa saja (Anyone)</strong>.</li>
-            <li>Klik <strong>Terapkan (Deploy)</strong>, izinkan akses Google, lalu salin <strong>URL Aplikasi Web (<code>.../exec</code>)</strong> dan tempel di kolom pengaturan Mahadewa.id!</li>
-          </ol>
-        </div>
-
         <div class="relative">
           <div class="flex items-center justify-between bg-[#1d1d1f] text-gray-300 px-4 py-2.5 rounded-t-2xl text-xs font-mono">
             <span>Code.gs</span>
@@ -494,17 +555,20 @@
 
   <script>
     // =========================================================================
-    // 1. KONFIGURASI & DATA BAWAAN LENGKAP MAHADEWA.ID
+    // 1. KONFIGURASI PATEN (HARDCODED) & KEAMANAN AKSES MAHADEWA.ID
     // =========================================================================
+    const HARDCODED_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbynSBQ0DYihlIqREK6SB-m-9d1x9bU81Bb5XCRQOFdKtHzffGw4LTw-RrXZ2ijC01Z5UQ/exec';
+    const DEFAULT_ADMIN_PIN = '2026';
+
     const STORAGE_KEY_PRODUCTS = 'mahadewa_compare_products_v2';
-    const STORAGE_KEY_GSHEET_URL = 'mahadewa_gsheet_url';
     const STORAGE_KEY_LOGO = 'mahadewa_custom_logo_v1';
     const STORAGE_KEY_GEMINI = 'mahadewa_gemini_apikey_v1';
+    const STORAGE_KEY_ADMIN_PIN = 'mahadewa_admin_pin_v1';
+    const SESSION_KEY_UNLOCKED = 'mahadewa_admin_unlocked_session';
     const WHATSAPP_NUMBER = '6282344888441';
 
     const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
 // GOOGLE APPS SCRIPT DATABASE SYNC UNTUK MAHADEWA.ID
-// Tempel kode ini di Google Sheets > Ekstensi > Apps Script, lalu Deploy Web App
 // ============================================================================
 
 const SHEET_NAME = 'KatalogProduk';
@@ -850,9 +914,121 @@ function jsonResponse(obj) {
     let columnCount = 3;
     let selectedProductIds = ['iphone-18-pro-max', 'iphone-18-pro', 'iphone-17', 'macbook-air-m4-13'];
     let isApiKeyHidden = false;
+    let activeMenu = 'compare'; // 'compare' | 'admin'
 
     // =========================================================================
-    // 3. INISIALISASI & PENYIMPANAN LOKAL + GOOGLE SHEETS SYNC
+    // 3. SISTEM 2 MENU & KONTROL AKSES PIN ADMIN
+    // =========================================================================
+    function getStoredAdminPin() {
+      return localStorage.getItem(STORAGE_KEY_ADMIN_PIN) || DEFAULT_ADMIN_PIN;
+    }
+
+    function isAdminUnlocked() {
+      return sessionStorage.getItem(SESSION_KEY_UNLOCKED) === 'true';
+    }
+
+    function switchMenu(menuName, event) {
+      if (event) event.preventDefault();
+
+      if (menuName === 'admin' && !isAdminUnlocked()) {
+        requestAdminAccess();
+        return;
+      }
+
+      activeMenu = menuName;
+      const compareView = document.getElementById('view-compare');
+      const adminView = document.getElementById('view-admin');
+      const btnCompare = document.getElementById('nav-btn-compare');
+      const btnAdmin = document.getElementById('nav-btn-admin');
+
+      if (menuName === 'admin') {
+        compareView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+
+        btnCompare.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] transition-all border border-gray-200/80';
+        btnAdmin.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#C62828] text-white shadow-sm transition-all';
+      } else {
+        adminView.classList.add('hidden');
+        compareView.classList.remove('hidden');
+
+        btnCompare.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#1d1d1f] text-white shadow-sm transition-all';
+        btnAdmin.className = 'inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs sm:text-sm font-semibold bg-[#f5f5f7] hover:bg-gray-200 text-[#1d1d1f] transition-all border border-gray-200/80';
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+
+    function requestAdminAccess() {
+      if (isAdminUnlocked()) {
+        switchMenu('admin');
+        return;
+      }
+      const modal = document.getElementById('pin-auth-modal');
+      const input = document.getElementById('pin-auth-input');
+      input.value = '';
+      modal.classList.remove('hidden');
+      setTimeout(() => input.focus(), 100);
+      lucide.createIcons();
+    }
+
+    function closePinModal() {
+      document.getElementById('pin-auth-modal').classList.add('hidden');
+    }
+
+    function verifyAdminPin(e) {
+      e.preventDefault();
+      const entered = document.getElementById('pin-auth-input').value.trim();
+      const validPin = getStoredAdminPin();
+
+      if (entered === validPin) {
+        sessionStorage.setItem(SESSION_KEY_UNLOCKED, 'true');
+        updateAdminLockIcon();
+        closePinModal();
+        switchMenu('admin');
+        showToast('Akses diberikan. Selamat datang di Menu Kelola Produk & Sync.', 'success');
+      } else {
+        showToast('PIN akses salah! Silakan hubungi Owner Mahadewa.id.', 'error');
+        document.getElementById('pin-auth-input').value = '';
+        document.getElementById('pin-auth-input').focus();
+      }
+    }
+
+    function lockAdminSession() {
+      sessionStorage.removeItem(SESSION_KEY_UNLOCKED);
+      updateAdminLockIcon();
+      switchMenu('compare');
+      showToast('Menu Kelola Produk telah dikunci kembali.', 'info');
+    }
+
+    function updateAdminLockIcon() {
+      const iconEl = document.getElementById('nav-admin-icon');
+      if (!iconEl) return;
+      if (isAdminUnlocked()) {
+        iconEl.setAttribute('data-lucide', 'unlock');
+        iconEl.classList.remove('text-[#C62828]');
+        iconEl.classList.add('text-emerald-600');
+      } else {
+        iconEl.setAttribute('data-lucide', 'lock');
+        iconEl.classList.remove('text-emerald-600');
+        iconEl.classList.add('text-[#C62828]');
+      }
+      lucide.createIcons();
+    }
+
+    function updateAdminPin() {
+      const newPin = document.getElementById('new-admin-pin').value.trim();
+      if (!newPin || newPin.length < 4) {
+        showToast('PIN baru minimal 4 karakter/angka.', 'error');
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY_ADMIN_PIN, newPin);
+      document.getElementById('new-admin-pin').value = '';
+      showToast('PIN Akses Admin berhasil diperbarui!', 'success');
+    }
+
+    // =========================================================================
+    // 4. INISIALISASI & PENYIMPANAN LOKAL + GOOGLE SHEETS SYNC (DIPATENKAN)
     // =========================================================================
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('footer-year').textContent = new Date().getFullYear();
@@ -861,7 +1037,6 @@ function jsonResponse(obj) {
       const savedLogo = localStorage.getItem(STORAGE_KEY_LOGO);
       if (savedLogo) applyCustomLogo(savedLogo);
 
-      // Muat API Key Gemini yang tersimpan
       const savedGeminiKey = localStorage.getItem(STORAGE_KEY_GEMINI) || '';
       if (savedGeminiKey) {
         document.getElementById('ai-api-key').value = savedGeminiKey;
@@ -869,9 +1044,10 @@ function jsonResponse(obj) {
 
       loadLocalProducts();
 
-      const savedUrl = localStorage.getItem(STORAGE_KEY_GSHEET_URL) || '';
-      document.getElementById('gsheet-url-input').value = savedUrl;
-      updateSyncStatusUI(savedUrl ? 'connected' : 'local', savedUrl ? 'Terhubung ke Google Sheets' : 'Mode Lokal');
+      // URL Google Sheets dipatenkan langsung dari konstanta HARDCODED_GSHEET_URL
+      document.getElementById('gsheet-url-input').value = HARDCODED_GSHEET_URL;
+      updateSyncStatusUI('connected', 'Cloud Sync Aktif');
+      updateAdminLockIcon();
 
       renderCategoryFilters();
       updateColumnButtonsUI();
@@ -879,9 +1055,8 @@ function jsonResponse(obj) {
       renderAdminProductList();
       lucide.createIcons();
 
-      if (savedUrl) {
-        syncFromGoogleSheets(true);
-      }
+      // Otomatis tarik data terbaru dari Google Sheets saat web dibuka di perangkat mana pun
+      syncFromGoogleSheets(true);
     });
 
     function saveGeminiApiKeyLocally() {
@@ -919,7 +1094,7 @@ function jsonResponse(obj) {
     }
 
     // =========================================================================
-    // 4. LOGIKA UPLOAD & TEMPLATE EXCEL / CSV (.XLSX / .XLS / .CSV)
+    // 5. LOGIKA UPLOAD & TEMPLATE EXCEL / CSV (.XLSX / .XLS / .CSV)
     // =========================================================================
     function downloadExcelTemplate() {
       if (typeof XLSX === 'undefined') {
@@ -977,7 +1152,6 @@ function jsonResponse(obj) {
           let updatedCount = 0;
 
           rows.forEach((row, index) => {
-            // Pemetaan kolom fleksibel (Bahasa Indonesia maupun Inggris)
             const getCol = (keys) => {
               for (const k of keys) {
                 const foundKey = Object.keys(row).find(rk => rk.trim().toLowerCase() === k.toLowerCase());
@@ -1011,7 +1185,6 @@ function jsonResponse(obj) {
               source: getCol(['Sumber', 'Referensi', 'Source', 'source']) || 'https://www.apple.com/id/'
             };
 
-            // Jika nama produk sudah ada, perbarui; jika belum, tambahkan ke atas
             const existingIdx = products.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
             if (existingIdx !== -1) {
               itemObj.id = products[existingIdx].id;
@@ -1034,10 +1207,7 @@ function jsonResponse(obj) {
           renderAdminProductList();
           showToast(`Import Excel selesai: ${addedCount} produk baru, ${updatedCount} diperbarui!`, 'success');
 
-          // Otomatis kirim ke Google Sheets jika terhubung
-          if (getGoogleSheetUrl()) {
-            pushAllToGoogleSheets();
-          }
+          pushAllToGoogleSheets();
         } catch (err) {
           console.error('Excel parse error:', err);
           showToast('Gagal membaca file Excel/CSV. Pastikan format file valid.', 'error');
@@ -1049,34 +1219,8 @@ function jsonResponse(obj) {
     }
 
     // =========================================================================
-    // 5. LOGIKA SINKRONISASI GOOGLE SHEETS (APPS SCRIPT WEB APP)
+    // 6. LOGIKA SINKRONISASI GOOGLE SHEETS (URL PATEN)
     // =========================================================================
-    function getGoogleSheetUrl() {
-      return (localStorage.getItem(STORAGE_KEY_GSHEET_URL) || '').trim();
-    }
-
-    function saveGoogleSheetUrl() {
-      const input = document.getElementById('gsheet-url-input');
-      const url = input.value.trim();
-
-      if (!url) {
-        localStorage.removeItem(STORAGE_KEY_GSHEET_URL);
-        updateSyncStatusUI('local', 'Mode Lokal');
-        showToast('URL Google Sheets dihapus. Beralih ke Mode Lokal.', 'info');
-        return;
-      }
-
-      if (!url.startsWith('https://script.google.com/')) {
-        showToast('Pastikan URL diawali dengan https://script.google.com/macros/s/...', 'error');
-        return;
-      }
-
-      localStorage.setItem(STORAGE_KEY_GSHEET_URL, url);
-      updateSyncStatusUI('connected', 'Terhubung ke Google Sheets');
-      showToast('URL Google Apps Script berhasil disimpan!', 'success');
-      syncFromGoogleSheets(false);
-    }
-
     function updateSyncStatusUI(state, text) {
       const dot = document.getElementById('sync-status-dot');
       const label = document.getElementById('sync-status-text');
@@ -1101,15 +1245,9 @@ function jsonResponse(obj) {
     }
 
     async function syncFromGoogleSheets(silent = false) {
-      const url = getGoogleSheetUrl();
-      if (!url) {
-        if (!silent) showToast('Masukkan dan simpan URL Google Apps Script terlebih dahulu.', 'error');
-        return;
-      }
-
       updateSyncStatusUI('syncing', 'Menyinkronkan...');
       try {
-        const response = await fetch(url, { method: 'GET' });
+        const response = await fetch(HARDCODED_GSHEET_URL, { method: 'GET' });
         const data = await response.json();
 
         if (data && data.status === 'success' && Array.isArray(data.products)) {
@@ -1122,36 +1260,33 @@ function jsonResponse(obj) {
             renderCategoryFilters();
             renderComparisonTable();
             renderAdminProductList();
-            if (!silent) showToast(`Berhasil menarik ${products.length} produk dari Google Sheets!`, 'success');
+            if (!silent) showToast(`Data terbaru berhasil ditarik (${products.length} produk)!`, 'success');
           } else {
-            if (!silent) showToast('Google Sheets masih kosong. Klik "Kirim Semua ke Sheets (Push)" untuk mengisi data awal.', 'info');
+            if (!silent) showToast('Database Google Sheets masih kosong.', 'info');
           }
           const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Terhubung ke Google Sheets');
-          document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Terakhir sinkronisasi dari Google Sheets pukul <strong>${timeStr}</strong> (${products.length} produk).</span>`;
-          lucide.createIcons();
+          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
+          const syncTextEl = document.getElementById('gsheet-last-sync');
+          if (syncTextEl) {
+            syncTextEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Terakhir sinkronisasi pukul <strong>${timeStr}</strong> (${products.length} produk).</span>`;
+            lucide.createIcons();
+          }
         } else {
           throw new Error(data.message || 'Format respons Google Sheets tidak valid');
         }
       } catch (err) {
         console.error('Sync GET error:', err);
-        updateSyncStatusUI('error', 'Gagal Terhubung');
+        updateSyncStatusUI('error', 'Mode Offline');
         if (!silent) {
-          showToast('Gagal terhubung ke Google Sheets. Pastikan akses Web App diatur ke "Siapa saja (Anyone)".', 'error');
+          showToast('Gagal memuat dari cloud. Menampilkan data lokal tersimpan.', 'error');
         }
       }
     }
 
     async function pushAllToGoogleSheets() {
-      const url = getGoogleSheetUrl();
-      if (!url) {
-        showToast('Masukkan dan simpan URL Google Apps Script terlebih dahulu.', 'error');
-        return;
-      }
-
       updateSyncStatusUI('syncing', 'Mengirim ke Sheets...');
       try {
-        const response = await fetch(url, {
+        const response = await fetch(HARDCODED_GSHEET_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
@@ -1162,7 +1297,7 @@ function jsonResponse(obj) {
         const result = await response.json();
         if (result && result.status === 'success') {
           const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Terhubung ke Google Sheets');
+          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
           document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Seluruh katalog (${products.length} produk) berhasil dikirim ke Sheets pukul <strong>${timeStr}</strong>.</span>`;
           lucide.createIcons();
           showToast(`Berhasil mengunggah ${products.length} produk ke Google Sheets!`, 'success');
@@ -1172,17 +1307,14 @@ function jsonResponse(obj) {
       } catch (err) {
         console.error('Push POST error:', err);
         updateSyncStatusUI('error', 'Gagal Sinkronisasi');
-        showToast('Gagal mengirim data ke Google Sheets. Periksa URL Web App Anda.', 'error');
+        showToast('Gagal mengirim data ke Google Sheets.', 'error');
       }
     }
 
     async function syncSingleMutationToSheets(action, payloadObj) {
-      const url = getGoogleSheetUrl();
-      if (!url) return;
-
       updateSyncStatusUI('syncing', 'Menyimpan ke Sheets...');
       try {
-        const response = await fetch(url, {
+        const response = await fetch(HARDCODED_GSHEET_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action, ...payloadObj })
@@ -1190,7 +1322,7 @@ function jsonResponse(obj) {
         const result = await response.json();
         if (result && result.status === 'success') {
           const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Terhubung ke Google Sheets');
+          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
           document.getElementById('gsheet-last-sync').innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Perubahan otomatis tersinkron ke Google Sheets pukul <strong>${timeStr}</strong>.</span>`;
           lucide.createIcons();
         } else {
@@ -1199,7 +1331,7 @@ function jsonResponse(obj) {
       } catch (err) {
         console.warn('Auto-sync mutation error:', err);
         updateSyncStatusUI('error', 'Sinkron Tertunda');
-        showToast('Tersimpan di perangkat lokal, namun gagal menyinkronkan ke Google Sheets.', 'error');
+        showToast('Tersimpan lokal, namun gagal menyinkronkan ke Google Sheets.', 'error');
       }
     }
 
@@ -1225,7 +1357,7 @@ function jsonResponse(obj) {
     }
 
     // =========================================================================
-    // 6. RENDER TAMPILAN PERBANDINGAN GAYA APPLE COMPARE
+    // 7. RENDER TAMPILAN PERBANDINGAN GAYA APPLE COMPARE
     // =========================================================================
     function getFilteredProducts() {
       if (selectedCategory === 'Semua') return products;
@@ -1403,22 +1535,8 @@ function jsonResponse(obj) {
     }
 
     // =========================================================================
-    // 7. MANAJEMEN KATALOG (TAMBAH, EDIT, HAPUS, UPLOAD GAMBAR, JSON)
+    // 8. MANAJEMEN KATALOG (TAMBAH, EDIT, HAPUS, UPLOAD GAMBAR, JSON)
     // =========================================================================
-    function toggleAdminPanel() {
-      const panel = document.getElementById('admin-panel');
-      panel.classList.toggle('hidden');
-      if (!panel.classList.contains('hidden')) {
-        panel.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-
-    function resetToPublicView(e) {
-      if (e) e.preventDefault();
-      document.getElementById('admin-panel').classList.add('hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
     function renderAdminProductList() {
       const query = (document.getElementById('admin-search-input').value || '').toLowerCase();
       const filtered = products.filter(p =>
@@ -1633,9 +1751,7 @@ function jsonResponse(obj) {
           renderComparisonTable();
           renderAdminProductList();
           showToast(`Berhasil mengimpor ${products.length} produk!`, 'success');
-          if (getGoogleSheetUrl()) {
-            pushAllToGoogleSheets();
-          }
+          pushAllToGoogleSheets();
         } catch (err) {
           showToast('File JSON tidak valid atau rusak.', 'error');
         }
@@ -1653,7 +1769,7 @@ function jsonResponse(obj) {
     }
 
     // =========================================================================
-    // 8. FITUR AI AUTO-ISI SPESIFIKASI (GEMINI API + FALLBACK WIKIPEDIA/PRESET)
+    // 9. FITUR AI AUTO-ISI SPESIFIKASI
     // =========================================================================
     function toggleApiKeyVisibility() {
       const input = document.getElementById('ai-api-key');
@@ -1853,7 +1969,7 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
     }
 
     // =========================================================================
-    // 9. TOAST NOTIFICATION
+    // 10. TOAST NOTIFICATION
     // =========================================================================
     function showToast(message, type = 'info') {
       const container = document.getElementById('toast-container');
