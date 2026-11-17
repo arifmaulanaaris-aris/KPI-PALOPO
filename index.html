@@ -72,7 +72,7 @@
         <div class="relative w-full">
           <i data-lucide="search" class="w-4 h-4 text-[#C62828] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
           <input type="text" id="header-search-input" oninput="handleHeaderSearch(this.value)"
-            placeholder="Cari 260+ produk di mahadewa.id..."
+            placeholder="Cari 300+ produk di mahadewa.id..."
             class="w-full pl-10 pr-4 py-2 rounded-full bg-white text-[#1d1d1f] placeholder-gray-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/60 shadow-inner" />
         </div>
       </div>
@@ -230,7 +230,7 @@
             <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Mode Administrator Terbuka
           </span>
           <h2 class="text-xl sm:text-2xl font-bold text-[#1d1d1f] mt-2">Kelola Produk & Sync</h2>
-          <p class="text-xs sm:text-sm text-[#6e6e73]">Perubahan produk, API Key, dan PIN Admin otomatis tersimpan ke Google Sheets utama.</p>
+          <p class="text-xs sm:text-sm text-[#6e6e73]">Perubahan produk, API Key, kategori, dan PIN Admin otomatis tersimpan ke Google Sheets utama.</p>
         </div>
 
         <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
@@ -269,7 +269,7 @@
                 </span>
               </div>
               <p class="text-xs sm:text-sm text-[#6e6e73] mt-0.5">
-                Link Google Apps Script dipatenkan di sistem. Saat HP/laptop baru membuka web ini, katalog, Gemini API Key, dan PIN Admin langsung ditarik otomatis.
+                Link Google Apps Script dipatenkan di sistem. Saat HP/laptop baru membuka web ini, katalog, kategori spreadsheet, Gemini API Key, dan PIN Admin langsung ditarik otomatis.
               </p>
             </div>
           </div>
@@ -305,7 +305,7 @@
           <!-- Pengaturan Kategori Dinamis -->
           <div class="lg:col-span-7">
             <label for="new-category-input" class="block text-xs font-semibold text-gray-700 mb-1.5">
-              Kelola Kategori Produk (Muncul di Filter Utama & Form Produk)
+              Kelola Kategori Produk (Otomatis Terbaca dari Spreadsheet & Bisa Diedit/Dihapus)
             </label>
             <div class="flex flex-col sm:flex-row gap-2 mb-2.5">
               <input type="text" id="new-category-input" maxlength="30"
@@ -333,7 +333,7 @@
             </label>
             <div class="flex gap-2">
               <input type="password" id="cloud-gemini-key-input"
-                placeholder="Tempel Gemini API Key (AIzaSy...) untuk disinkronkan..."
+                placeholder="Tempel Gemini API Key (AQ... atau AIza...) untuk disinkronkan..."
                 class="w-full px-3.5 py-2 rounded-xl bg-white border border-gray-300 text-xs focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
               <button type="button" onclick="saveCloudGeminiApiKey()"
                 class="px-4 py-2 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold shadow-sm transition flex-shrink-0">
@@ -554,7 +554,7 @@
             <span class="text-base font-extrabold text-[#1d1d1f]">mahadewa<span class="text-[#C62828]">.id</span></span>
           </div>
           <p class="leading-relaxed text-gray-600">
-            Pusat penjualan iPhone, iPad, MacBook, Laptop Windows, dan Starlink terpercaya di Kota Palopo. Bandingkan spesifikasi resmi sebelum membeli.
+            Pusat penjualan iPhone, iPad, MacBook, Laptop Windows, PC AIO, dan Starlink terpercaya di Kota Palopo. Bandingkan spesifikasi resmi sebelum membeli.
           </p>
         </div>
 
@@ -1103,27 +1103,48 @@ function jsonResponse(obj) {
     let editingCategoryOldName = null;
 
     // =========================================================================
-    // 3. SISTEM 2 MENU, KATEGORI DINAMIS & KONTROL AKSES PIN ADMIN
+    // 3. SISTEM 2 MENU, KATEGORI DINAMIS (SINKRON SPREADSHEET) & PIN ADMIN
     // =========================================================================
+    function extractCategoriesFromProducts(prodList) {
+      const found = [];
+      (prodList || []).forEach(p => {
+        const cat = String(p.category || '').trim();
+        if (cat && !found.some(x => x.toLowerCase() === cat.toLowerCase())) {
+          found.push(cat);
+        }
+      });
+      return found;
+    }
+
     function loadCategories(mergeFromProducts = true) {
+      const actualFromSheet = extractCategoriesFromProducts(products);
+      let loaded = [];
       try {
         const raw = localStorage.getItem(STORAGE_KEY_CATEGORIES);
         if (raw) {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            categoriesList = parsed;
+            loaded = parsed;
           }
         }
-      } catch (e) {
-        categoriesList = [...DEFAULT_CATEGORIES];
+      } catch (e) {}
+
+      if (loaded.length > 0) {
+        if (mergeFromProducts && actualFromSheet.length > 0) {
+          const merged = [...loaded];
+          actualFromSheet.forEach(c => {
+            if (!merged.some(m => m.toLowerCase() === c.toLowerCase())) {
+              merged.push(c);
+            }
+          });
+          categoriesList = merged;
+        } else {
+          categoriesList = loaded;
+        }
+      } else {
+        categoriesList = actualFromSheet.length > 0 ? actualFromSheet : [...DEFAULT_CATEGORIES];
       }
-      if (mergeFromProducts) {
-        products.forEach(p => {
-          if (p.category && !categoriesList.includes(p.category)) {
-            categoriesList.push(p.category);
-          }
-        });
-      }
+
       renderCategorySelectOptions();
       renderAdminCategoryTags();
     }
@@ -1154,6 +1175,7 @@ function jsonResponse(obj) {
       container.innerHTML = categoriesList.map(cat => {
         const safeCat = cat.replace(/'/g, "\\'");
         const isBeingEdited = editingCategoryOldName === cat;
+        const count = products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase()).length;
         return `
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition ${
             isBeingEdited
@@ -1161,6 +1183,7 @@ function jsonResponse(obj) {
               : 'bg-white border-gray-300 text-[#1d1d1f]'
           }">
             <span>${cat}</span>
+            <span class="text-[10px] text-gray-400">(${count})</span>
             <button type="button" onclick="startEditCategory('${safeCat}')" title="Ubah nama kategori"
               class="${isBeingEdited ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'} transition">
               <i data-lucide="pencil" class="w-3 h-3"></i>
@@ -1530,7 +1553,7 @@ function jsonResponse(obj) {
       }
 
       loadLocalProducts();
-      loadCategories();
+      loadCategories(true);
       updateAdminLockIcon();
 
       renderCategoryFilters();
@@ -1785,16 +1808,14 @@ function jsonResponse(obj) {
             if (cloudKeyEl) cloudKeyEl.value = cloudKey;
           }
 
-          let hasCloudCategories = false;
+          let cloudCats = [];
           if (data.brandCategories) {
             try {
-              const cloudCats = typeof data.brandCategories === 'string'
+              const parsedCats = typeof data.brandCategories === 'string'
                 ? JSON.parse(data.brandCategories)
                 : data.brandCategories;
-              if (Array.isArray(cloudCats) && cloudCats.length > 0) {
-                categoriesList = cloudCats;
-                hasCloudCategories = true;
-                saveCategoriesLocally();
+              if (Array.isArray(parsedCats) && parsedCats.length > 0) {
+                cloudCats = parsedCats;
               }
             } catch (e) {}
           }
@@ -1805,11 +1826,31 @@ function jsonResponse(obj) {
               image: p.image && p.image.trim() !== '' ? p.image : getFallbackImageByCategory(p.category, p.name)
             }));
             saveLocalProducts();
-            loadCategories(!hasCloudCategories);
+
+            // Selalu sinkronkan kategori aktual dari 300+ baris spreadsheet Anda + pengaturan cloud
+            const actualSheetCats = extractCategoriesFromProducts(products);
+            const isDefaultOnly = cloudCats.length === DEFAULT_CATEGORIES.length &&
+              cloudCats.every((c, idx) => c === DEFAULT_CATEGORIES[idx]);
+
+            if (actualSheetCats.length > 0 && (cloudCats.length === 0 || isDefaultOnly)) {
+              categoriesList = actualSheetCats;
+            } else if (cloudCats.length > 0) {
+              const merged = [...cloudCats];
+              actualSheetCats.forEach(c => {
+                if (!merged.some(m => m.toLowerCase() === c.toLowerCase())) {
+                  merged.push(c);
+                }
+              });
+              categoriesList = merged;
+            } else {
+              categoriesList = [...DEFAULT_CATEGORIES];
+            }
+
+            saveCategoriesLocally();
             renderCategoryFilters();
             renderComparisonTable();
             renderAdminProductList();
-            if (!silent) showToast(`Data terbaru berhasil ditarik (${products.length} produk)!`, 'success');
+            if (!silent) showToast(`Data terbaru berhasil ditarik (${products.length} produk & ${categoriesList.length} kategori)!`, 'success');
           } else {
             if (!silent) showToast('Database Google Sheets masih kosong.', 'info');
           }
@@ -1818,7 +1859,7 @@ function jsonResponse(obj) {
           updateSyncStatusUI('connected', 'Cloud Sync Aktif');
           const syncTextEl = document.getElementById('gsheet-last-sync');
           if (syncTextEl) {
-            syncTextEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Otomatis sinkron pukul <strong>${timeStr}</strong> (${products.length} produk & PIN cloud aktif).</span>`;
+            syncTextEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Otomatis sinkron pukul <strong>${timeStr}</strong> (${products.length} produk & ${categoriesList.length} kategori cloud aktif).</span>`;
             lucide.createIcons();
           }
         } else {
@@ -1917,10 +1958,10 @@ function jsonResponse(obj) {
     // =========================================================================
     function getFilteredProducts() {
       return products.filter(p => {
-        const matchCat = selectedCategory === 'Semua' || p.category === selectedCategory;
+        const matchCat = selectedCategory === 'Semua' || (p.category || '').toLowerCase() === selectedCategory.toLowerCase();
         const matchSearch = !headerSearchKeyword ||
           p.name.toLowerCase().includes(headerSearchKeyword) ||
-          p.category.toLowerCase().includes(headerSearchKeyword) ||
+          (p.category && p.category.toLowerCase().includes(headerSearchKeyword)) ||
           (p.chip && p.chip.toLowerCase().includes(headerSearchKeyword));
         return matchCat && matchSearch;
       });
@@ -1931,8 +1972,10 @@ function jsonResponse(obj) {
       const container = document.getElementById('category-filters');
       if (!container) return;
       container.innerHTML = categories.map(cat => {
-        const isActive = selectedCategory === cat;
-        const count = cat === 'Semua' ? products.length : products.filter(p => p.category === cat).length;
+        const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
+        const count = cat === 'Semua'
+          ? products.length
+          : products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase()).length;
         return `
           <button onclick="selectCategory('${cat.replace(/'/g, "\\'")}')"
             class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 flex-shrink-0 ${
@@ -1978,10 +2021,11 @@ function jsonResponse(obj) {
 
     function getFallbackImageByCategory(category, name = '') {
       const shortLabel = (name || category || 'Device').slice(0, 14);
-      if (category === 'iPad') return createDeviceSvgDataUri('ipad', '#0284c7', shortLabel);
-      if (category === 'MacBook') return createDeviceSvgDataUri('macbook', '#1e293b', shortLabel);
-      if (category === 'Laptop Windows') return createDeviceSvgDataUri('windows', '#334155', shortLabel);
-      if (category === 'Starlink') return createDeviceSvgDataUri('starlink', '#0f172a', shortLabel);
+      const low = (category || '').toLowerCase();
+      if (low.includes('ipad') || low.includes('tablet')) return createDeviceSvgDataUri('ipad', '#0284c7', shortLabel);
+      if (low.includes('macbook')) return createDeviceSvgDataUri('macbook', '#1e293b', shortLabel);
+      if (low.includes('laptop') || low.includes('notebook') || low.includes('windows') || low.includes('aio')) return createDeviceSvgDataUri('windows', '#334155', shortLabel);
+      if (low.includes('starlink')) return createDeviceSvgDataUri('starlink', '#0f172a', shortLabel);
       return createDeviceSvgDataUri('iphone', '#C62828', shortLabel);
     }
 
@@ -2194,6 +2238,7 @@ function jsonResponse(obj) {
 
       saveLocalProducts();
       renderCategoryFilters();
+      renderAdminCategoryTags();
       renderComparisonTable();
       renderAdminProductList();
       resetProductForm();
@@ -2248,6 +2293,7 @@ function jsonResponse(obj) {
       products = products.filter(p => p.id !== id);
       saveLocalProducts();
       renderCategoryFilters();
+      renderAdminCategoryTags();
       renderComparisonTable();
       renderAdminProductList();
       showToast(`Produk "${target ? target.name : ''}" dihapus.`, 'info');
@@ -2313,7 +2359,7 @@ function jsonResponse(obj) {
           }
           products = imported;
           saveLocalProducts();
-          loadCategories();
+          loadCategories(true);
           renderCategoryFilters();
           renderComparisonTable();
           renderAdminProductList();
@@ -2336,7 +2382,43 @@ function jsonResponse(obj) {
     }
 
     // =========================================================================
-    // 9. FITUR AI AUTO-ISI SPESIFIKASI
+    // 9. HELPER PEMANGGILAN GEMINI API DENGAN AUTO-MODEL FALLBACK
+    // =========================================================================
+    async function callGeminiWithFallback(apiKey, promptText) {
+      const candidateModels = [
+        'gemini-2.5-flash-lite',
+        'gemini-flash-latest',
+        'gemini-2.0-flash',
+        'gemini-2.5-flash'
+      ];
+
+      let lastErrMsg = '';
+      for (const modelName of candidateModels) {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+          const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+          return { parsed, modelUsed: modelName };
+        } else {
+          const errJson = await res.json().catch(() => ({}));
+          lastErrMsg = errJson?.error?.message || `HTTP ${res.status}`;
+        }
+      }
+      throw new Error(lastErrMsg || 'Semua model Gemini gagal merespons');
+    }
+
+    // =========================================================================
+    // 9A. FITUR AI AUTO-ISI SPESIFIKASI
     // =========================================================================
     function toggleApiKeyVisibility() {
       const input = document.getElementById('ai-api-key');
@@ -2388,22 +2470,9 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
   "source": "URL situs resmi produk (misal https://www.apple.com/id/)"
 }`;
 
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-          const res = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json' }
-            })
-          });
-
-          if (!res.ok) throw new Error('API Key tidak valid atau kuota habis');
-          const data = await res.json();
-          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-          const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+          const { parsed, modelUsed } = await callGeminiWithFallback(apiKey, prompt);
           fillFormWithSpecs(parsed);
-          showToast(`Spesifikasi "${parsed.name || query}" berhasil diisi dengan AI!`, 'success');
+          showToast(`Spesifikasi "${parsed.name || query}" berhasil diisi dengan ${modelUsed}!`, 'success');
         } else {
           const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
           let summary = '';
@@ -2434,11 +2503,13 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
 
     function detectCategoryFromName(name) {
       const lower = name.toLowerCase();
-      if (lower.includes('ipad')) return 'iPad';
-      if (lower.includes('macbook') || lower.includes('mac ')) return 'MacBook';
-      if (lower.includes('starlink')) return 'Starlink';
-      if (lower.includes('asus') || lower.includes('lenovo') || lower.includes('acer') || lower.includes('hp ') || lower.includes('dell') || lower.includes('windows') || lower.includes('laptop')) return 'Laptop Windows';
-      return 'iPhone';
+      if (lower.includes('ipad')) return categoriesList.find(c => c.toLowerCase().includes('ipad')) || 'iPad';
+      if (lower.includes('macbook') || lower.includes('mac ')) return categoriesList.find(c => c.toLowerCase().includes('macbook')) || 'MacBook';
+      if (lower.includes('starlink')) return categoriesList.find(c => c.toLowerCase().includes('starlink')) || 'Starlink';
+      if (lower.includes('asus') || lower.includes('lenovo') || lower.includes('acer') || lower.includes('hp ') || lower.includes('dell') || lower.includes('windows') || lower.includes('laptop')) {
+        return categoriesList.find(c => /(notebook|laptop)/i.test(c)) || 'Laptop Windows';
+      }
+      return categoriesList.find(c => c.toLowerCase().includes('iphone')) || categoriesList[0] || 'iPhone';
     }
 
     function buildSmartFallbackSpec(name, category, summary, sourceUrl) {
@@ -2473,7 +2544,7 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
           source: sourceUrl
         };
       }
-      if (category === 'Laptop Windows') {
+      if (/(laptop|notebook|windows)/i.test(category)) {
         return {
           name,
           category,
@@ -2505,7 +2576,7 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
       }
       return {
         name,
-        category: 'iPhone',
+        category,
         tagline: shortDesc,
         display: 'Super Retina XDR OLED dengan Ceramic Shield',
         chip: 'Chip Apple Silicon A-Series dengan Neural Engine cepat',
@@ -2619,14 +2690,14 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
             const prompt = `Kamu adalah konsultan produk AI resmi toko gadget Mahadewa.id Palopo.
 Pertanyaan pelanggan: "${userQuestion}"
 
-Daftar kategori yang tersedia di spreadsheet kami: ${JSON.stringify(categoriesList)}
+Daftar kategori aktual yang tersedia di spreadsheet kami: ${JSON.stringify(categoriesList)}
 Database katalog produk real-time dari Google Sheets kami (selalu mengacu pada data terbaru berikut):
 ${JSON.stringify(catalogSummary)}
 
 Aturan wajib:
 1. HANYA pilih 1 sampai 3 produk yang BENAR-BENAR ADA di database spreadsheet di atas (gunakan field "id" yang persis sama). Jangan pernah mengarang produk di luar database.
 2. Patuhi jenis perangkat/kategori yang diminta pelanggan (misal jika pelanggan menanyakan AIO/PC, pilih hanya dari kategori PC/AIO; jika menanyakan Printer, pilih hanya dari kategori Printer; jika menanyakan Laptop, pilih hanya dari kategori Laptop/Notebook/MacBook).
-3. Perhatikan syarat spesifik seperti WARNA (misal: pink, merah, biru, gold, silver, putih, hitam) atau fitur khusus. Jika pelanggan meminta laptop warna Pink tetapi di database tidak ada produk laptop dengan warna Pink, JANGAN menyodorkan warna Gray/Blue/Hitam! Kembalikan "recommendations": [] dan jelaskan dengan ramah di "advice" bahwa stok laptop warna tersebut belum tersedia di katalog serta sebutkan warna yang tersedia.
+3. Perhatikan syarat spesifik seperti WARNA (misal: pink, merah, biru, gold, silver, putih, hitam) atau fitur khusus. Jika pelanggan meminta warna tertentu tetapi di database tidak ada produk kategori tersebut dengan warna itu, JANGAN menyodorkan warna lain! Kembalikan "recommendations": [] dan jelaskan dengan ramah di "advice" bahwa stok warna tersebut belum tersedia serta sebutkan warna yang tersedia.
 4. Jadikan kolom "pros" (Kelebihan Utama), "cons" (Kekurangan/Catatan), dan spesifikasi "chip"/"display" pada data spreadsheet di atas sebagai dasar utama penilaian agar setiap kali admin mengubah data di spreadsheet, rekomendasi otomatis mengikuti perubahan terbaru.
 5. Jika di database spreadsheet tidak ada produk yang sesuai dengan permintaan pelanggan, kembalikan "recommendations": [] dan jelaskan dengan sopan di "advice".
 6. Balas HANYA dalam format JSON valid tanpa markdown:
@@ -2637,25 +2708,7 @@ Aturan wajib:
   ]
 }`;
 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-            const res = await fetch(apiUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: 'application/json' }
-              })
-            });
-
-            if (!res.ok) {
-              const errJson = await res.json().catch(() => ({}));
-              const msg = errJson?.error?.message || `HTTP ${res.status}`;
-              throw new Error(msg);
-            }
-
-            const data = await res.json();
-            const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-            const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+            const { parsed, modelUsed } = await callGeminiWithFallback(apiKey, prompt);
 
             adviceText = parsed.advice || '';
             if (Array.isArray(parsed.recommendations)) {
@@ -2667,10 +2720,10 @@ Aturan wajib:
               });
             }
 
-            answerSourceBadge = '✨ Gemini 2.5 Flash';
+            answerSourceBadge = `✨ Gemini AI Aktif (${modelUsed})`;
 
             if (adviceText && recommendedItems.length === 0) {
-              renderConsultantCards(adviceText, [], answerEl, cardsEl, applyWrapEl, resultBox, answerSourceBadge);
+              renderConsultantCards(adviceText, [], answerEl, cardsEl, applyWrapEl, resultBox, answerSourceBadge, true);
               return;
             }
           } catch (geminiErr) {
@@ -2689,10 +2742,11 @@ Aturan wajib:
           answerSourceBadge = `⚡ Mode Katalog Lokal${reasonNote}`;
         }
 
-        renderConsultantCards(adviceText, recommendedItems, answerEl, cardsEl, applyWrapEl, resultBox, answerSourceBadge);
+        const isGeminiLive = answerSourceBadge.startsWith('✨');
+        renderConsultantCards(adviceText, recommendedItems, answerEl, cardsEl, applyWrapEl, resultBox, answerSourceBadge, isGeminiLive);
       } catch (err) {
         const smartLocal = generateSmartLocalRecommendation(userQuestion);
-        renderConsultantCards(smartLocal.advice, smartLocal.items, answerEl, cardsEl, applyWrapEl, resultBox, '⚡ Mode Katalog Lokal');
+        renderConsultantCards(smartLocal.advice, smartLocal.items, answerEl, cardsEl, applyWrapEl, resultBox, '⚡ Mode Katalog Lokal', false);
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalBtnHtml;
@@ -2700,10 +2754,13 @@ Aturan wajib:
       }
     }
 
-    function renderConsultantCards(adviceText, recommendedItems, answerEl, cardsEl, applyWrapEl, resultBox, sourceBadge = '') {
+    function renderConsultantCards(adviceText, recommendedItems, answerEl, cardsEl, applyWrapEl, resultBox, sourceBadge = '', isGeminiLive = false) {
       lastAiRecommendedIds = recommendedItems.map(item => item.product.id);
+      const badgeClass = isGeminiLive
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        : 'bg-gray-100 text-gray-600 border-gray-200';
       const badgeHtml = sourceBadge
-        ? `<span class="inline-block mb-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200">${sourceBadge}</span><br/>`
+        ? `<span class="inline-block mb-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-semibold border ${badgeClass}">${sourceBadge}</span><br/>`
         : '';
       answerEl.innerHTML = `${badgeHtml}<span class="font-bold text-[#C62828]">Saran AI Mahadewa.id:</span> ${adviceText}`;
 
@@ -2747,7 +2804,6 @@ Aturan wajib:
     function generateSmartLocalRecommendation(question) {
       const q = question.toLowerCase();
 
-      // 1. DETEKSI JENIS PERANGKAT / KATEGORI SPREADSHEET SECARA KETAT TERLEBIH DAHULU
       const deviceTypeRules = [
         {
           label: 'PC / All-in-One (AIO)',
@@ -2824,7 +2880,6 @@ Aturan wajib:
         }
       }
 
-      // 2. CEK SYARAT WARNA SPESIFIK (Misal: pink, merah, biru, gold, silver, putih, hitam)
       const colorFilters = [
         { label: 'Pink / Merah Muda', regex: /\b(pink|merah\s*muda|rose\s*gold)\b/i },
         { label: 'Merah / Red', regex: /\b(merah|red)\b/i },
@@ -2855,7 +2910,6 @@ Aturan wajib:
         }
       }
 
-      // 3. KAMUS KONTEKS PROFESI & KEBUTUHAN UNTUK DICOCOKKAN KE KOLOM "KELEBIHAN UTAMA" (pros)
       const intentExpansions = [
         { triggers: ['teknik', 'informatika', 'coding', 'arsitektur', 'desain', '3d', 'render', 'berat', 'cad', 'simulasi'], keywords: ['kencang', 'berat', 'gaming', 'editing', 'grafis', 'render', 'multitasking', 'performa', 'pro', 'gpu', 'rtx', 'ryzen', 'i7', 'm4', 'm3', 'desain'] },
         { triggers: ['guru', 'dosen', 'mengajar', 'sekolah', 'presentasi', 'administrasi', 'kantor', 'admin', 'kerja', 'bisnis', 'excel', 'word'], keywords: ['guru', 'kantor', 'mengajar', 'presentasi', 'rapi', 'luas', 'nyaman', 'ekonomis', 'hemat', 'terjangkau', 'port', 'lengkap', 'hdmi', 'ringkas', 'harian', 'mengetik', 'baterai', 'wifi', 'scan', 'copy'] },
@@ -2874,7 +2928,6 @@ Aturan wajib:
 
       const isHeavyWorkload = /(teknik|informatika|coding|arsitektur|3d|render|berat|cad|simulasi|gaming|editing\s*video)/i.test(q);
 
-      // 4. HITUNG SKOR KECOCOKAN BERBASIS KOLOM KELEBIHAN UTAMA (pros)
       const scoredCandidates = candidatePool.map(p => {
         const prosText = (p.pros || '').toLowerCase();
         const consText = (p.cons || '').toLowerCase();
