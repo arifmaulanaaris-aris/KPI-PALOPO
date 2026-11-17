@@ -671,439 +671,186 @@
     const DEFAULT_BRAND_LOGO_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTByyjzmv5_5XHSkxerj-ZrVJPugMEUxMFhXyHPjzOaLg&s=10';
     const DEFAULT_LOGO_FALLBACK_SVG = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="46" fill="#C62828"/><path d="M62 20 V76 H52 V70 C48.5 74.5 43.2 77 37 77 C25.5 77 18 68.5 18 56.5 C18 44.5 25.5 36 37 36 C43.2 36 48.5 38.5 52 43 V20 H62 Z M39.5 45 C32.5 45 28.2 49.8 28.2 56.5 C28.2 63.2 32.5 68 39.5 68 C46.5 68 51.5 63.2 51.5 56.5 C51.5 49.8 46.5 45 39.5 45 Z" fill="#FFFFFF"/><circle cx="71" cy="71" r="5" fill="#FFFFFF"/></svg>`);
 
-    const STORAGE_KEY_PRODUCTS = 'mahadewa_compare_products_v2';
-    const STORAGE_KEY_GEMINI = 'mahadewa_gemini_apikey_v1';
-    const STORAGE_KEY_ADMIN_PIN = 'mahadewa_admin_pin_v1';
-    const STORAGE_KEY_BRAND_LOGO = 'mahadewa_brand_logo_v1';
-    const STORAGE_KEY_CATEGORIES = 'mahadewa_categories_v1';
+    // Penyimpanan 100% dialihkan ke Google Sheets (Memori Cloud Aktif, tanpa membebani localStorage browser)
     const SESSION_KEY_UNLOCKED = 'mahadewa_admin_unlocked_session';
     const WHATSAPP_NUMBER = '6282344888441';
     const DEFAULT_CATEGORIES = ['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink'];
 
-    const GOOGLE_APPS_SCRIPT_TEMPLATE = `// ============================================================================
-// GOOGLE APPS SCRIPT DATABASE SYNC + CLOUD PIN, LOGO & KATEGORI MAHADEWA.ID
-// ============================================================================
+    let cloudState = {
+      adminPin: DEFAULT_ADMIN_PIN,
+      brandLogo: DEFAULT_BRAND_LOGO_URL,
+      geminiApiKey: ''
+    };
 
-const SHEET_NAME = 'KatalogProduk';
-const CONFIG_SHEET_NAME = 'PengaturanAdmin';
-const HEADERS = [
-  'id', 'name', 'category', 'tagline', 'image',
-  'display', 'chip', 'camera', 'battery',
-  'features', 'pros', 'cons', 'source', 'updatedAt'
-];
+    let products = [];
+    let categoriesList = [...DEFAULT_CATEGORIES];
+    let selectedCategory = 'Semua';
+    let columnCount = 3;
+    let selectedProductIds = [];
+    let headerSearchKeyword = '';
+    let isApiKeyHidden = false;
+    let editingCategoryOldName = null;
 
-function getOrCreateSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
-    sheet.appendRow(HEADERS);
-    sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#f3f4f6');
-    sheet.setFrozenRows(1);
-  }
-  return sheet;
-}
-
-function getOrCreateConfigSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(CONFIG_SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(CONFIG_SHEET_NAME);
-    sheet.appendRow(['key', 'value']);
-    sheet.appendRow(['adminPin', '2026']);
-    sheet.appendRow(['brandLogo', '${DEFAULT_BRAND_LOGO_URL}']);
-    sheet.appendRow(['brandCategories', JSON.stringify(['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink'])]);
-    sheet.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#f3f4f6');
-  }
-  return sheet;
-}
-
-function getConfigMap() {
-  const sheet = getOrCreateConfigSheet();
-  const data = sheet.getDataRange().getValues();
-  const cfg = {
-    adminPin: '2026',
-    brandLogo: '${DEFAULT_BRAND_LOGO_URL}',
-    brandCategories: JSON.stringify(['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink']),
-    geminiApiKey: ''
-  };
-  for (let i = 1; i < data.length; i++) {
-    const k = String(data[i][0] || '').trim();
-    const v = String(data[i][1] || '').trim();
-    if (k && v) cfg[k] = v;
-  }
-  return cfg;
-}
-
-function upsertConfigKey(key, value) {
-  const sheet = getOrCreateConfigSheet();
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]).trim() === key) {
-      sheet.getRange(i + 1, 2).setValue(value);
-      return;
-    }
-  }
-  sheet.appendRow([key, value]);
-}
-
-function doGet(e) {
-  try {
-    const sheet = getOrCreateSheet();
-    const cfg = getConfigMap();
-    const data = sheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      return jsonResponse({ status: 'success', products: [], adminPin: cfg.adminPin, brandLogo: cfg.brandLogo, brandCategories: cfg.brandCategories, geminiApiKey: cfg.geminiApiKey });
-    }
-    const headers = data[0];
-    const products = [];
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      if (!row[0] && !row[1]) continue;
-      const item = {};
-      headers.forEach((h, idx) => {
-        item[h] = row[idx] !== undefined ? String(row[idx]) : '';
-      });
-      products.push(item);
-    }
-    return jsonResponse({ status: 'success', products: products, adminPin: cfg.adminPin, brandLogo: cfg.brandLogo, brandCategories: cfg.brandCategories, geminiApiKey: cfg.geminiApiKey });
-  } catch (err) {
-    return jsonResponse({ status: 'error', message: err.toString() });
-  }
-}
-
-function doPost(e) {
-  try {
-    const payload = JSON.parse(e.postData.contents);
-    const action = payload.action || 'syncAll';
-
-    if (action === 'updatePin' && payload.pin) {
-      const cleanPin = String(payload.pin).trim();
-      upsertConfigKey('adminPin', cleanPin);
-      return jsonResponse({ status: 'success', adminPin: cleanPin });
-    }
-
-    if (action === 'updateLogo' && payload.logoUrl) {
-      const cleanLogo = String(payload.logoUrl).trim();
-      upsertConfigKey('brandLogo', cleanLogo);
-      return jsonResponse({ status: 'success', brandLogo: cleanLogo });
-    }
-
-    if (action === 'updateCategories' && Array.isArray(payload.categories)) {
-      const cleanCats = JSON.stringify(payload.categories);
-      upsertConfigKey('brandCategories', cleanCats);
-      return jsonResponse({ status: 'success', brandCategories: cleanCats });
-    }
-
-    if (action === 'updateGeminiKey' && payload.apiKey !== undefined) {
-      const cleanKey = String(payload.apiKey).trim();
-      upsertConfigKey('geminiApiKey', cleanKey);
-      return jsonResponse({ status: 'success' });
-    }
-
-    const sheet = getOrCreateSheet();
-
-    if (action === 'syncAll' && Array.isArray(payload.products)) {
-      sheet.clearContents();
-      sheet.appendRow(HEADERS);
-      sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#f3f4f6');
-      const now = new Date().toISOString();
-      const rows = payload.products.map(p => [
-        p.id || '', p.name || '', p.category || '', p.tagline || '', p.image || '',
-        p.display || '', p.chip || '', p.camera || '', p.battery || '',
-        p.features || '', p.pros || '', p.cons || '', p.source || '', now
-      ]);
-      if (rows.length > 0) {
-        sheet.getRange(2, 1, rows.length, HEADERS.length).setValues(rows);
-      }
-      return jsonResponse({ status: 'success', count: rows.length });
-    }
-
-    if (action === 'upsert' && payload.product) {
-      const p = payload.product;
-      const data = sheet.getDataRange().getValues();
-      const now = new Date().toISOString();
-      const rowValues = [
-        p.id || '', p.name || '', p.category || '', p.tagline || '', p.image || '',
-        p.display || '', p.chip || '', p.camera || '', p.battery || '',
-        p.features || '', p.pros || '', p.cons || '', p.source || '', now
-      ];
-      let foundRow = -1;
-      for (let i = 1; i < data.length; i++) {
-        if (String(data[i][0]) === String(p.id)) {
-          foundRow = i + 1;
-          break;
-        }
-      }
-      if (foundRow > 0) {
-        sheet.getRange(foundRow, 1, 1, HEADERS.length).setValues([rowValues]);
-      } else {
-        sheet.appendRow(rowValues);
-      }
-      return jsonResponse({ status: 'success', id: p.id });
-    }
-
-    if (action === 'delete' && payload.id) {
-      const data = sheet.getDataRange().getValues();
-      for (let i = data.length - 1; i >= 1; i--) {
-        if (String(data[i][0]) === String(payload.id)) {
-          sheet.deleteRow(i + 1);
-        }
-      }
-      return jsonResponse({ status: 'success', deletedId: payload.id });
-    }
-
-    return jsonResponse({ status: 'error', message: 'Aksi tidak dikenal' });
-  } catch (err) {
-    return jsonResponse({ status: 'error', message: err.toString() });
-  }
-}
-
-function jsonResponse(obj) {
-  return ContentService
-    .createTextOutput(JSON.stringify(obj))
-    .setMimeType(ContentService.MimeType.JSON);
-}`;
-
-    function createDeviceSvgDataUri(type, accentColor = '#1d1d1f', label = '') {
-      let svg = '';
-      if (type === 'iphone') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <defs>
-            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="${accentColor}"/>
-              <stop offset="100%" stop-color="#3a3a3c"/>
-            </linearGradient>
-          </defs>
-          <rect x="68" y="18" width="104" height="204" rx="22" fill="#1d1d1f" stroke="#d2d2d7" stroke-width="3"/>
-          <rect x="74" y="24" width="92" height="192" rx="17" fill="url(#g1)"/>
-          <rect x="104" y="31" width="32" height="8" rx="4" fill="#000000"/>
-          <circle cx="128" cy="35" r="2.2" fill="#1e3a8a"/>
-          <text x="120" y="128" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle" opacity="0.92">${label}</text>
-        </svg>`;
-      } else if (type === 'iphone-duo') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="36" y="28" width="84" height="184" rx="18" fill="#1d1d1f" stroke="#d2d2d7" stroke-width="2.5"/>
-          <rect x="41" y="33" width="74" height="174" rx="14" fill="#2c2c2e"/>
-          <rect x="120" y="28" width="84" height="184" rx="18" fill="#1d1d1f" stroke="#d2d2d7" stroke-width="2.5"/>
-          <rect x="125" y="33" width="74" height="174" rx="14" fill="#C62828"/>
-          <text x="120" y="126" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">${label}</text>
-        </svg>`;
-      } else if (type === 'ipad') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="46" y="22" width="148" height="196" rx="16" fill="#1d1d1f" stroke="#d2d2d7" stroke-width="3"/>
-          <rect x="54" y="30" width="132" height="180" rx="10" fill="#2563eb"/>
-          <circle cx="120" cy="26" r="2" fill="#4b5563"/>
-          <text x="120" y="125" font-family="Inter, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">${label}</text>
-        </svg>`;
-      } else if (type === 'macbook') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="34" y="48" width="172" height="114" rx="10" fill="#1d1d1f" stroke="#9ca3af" stroke-width="2.5"/>
-          <rect x="40" y="54" width="160" height="102" rx="6" fill="#0f172a"/>
-          <path d="M16 162 H224 L214 172 H26 Z" fill="#d1d5db"/>
-          <rect x="102" y="162" width="36" height="4" rx="2" fill="#9ca3af"/>
-          <text x="120" y="108" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">${label}</text>
-        </svg>`;
-      } else if (type === 'windows') {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="34" y="48" width="172" height="114" rx="8" fill="#334155" stroke="#cbd5e1" stroke-width="2.5"/>
-          <rect x="40" y="54" width="160" height="102" rx="4" fill="#1e293b"/>
-          <path d="M18 162 H222 L215 171 H25 Z" fill="#94a3b8"/>
-          <text x="120" y="108" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#38bdf8" text-anchor="middle">${label}</text>
-        </svg>`;
-      } else {
-        svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-          <rect x="42" y="38" width="156" height="102" rx="10" transform="rotate(-12 120 89)" fill="#f8fafc" stroke="#cbd5e1" stroke-width="3"/>
-          <path d="M115 135 L95 198 M125 135 L155 198 M80 198 H170" stroke="#475569" stroke-width="7" stroke-linecap="round"/>
-          <text x="120" y="95" font-family="Inter, sans-serif" font-size="13" font-weight="800" fill="#1d1d1f" text-anchor="middle">${label}</text>
-        </svg>`;
-      }
+    function createDeviceSvgDataUri(type, accentColor, label) {
+      const safeLabel = (label || 'Device').replace(/[<>&'"]/g, '');
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240"><rect width="240" height="240" rx="28" fill="#f5f5f7"/><rect x="52" y="34" width="136" height="172" rx="18" fill="${accentColor}" opacity="0.12"/><rect x="64" y="46" width="112" height="148" rx="12" fill="#ffffff" stroke="${accentColor}" stroke-width="3"/><text x="120" y="124" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="${accentColor}" text-anchor="middle">${safeLabel}</text></svg>`;
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
     }
 
     const DEFAULT_PRODUCTS = [
       {
-        id: 'iphone-15',
-        name: 'iPhone 15',
+        id: 'prod-default-1',
+        name: 'iPhone 16 Pro Max',
         category: 'iPhone',
-        tagline: 'Dynamic Island dan kamera utama 48 MP yang bertenaga.',
-        image: createDeviceSvgDataUri('iphone', '#2563eb', 'iPhone 15'),
-        display: '6,1 inci Super Retina XDR OLED, 2.000 nit puncak luar ruangan',
-        chip: 'Chip A16 Bionic dengan GPU 5-core',
-        camera: 'Sistem kamera ganda: Utama 48 MP + Ultra Wide 12 MP, Telefoto 2x',
-        battery: 'Pemutaran video hingga 20 jam, konektor USB-C (USB 2)',
-        features: 'Dynamic Island, Kaca belakang berwarna, Tahan air IP68, MagSafe',
-        pros: 'Harga paling terjangkau dengan Dynamic Island & USB-C, kamera 48 MP tajam.',
-        cons: 'Refresh rate masih 60Hz, belum mendukung Apple Intelligence.',
-        source: 'https://www.apple.com/id/iphone/'
+        tagline: 'Layar terbesar dan performa Pro paling mutakhir.',
+        image: createDeviceSvgDataUri('iphone', '#C62828', 'iPhone 16 Pro Max'),
+        display: '6,9 inci Super Retina XDR OLED ProMotion 120Hz',
+        chip: 'Chip A18 Pro dengan Apple Intelligence',
+        camera: 'Sistem kamera Pro 48MP Fusion + Telefoto 5x',
+        battery: 'Pemutaran video hingga 33 jam, USB-C & MagSafe',
+        features: 'Bodi Titanium, Kontrol Kamera, Action Button, IP68',
+        pros: 'Kamera pro terdepan, layar super luas & terang, baterai tahan lama.',
+        cons: 'Ukuran bodi besar dan bobot terasa saat digenggam satu tangan.',
+        source: 'https://www.apple.com/id/'
       },
       {
-        id: 'iphone-16',
-        name: 'iPhone 16',
-        category: 'iPhone',
-        tagline: 'Dibuat untuk Apple Intelligence dengan Kontrol Kamera baru.',
-        image: createDeviceSvgDataUri('iphone', '#0d9488', 'iPhone 16'),
-        display: '6,1 inci Super Retina XDR OLED dengan Ceramic Shield generasi terbaru',
-        chip: 'Chip A18 (3nm) dengan Neural Engine 16-core yang jauh lebih cepat',
-        camera: 'Kamera Fusion 48 MP + Ultra Wide 12 MP dengan autofokus (Foto Makro)',
-        battery: 'Pemutaran video hingga 22 jam, pengisian cepat MagSafe 25W',
-        features: 'Kontrol Kamera fisik, Action Button, Apple Intelligence, Wi-Fi 7',
-        pros: 'Performa lompat jauh ke chip A18, tombol Kontrol Kamera praktis, dukung fitur AI.',
-        cons: 'Layar masih 60Hz dan transfer kabel USB-C masih kecepatan USB 2.',
-        source: 'https://www.apple.com/id/iphone-16/'
-      },
-      {
-        id: 'iphone-17',
-        name: 'iPhone 17',
-        category: 'iPhone',
-        tagline: 'Layar ProMotion 120Hz kini hadir di lini standar yang lebih tipis.',
-        image: createDeviceSvgDataUri('iphone', '#4f46e5', 'iPhone 17'),
-        display: '6,3 inci Super Retina XDR OLED dengan ProMotion adaptif hingga 120Hz',
-        chip: 'Chip A19 (3nm generasi kedua) hemat daya & optimal untuk AI',
-        camera: 'Kamera Fusion 48 MP + Ultra Wide 48 MP, Kamera Depan 24 MP',
-        battery: 'Pemutaran video hingga 24 jam, efisiensi daya layar LTPO',
-        features: 'Layar Always-On 120Hz, Apple Intelligence penuh, Kontrol Kamera, Wi-Fi 7',
-        pros: 'Akhirnya membawa layar 120Hz ke seri reguler dan kamera selfie 24 MP jauh lebih jernih.',
-        cons: 'Belum memiliki lensa Telefoto optik khusus seperti varian Pro.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-18',
-        name: 'iPhone 18',
-        category: 'iPhone',
-        tagline: 'Generasi baru dengan efisiensi chip 2nm dan kecerdasan generasi berikutnya.',
-        image: createDeviceSvgDataUri('iphone', '#7c3aed', 'iPhone 18'),
-        display: '6,3 inci Super Retina XDR OLED ProMotion 120Hz, bezel ultra tipis',
-        chip: 'Chip A20 (fabrikasi 2nm) dengan akselerator AI terintegrasi',
-        camera: 'Kamera Ganda 48 MP Fusion dengan pemrosesan Photonic Engine baru',
-        battery: 'Pemutaran video hingga 26 jam, pengisian cepat USB-C & Qi2/MagSafe',
-        features: 'Apple Intelligence generasi baru, Dynamic Island lebih ringkas, Wi-Fi 7',
-        pros: 'Sangat hemat baterai berkat arsitektur 2nm dan sangat mulus untuk multitasking harian.',
-        cons: 'Kecepatan transfer port USB-C masih di bawah lini Pro.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-18-pro',
-        name: 'iPhone 18 Pro',
-        category: 'iPhone',
-        tagline: 'Kekuatan Pro dalam ukuran ringkas yang ergonomis.',
-        image: createDeviceSvgDataUri('iphone', '#374151', 'iPhone 18 Pro'),
-        display: '6,3 inci LTPO Super Retina XDR OLED 120Hz, kecerahan puncak tinggi',
-        chip: 'Chip A20 Pro (2nm) dengan GPU 6-core kelas konsol & RAM 12GB',
-        camera: 'Sistem kamera Pro tiga lensa 48 MP (Utama, Ultra Wide, Telefoto Periskop 5x)',
-        battery: 'Pemutaran video hingga 29 jam, USB-C kecepatan tinggi USB 3 (10Gb/s)',
-        features: 'Rangka Titanium Grade 5, ProRes Log video, Kontrol Kamera, Face ID bawah layar',
-        pros: 'Kamera zoom optik 5x di bodi yang nyaman digenggam satu tangan, performa video terbaik.',
-        cons: 'Harga premium dan kapasitas baterai di bawah varian Pro Max.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-18-pro-max',
-        name: 'iPhone 18 Pro Max',
-        category: 'iPhone',
-        tagline: 'Layar terbesar, baterai paling tahan lama, dan kamera Pro terlengkap.',
-        image: createDeviceSvgDataUri('iphone', '#C62828', '18 Pro Max'),
-        display: '6,9 inci LTPO Super Retina XDR OLED 120Hz dengan anti-reflektif baru',
-        chip: 'Chip A20 Pro (2nm) dengan sistem pendingin vapor chamber untuk beban berat',
-        camera: 'Tiga kamera 48 MP Pro (Utama apertur variabel, Ultra Wide, Telefoto Tetraprisma)',
-        battery: 'Pemutaran video hingga 35 jam (rekor daya tahan baterai iPhone)',
-        features: 'Titanium Grade 5, USB 3 10Gb/s, ProRAW & ProRes 4K120, Apple Intelligence',
-        pros: 'Daya tahan baterai luar biasa, layar sinematik 6,9 inci, dan sistem kamera paling lengkap.',
-        cons: 'Dimensi cukup besar dan berat untuk saku celana kecil.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'iphone-duo',
-        name: 'iPhone Duo',
-        category: 'iPhone',
-        tagline: 'Paket bundling hemat dua unit iPhone untuk pasangan, keluarga, atau bisnis.',
-        image: createDeviceSvgDataUri('iphone-duo', '#C62828', 'iPhone Duo'),
-        display: 'Dual Display Super Retina XDR OLED (2 unit perangkat dalam 1 paket)',
-        chip: 'Chip Apple Silicon Bionic / A-Series generasi terbaru di kedua unit',
-        camera: 'Sistem kamera ganda 48 MP di masing-masing unit dengan mode Sinematik',
-        battery: 'Daya tahan seharian penuh di kedua perangkat + dukungan MagSafe',
-        features: 'Paket bundling resmi Mahadewa.id, bonus aksesori, garansi resmi terdaftar',
-        pros: 'Harga paket jauh lebih hemat dibanding beli satuan, cocok untuk hadiah atau operasional tim.',
-        cons: 'Pilihan warna dan kapasitas penyimpanan mengikuti ketersediaan stok paket.',
-        source: 'https://www.apple.com/id/iphone/'
-      },
-      {
-        id: 'ipad-gen-11',
-        name: 'iPad Generasi 11',
-        category: 'iPad',
-        tagline: 'Layar penuh warna serbaguna untuk belajar, bekerja, dan hiburan.',
-        image: createDeviceSvgDataUri('ipad', '#0284c7', 'iPad Gen 11'),
-        display: '10,9 inci Liquid Retina IPS LCD, True Tone, resolusi 2360 x 1640 piksel',
-        chip: 'Chip Apple Silicon seri A terbaru dengan dukungan Apple Intelligence',
-        camera: 'Kamera belakang 12 MP Wide + Kamera depan lanskap 12 MP Center Stage',
-        battery: 'Hingga 10 jam menjelajah web via Wi-Fi atau menonton video, USB-C',
-        features: 'Touch ID di tombol atas, dukung Apple Pencil (USB-C) & Magic Keyboard Folio',
-        pros: 'Sangat ideal untuk pelajar, mahasiswa, dan kasir/POS toko dengan harga terjangkau.',
-        cons: 'Layar belum laminated dan refresh rate masih 60Hz.',
-        source: 'https://www.apple.com/id/ipad/'
-      },
-      {
-        id: 'macbook-air-m4-13',
-        name: 'MacBook Air M4 13 inci',
+        id: 'prod-default-2',
+        name: 'MacBook Air M3 13 inci',
         category: 'MacBook',
-        tagline: 'Super tipis, super ringan, dan super bertenaga dengan chip M4.',
-        image: createDeviceSvgDataUri('macbook', '#1e293b', 'MacBook Air M4'),
-        display: '13,6 inci Liquid Retina dengan 1 miliar warna, kecerahan 500 nit, True Tone',
-        chip: 'Chip Apple M4 (CPU 10-core, GPU hingga 10-core, Neural Engine 16-core)',
-        camera: 'Kamera 12MP Center Stage + Wi-Fi 6E, Bluetooth 5.3, 2x port Thunderbolt 4',
-        battery: 'Hingga 18 jam pemakaian nirkabel, pengisian daya MagSafe 3',
-        features: 'Desain tanpa kipas (hening total), bobot hanya 1,24 kg, dukung 2 layar eksternal',
-        pros: 'Performa sangat kencang untuk editing & multitasking, baterai awet seharian, sangat ringan.',
-        cons: 'Jumlah port terbatas (2x Thunderbolt + MagSafe), tidak memiliki kipas aktif untuk render ekstrem.',
-        source: 'https://www.apple.com/id/macbook-air/'
+        tagline: 'Tipis, ringan, dan bertenaga super dengan chip M3.',
+        image: createDeviceSvgDataUri('macbook', '#1e293b', 'MacBook Air M3'),
+        display: '13,6 inci Liquid Retina IPS dengan True Tone',
+        chip: 'Apple M3 (CPU 8-core, GPU hingga 10-core)',
+        camera: 'Kamera FaceTime HD 1080p, Wi-Fi 6E, 2x Thunderbolt',
+        battery: 'Hingga 18 jam pemakaian nirkabel, MagSafe 3',
+        features: 'Desain tanpa kipas senyap, Touch ID, bobot hanya 1,24 kg',
+        pros: 'Sangat ringan untuk mobilitas kuliah/kerja, baterai seharian.',
+        cons: 'Port terbatas hanya dua Thunderbolt saat tanpa hub.',
+        source: 'https://www.apple.com/id/'
       },
       {
-        id: 'asus-vivobook-14-a1404',
-        name: 'ASUS Vivobook 14 (A1404)',
-        category: 'Laptop Windows',
-        tagline: 'Laptop harian ringkas dengan engsel 180° dan ketahanan standar militer.',
-        image: createDeviceSvgDataUri('windows', '#334155', 'Vivobook 14'),
-        display: '14,0 inci FHD (1920 x 1080) 16:9 Anti-Glare, bezel tipis NanoEdge',
-        chip: 'Prosesor Intel Core i3 / i5 / i7 Generasi ke-13 + Intel UHD / Iris Xe Graphics',
-        camera: 'Kamera HD 720p dengan penutup privasi fisik + Wi-Fi 6E, USB-C, USB-A, HDMI',
-        battery: '42WHrs Li-ion, pengisian cepat 60% dalam 49 menit',
-        features: 'Sertifikasi ketahanan militer MIL-STD-810H, engsel datar 180°, ASUS Antimicrobial Guard',
-        pros: 'Port sangat lengkap (HDMI & USB-A tersedia tanpa dongle), harga ekonomis untuk kantor & kuliah.',
-        cons: 'Akurasi warna layar standar (45% NTSC) dan bodi berbahan polikarbonat.',
-        source: 'https://www.asus.com/id/laptops/for-home/vivobook/'
-      },
-      {
-        id: 'starlink-gen-3-standard',
-        name: 'Starlink Gen 3 Standard',
-        category: 'Starlink',
-        tagline: 'Internet satelit berkecepatan tinggi dengan latensi rendah di mana saja.',
-        image: createDeviceSvgDataUri('starlink', '#0f172a', 'Starlink Gen 3'),
-        display: 'Antena Phased Array Elektronik (594 x 383 mm) dengan Kickstand terintegrasi',
-        chip: 'Router Wi-Fi 6 Tri-Band 4x4 MU-MIMO terintegrasi (jangkauan hingga 297 m²)',
-        camera: 'Konektivitas Satelit LEO (kecepatan unduh 100–250+ Mbps), 2x port LAN Ethernet',
-        battery: 'Daya listrik AC 100-240V (konsumsi rata-rata 75–100W), tahan cuaca IP67',
-        features: 'Tahan hujan lebat & angin kencang (IP67), tanpa motor penggerak (lebih awet), instalasi mudah',
-        pros: 'Sinyal kencang & stabil bahkan di daerah pelosok/tambang/perkebunan tanpa jaringan fiber.',
-        cons: 'Membutuhkan pandangan langit terbuka tanpa halangan pohon/atap dan biaya langganan bulanan.',
-        source: 'https://www.starlink.com/id'
+        id: 'prod-default-3',
+        name: 'iPad Air M2 11 inci',
+        category: 'iPad',
+        tagline: 'Performa kencang dalam desain portabel serbaguna.',
+        image: createDeviceSvgDataUri('ipad', '#0284c7', 'iPad Air M2'),
+        display: '11 inci Liquid Retina Multi-Touch P3',
+        chip: 'Chip Apple M2 dengan Neural Engine cepat',
+        camera: 'Kamera belakang 12MP Wide + Kamera depan lanskap Center Stage',
+        battery: 'Hingga 10 jam penggunaan web/video, port USB-C',
+        features: 'Mendukung Apple Pencil Pro & Magic Keyboard, Touch ID',
+        pros: 'Ideal untuk mencatat kuliah, desain ringan, dan multitasking.',
+        cons: 'Apple Pencil dan keyboard dijual terpisah.',
+        source: 'https://www.apple.com/id/'
       }
     ];
 
-    // =========================================================================
-    // 2. STATE APLIKASI
-    // =========================================================================
-    let products = [];
-    let categoriesList = [...DEFAULT_CATEGORIES];
-    let selectedCategory = 'Semua';
-    let columnCount = window.innerWidth < 768 ? 2 : 3;
-    let selectedProductIds = ['iphone-18-pro-max', 'iphone-18-pro', 'iphone-17', 'macbook-air-m4-13'];
-    let isApiKeyHidden = false;
-    let activeMenu = 'compare';
-    let headerSearchKeyword = '';
-    let editingCategoryOldName = null;
+    const GOOGLE_APPS_SCRIPT_TEMPLATE = `// Kode Google Apps Script Mahadewa.id (Code.gs)
+// Simpan & Deploy sebagai Web App (Akses: Siapa saja / Anyone)
+function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const prodSheet = ss.getSheetByName('KatalogProduk') || ss.insertSheet('KatalogProduk');
+  const setSheet = ss.getSheetByName('PengaturanAdmin') || ss.insertSheet('PengaturanAdmin');
+
+  const rows = prodSheet.getDataRange().getValues();
+  const products = [];
+  if (rows.length > 1) {
+    const headers = rows[0].map(h => String(h).trim().toLowerCase());
+    for (let i = 1; i < rows.length; i++) {
+      if (!rows[i][1] && !rows[i][0]) continue;
+      const obj = {};
+      headers.forEach((h, idx) => { obj[h] = rows[i][idx]; });
+      products.push({
+        id: String(obj.id || 'row-' + i),
+        name: String(obj.name || obj['nama produk'] || ''),
+        category: String(obj.category || obj.kategori || ''),
+        tagline: String(obj.tagline || ''),
+        image: String(obj.image || obj.foto || ''),
+        display: String(obj.display || obj.layar || ''),
+        chip: String(obj.chip || obj.performa || ''),
+        camera: String(obj.camera || obj.kamera || ''),
+        battery: String(obj.battery || obj.baterai || ''),
+        features: String(obj.features || obj.fitur || ''),
+        pros: String(obj.pros || obj.kelebihan || ''),
+        cons: String(obj.cons || obj.kekurangan || ''),
+        source: String(obj.source || obj.sumber || '')
+      });
+    }
+  }
+
+  const settings = {};
+  const setRows = setSheet.getDataRange().getValues();
+  for (let i = 0; i < setRows.length; i++) {
+    if (setRows[i][0]) settings[String(setRows[i][0]).trim()] = setRows[i][1];
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'success',
+    products: products,
+    adminPin: settings.adminPin || '2026',
+    brandLogo: settings.brandLogo || '',
+    geminiApiKey: settings.geminiApiKey || '',
+    brandCategories: settings.brandCategories || ''
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const prodSheet = ss.getSheetByName('KatalogProduk') || ss.insertSheet('KatalogProduk');
+  const setSheet = ss.getSheetByName('PengaturanAdmin') || ss.insertSheet('PengaturanAdmin');
+  const payload = JSON.parse(e.postData.contents || '{}');
+
+  function upsertSetting(key, val) {
+    const rows = setSheet.getDataRange().getValues();
+    for (let i = 0; i < rows.length; i++) {
+      if (String(rows[i][0]).trim() === key) {
+        setSheet.getRange(i + 1, 2).setValue(val);
+        return;
+      }
+    }
+    setSheet.appendRow([key, val]);
+  }
+
+  if (payload.action === 'updatePin') upsertSetting('adminPin', payload.pin);
+  if (payload.action === 'updateLogo') upsertSetting('brandLogo', payload.logoUrl);
+  if (payload.action === 'updateGeminiKey') upsertSetting('geminiApiKey', payload.apiKey);
+  if (payload.action === 'updateCategories') upsertSetting('brandCategories', JSON.stringify(payload.categories || []));
+
+  if (payload.action === 'syncAll' && Array.isArray(payload.products)) {
+    prodSheet.clearContents();
+    prodSheet.appendRow(['id', 'name', 'category', 'tagline', 'image', 'display', 'chip', 'camera', 'battery', 'features', 'pros', 'cons', 'source']);
+    payload.products.forEach(p => {
+      prodSheet.appendRow([p.id, p.name, p.category, p.tagline, p.image, p.display, p.chip, p.camera, p.battery, p.features, p.pros, p.cons, p.source]);
+    });
+  }
+
+  if (payload.action === 'upsert' && payload.product) {
+    const p = payload.product;
+    const rows = prodSheet.getDataRange().getValues();
+    if (rows.length === 0) {
+      prodSheet.appendRow(['id', 'name', 'category', 'tagline', 'image', 'display', 'chip', 'camera', 'battery', 'features', 'pros', 'cons', 'source']);
+    }
+    let foundRow = -1;
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(p.id)) { foundRow = i + 1; break; }
+    }
+    const rowData = [p.id, p.name, p.category, p.tagline, p.image, p.display, p.chip, p.camera, p.battery, p.features, p.pros, p.cons, p.source];
+    if (foundRow !== -1) prodSheet.getRange(foundRow, 1, 1, rowData.length).setValues([rowData]);
+    else prodSheet.appendRow(rowData);
+  }
+
+  if (payload.action === 'delete' && payload.id) {
+    const rows = prodSheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(payload.id)) { prodSheet.deleteRow(i + 1); break; }
+    }
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
+}`;
 
     // =========================================================================
-    // 3. SISTEM 2 MENU, KATEGORI DINAMIS (SINKRON SPREADSHEET) & PIN ADMIN
+    // 2. MANAJEMEN KATEGORI & FILTER PENCARIAN
     // =========================================================================
     function extractCategoriesFromProducts(prodList) {
       const found = [];
@@ -1118,31 +865,18 @@ function jsonResponse(obj) {
 
     function loadCategories(mergeFromProducts = true) {
       const actualFromSheet = extractCategoriesFromProducts(products);
-      let loaded = [];
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY_CATEGORIES);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            loaded = parsed;
+      if (categoriesList.length > 0 && mergeFromProducts && actualFromSheet.length > 0) {
+        const merged = [...categoriesList];
+        actualFromSheet.forEach(c => {
+          if (!merged.some(m => m.toLowerCase() === c.toLowerCase())) {
+            merged.push(c);
           }
-        }
-      } catch (e) {}
-
-      if (loaded.length > 0) {
-        if (mergeFromProducts && actualFromSheet.length > 0) {
-          const merged = [...loaded];
-          actualFromSheet.forEach(c => {
-            if (!merged.some(m => m.toLowerCase() === c.toLowerCase())) {
-              merged.push(c);
-            }
-          });
-          categoriesList = merged;
-        } else {
-          categoriesList = loaded;
-        }
-      } else {
-        categoriesList = actualFromSheet.length > 0 ? actualFromSheet : [...DEFAULT_CATEGORIES];
+        });
+        categoriesList = merged;
+      } else if (actualFromSheet.length > 0) {
+        categoriesList = actualFromSheet;
+      } else if (categoriesList.length === 0) {
+        categoriesList = [...DEFAULT_CATEGORIES];
       }
 
       renderCategorySelectOptions();
@@ -1150,7 +884,6 @@ function jsonResponse(obj) {
     }
 
     function saveCategoriesLocally() {
-      localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(categoriesList));
       renderCategorySelectOptions();
       renderAdminCategoryTags();
       renderCategoryFilters();
@@ -1171,29 +904,18 @@ function jsonResponse(obj) {
     function renderAdminCategoryTags() {
       const container = document.getElementById('admin-category-tags');
       if (!container) return;
-      const canDelete = categoriesList.length > 1;
       container.innerHTML = categoriesList.map(cat => {
-        const safeCat = cat.replace(/'/g, "\\'");
-        const isBeingEdited = editingCategoryOldName === cat;
         const count = products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase()).length;
+        const safeCat = cat.replace(/'/g, "\\'");
         return `
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition ${
-            isBeingEdited
-              ? 'bg-blue-50 border-blue-400 text-blue-800 ring-2 ring-blue-200'
-              : 'bg-white border-gray-300 text-[#1d1d1f]'
-          }">
-            <span>${cat}</span>
-            <span class="text-[10px] text-gray-400">(${count})</span>
-            <button type="button" onclick="startEditCategory('${safeCat}')" title="Ubah nama kategori"
-              class="${isBeingEdited ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'} transition">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#f5f5f7] border border-gray-200 text-xs font-medium text-[#1d1d1f]">
+            <span>${cat} <span class="text-[10px] text-gray-500">(${count})</span></span>
+            <button type="button" onclick="startEditCategory('${safeCat}')" title="Ubah nama kategori" class="text-blue-600 hover:text-blue-800">
               <i data-lucide="pencil" class="w-3 h-3"></i>
             </button>
-            ${canDelete ? `
-              <button type="button" onclick="deleteCategory('${safeCat}')" title="Hapus kategori"
-                class="text-gray-400 hover:text-[#C62828] transition">
-                <i data-lucide="x" class="w-3 h-3"></i>
-              </button>
-            ` : ''}
+            <button type="button" onclick="deleteCategory('${safeCat}')" title="Hapus kategori" class="text-[#C62828] hover:text-red-800">
+              <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
           </span>
         `;
       }).join('');
@@ -1205,20 +927,12 @@ function jsonResponse(obj) {
       const input = document.getElementById('new-category-input');
       const saveBtn = document.getElementById('btn-save-category');
       const cancelBtn = document.getElementById('btn-cancel-category-edit');
-
       if (input) {
         input.value = catName;
         input.focus();
-        input.select();
       }
-      if (saveBtn) {
-        saveBtn.textContent = 'Simpan Perubahan';
-        saveBtn.className = 'px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition';
-      }
+      if (saveBtn) saveBtn.textContent = 'Simpan Perubahan';
       if (cancelBtn) cancelBtn.classList.remove('hidden');
-
-      renderAdminCategoryTags();
-      showToast(`Mengedit kategori "${catName}". Ubah namanya lalu klik "Simpan Perubahan".`, 'info');
     }
 
     function cancelCategoryEdit() {
@@ -1226,110 +940,59 @@ function jsonResponse(obj) {
       const input = document.getElementById('new-category-input');
       const saveBtn = document.getElementById('btn-save-category');
       const cancelBtn = document.getElementById('btn-cancel-category-edit');
-
       if (input) input.value = '';
-      if (saveBtn) {
-        saveBtn.textContent = '+ Tambah Kategori';
-        saveBtn.className = 'px-4 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition';
-      }
+      if (saveBtn) saveBtn.textContent = '+ Tambah Kategori';
       if (cancelBtn) cancelBtn.classList.add('hidden');
-      renderAdminCategoryTags();
     }
 
-    async function saveCategoryAction() {
+    function saveCategoryAction() {
       const input = document.getElementById('new-category-input');
-      const typedName = (input ? input.value : '').trim();
-
-      if (!typedName) {
-        showToast('Ketik nama kategori terlebih dahulu.', 'error');
+      const val = (input ? input.value : '').trim();
+      if (!val) {
+        showToast('Masukkan nama kategori terlebih dahulu.', 'error');
         return;
       }
 
       if (editingCategoryOldName) {
-        const oldName = editingCategoryOldName;
-        if (typedName === oldName) {
-          cancelCategoryEdit();
-          return;
-        }
-        if (categoriesList.some(c => c.toLowerCase() === typedName.toLowerCase() && c !== oldName)) {
-          showToast(`Kategori "${typedName}" sudah digunakan.`, 'error');
-          return;
-        }
-
-        const idx = categoriesList.indexOf(oldName);
-        if (idx !== -1) {
-          categoriesList[idx] = typedName;
-        }
-
-        let updatedProductsCount = 0;
+        const idx = categoriesList.findIndex(c => c.toLowerCase() === editingCategoryOldName.toLowerCase());
+        if (idx !== -1) categoriesList[idx] = val;
         products.forEach(p => {
-          if (p.category === oldName) {
-            p.category = typedName;
-            updatedProductsCount++;
+          if ((p.category || '').toLowerCase() === editingCategoryOldName.toLowerCase()) {
+            p.category = val;
           }
         });
-
-        if (selectedCategory === oldName) selectedCategory = typedName;
         cancelCategoryEdit();
-        saveCategoriesLocally();
-
-        if (updatedProductsCount > 0) {
-          saveLocalProducts();
-          renderComparisonTable();
-          renderAdminProductList();
-          await pushAllToGoogleSheets();
+        showToast(`Kategori diperbarui menjadi "${val}"!`, 'success');
+        pushAllToGoogleSheets();
+      } else {
+        if (categoriesList.some(c => c.toLowerCase() === val.toLowerCase())) {
+          showToast('Kategori tersebut sudah ada.', 'error');
+          return;
         }
-        await syncCategoriesToSheets();
-        showToast(`Kategori "${oldName}" berhasil diubah menjadi "${typedName}" & disinkronkan ke Sheets!`, 'success');
-        return;
+        categoriesList.push(val);
+        if (input) input.value = '';
+        showToast(`Kategori "${val}" ditambahkan!`, 'success');
       }
 
-      if (categoriesList.some(c => c.toLowerCase() === typedName.toLowerCase())) {
-        showToast(`Kategori "${typedName}" sudah ada.`, 'info');
-        return;
-      }
-      categoriesList.push(typedName);
-      input.value = '';
       saveCategoriesLocally();
-      showToast(`Kategori "${typedName}" berhasil ditambahkan!`, 'success');
-      await syncCategoriesToSheets();
+      renderComparisonTable();
+      renderAdminProductList();
+      syncCategoriesToSheets();
     }
 
-    async function deleteCategory(catName) {
+    function deleteCategory(catName) {
       if (categoriesList.length <= 1) {
-        showToast('Minimal harus tersisa 1 kategori produk.', 'error');
+        showToast('Minimal harus tersisa 1 kategori.', 'error');
         return;
       }
-      if (editingCategoryOldName === catName) {
-        cancelCategoryEdit();
+      categoriesList = categoriesList.filter(c => c.toLowerCase() !== catName.toLowerCase());
+      if (selectedCategory.toLowerCase() === catName.toLowerCase()) {
+        selectedCategory = 'Semua';
       }
-      categoriesList = categoriesList.filter(c => c !== catName);
-      const fallbackCat = categoriesList[0];
-
-      let movedCount = 0;
-      products.forEach(p => {
-        if (p.category === catName) {
-          p.category = fallbackCat;
-          movedCount++;
-        }
-      });
-
-      if (selectedCategory === catName) selectedCategory = 'Semua';
-
       saveCategoriesLocally();
-      if (movedCount > 0) {
-        saveLocalProducts();
-        renderComparisonTable();
-        renderAdminProductList();
-        await pushAllToGoogleSheets();
-      }
-      await syncCategoriesToSheets();
-      showToast(
-        movedCount > 0
-          ? `Kategori "${catName}" dihapus & ${movedCount} produk dipindahkan ke "${fallbackCat}" (Tersinkron ke Sheets).`
-          : `Kategori "${catName}" berhasil dihapus & disinkronkan ke Google Sheets!`,
-        'success'
-      );
+      renderComparisonTable();
+      syncCategoriesToSheets();
+      showToast(`Kategori "${catName}" dihapus.`, 'info');
     }
 
     async function syncCategoriesToSheets() {
@@ -1339,112 +1002,59 @@ function jsonResponse(obj) {
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: 'updateCategories', categories: categoriesList })
         });
-      } catch (err) {
-        console.warn('Gagal sinkron kategori ke server:', err);
+      } catch (e) {
+        console.warn('Gagal menyinkronkan kategori ke Sheets:', e);
       }
     }
 
-    function getStoredAdminPin() {
-      return localStorage.getItem(STORAGE_KEY_ADMIN_PIN) || DEFAULT_ADMIN_PIN;
+    function handleHeaderSearch(val) {
+      headerSearchKeyword = (val || '').trim().toLowerCase();
+      const desktopEl = document.getElementById('header-search-input');
+      const mobileEl = document.getElementById('mobile-search-input');
+      if (desktopEl && desktopEl.value.toLowerCase() !== headerSearchKeyword) desktopEl.value = val;
+      if (mobileEl && mobileEl.value.toLowerCase() !== headerSearchKeyword) mobileEl.value = val;
+      renderComparisonTable();
     }
 
-    function applyBrandLogo(url) {
-      const validUrl = (url && String(url).trim() !== '') ? String(url).trim() : DEFAULT_BRAND_LOGO_URL;
-      localStorage.setItem(STORAGE_KEY_BRAND_LOGO, validUrl);
-      const headerImg = document.getElementById('header-logo-img');
-      const footerImg = document.getElementById('footer-logo-img');
-      const logoInput = document.getElementById('custom-logo-url-input');
-      if (headerImg) headerImg.src = validUrl;
-      if (footerImg) footerImg.src = validUrl;
-      if (logoInput && validUrl !== DEFAULT_BRAND_LOGO_URL) {
-        logoInput.value = validUrl;
-      }
-    }
-
-    async function updateBrandLogo() {
-      const inputEl = document.getElementById('custom-logo-url-input');
-      const newUrl = (inputEl ? inputEl.value : '').trim();
-      if (!newUrl || !newUrl.startsWith('http')) {
-        showToast('Masukkan link URL gambar logo yang valid (diawali https://).', 'error');
-        return;
-      }
-
-      applyBrandLogo(newUrl);
-      showToast('Logo diperbarui! Menyimpan ke cloud agar semua HP/laptop ikut berubah...', 'info');
-
-      try {
-        const res = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updateLogo', logoUrl: newUrl })
-        });
-        const data = await res.json();
-        if (data && data.status === 'success') {
-          showToast('Logo berhasil disimpan ke Google Sheets & aktif di semua perangkat!', 'success');
-        } else {
-          showToast('Logo aktif di perangkat ini. Perbarui Code.gs jika ingin sinkron lintas browser.', 'info');
-        }
-      } catch (err) {
-        showToast('Logo aktif secara lokal, gagal menyinkronkan ke server.', 'error');
-      }
-    }
-
-    async function resetBrandLogo() {
-      const inputEl = document.getElementById('custom-logo-url-input');
-      if (inputEl) inputEl.value = '';
-      applyBrandLogo(DEFAULT_BRAND_LOGO_URL);
-      try {
-        await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updateLogo', logoUrl: DEFAULT_BRAND_LOGO_URL })
-        });
-      } catch (e) {}
-      showToast('Logo dikembalikan ke logo resmi Mahadewa.id.', 'success');
-    }
-
+    // =========================================================================
+    // 3. NAVIGASI MENU & KEAMANAN PIN ADMIN
+    // =========================================================================
     function isAdminUnlocked() {
       return sessionStorage.getItem(SESSION_KEY_UNLOCKED) === 'true';
     }
 
-    function handleHeaderSearch(keyword) {
-      headerSearchKeyword = (keyword || '').trim().toLowerCase();
-      const dInput = document.getElementById('header-search-input');
-      const mInput = document.getElementById('mobile-search-input');
-      if (dInput && dInput.value.toLowerCase() !== headerSearchKeyword) dInput.value = keyword;
-      if (mInput && mInput.value.toLowerCase() !== headerSearchKeyword) mInput.value = keyword;
-      renderComparisonTable();
+    function updateAdminLockIcon() {
+      const iconEl = document.getElementById('nav-admin-icon');
+      if (!iconEl) return;
+      iconEl.setAttribute('data-lucide', isAdminUnlocked() ? 'unlock' : 'lock');
+      lucide.createIcons();
     }
 
     function switchMenu(menuName, event) {
       if (event) event.preventDefault();
-
-      if (menuName === 'admin' && !isAdminUnlocked()) {
-        requestAdminAccess();
-        return;
-      }
-
-      activeMenu = menuName;
       const compareView = document.getElementById('view-compare');
       const adminView = document.getElementById('view-admin');
       const btnCompare = document.getElementById('nav-btn-compare');
       const btnAdmin = document.getElementById('nav-btn-admin');
 
       if (menuName === 'admin') {
+        if (!isAdminUnlocked()) {
+          requestAdminAccess();
+          return;
+        }
         compareView.classList.add('hidden');
         adminView.classList.remove('hidden');
-
+        btnAdmin.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-white/20 shadow-sm transition-all whitespace-nowrap';
         btnCompare.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white/90 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap';
-        btnAdmin.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-white/25 shadow-sm transition-all whitespace-nowrap';
+        renderAdminProductList();
+        renderAdminCategoryTags();
       } else {
         adminView.classList.add('hidden');
         compareView.classList.remove('hidden');
-
-        btnCompare.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-white/25 shadow-sm transition-all whitespace-nowrap';
+        btnCompare.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-white/20 shadow-sm transition-all whitespace-nowrap';
         btnAdmin.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white/90 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap';
+        renderComparisonTable();
       }
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       lucide.createIcons();
     }
 
@@ -1455,31 +1065,29 @@ function jsonResponse(obj) {
       }
       const modal = document.getElementById('pin-auth-modal');
       const input = document.getElementById('pin-auth-input');
-      input.value = '';
-      modal.classList.remove('hidden');
-      setTimeout(() => input.focus(), 100);
-      lucide.createIcons();
+      if (modal) modal.classList.remove('hidden');
+      if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 50);
+      }
     }
 
     function closePinModal() {
-      document.getElementById('pin-auth-modal').classList.add('hidden');
+      const modal = document.getElementById('pin-auth-modal');
+      if (modal) modal.classList.add('hidden');
     }
 
-    function verifyAdminPin(e) {
-      e.preventDefault();
-      const entered = document.getElementById('pin-auth-input').value.trim();
-      const validPin = getStoredAdminPin();
-
-      if (entered === validPin) {
+    function verifyAdminPin(event) {
+      event.preventDefault();
+      const inputVal = (document.getElementById('pin-auth-input').value || '').trim();
+      if (inputVal === getStoredAdminPin()) {
         sessionStorage.setItem(SESSION_KEY_UNLOCKED, 'true');
-        updateAdminLockIcon();
         closePinModal();
+        updateAdminLockIcon();
         switchMenu('admin');
-        showToast('Akses diberikan. Selamat datang di Menu Kelola Produk & Sync.', 'success');
+        showToast('Akses Administrator berhasil dibuka!', 'success');
       } else {
-        showToast('PIN akses salah! Silakan hubungi Owner Mahadewa.id.', 'error');
-        document.getElementById('pin-auth-input').value = '';
-        document.getElementById('pin-auth-input').focus();
+        showToast('PIN salah! Silakan coba lagi.', 'error');
       }
     }
 
@@ -1487,177 +1095,33 @@ function jsonResponse(obj) {
       sessionStorage.removeItem(SESSION_KEY_UNLOCKED);
       updateAdminLockIcon();
       switchMenu('compare');
-      showToast('Menu Kelola Produk telah dikunci kembali.', 'info');
-    }
-
-    function updateAdminLockIcon() {
-      const iconEl = document.getElementById('nav-admin-icon');
-      if (!iconEl) return;
-      if (isAdminUnlocked()) {
-        iconEl.setAttribute('data-lucide', 'unlock');
-        iconEl.className = 'w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-300';
-      } else {
-        iconEl.setAttribute('data-lucide', 'lock');
-        iconEl.className = 'w-3.5 h-3.5 sm:w-4 sm:h-4 text-white';
-      }
-      lucide.createIcons();
-    }
-
-    async function updateAdminPin() {
-      const newPin = document.getElementById('new-admin-pin').value.trim();
-      if (!newPin || newPin.length < 4) {
-        showToast('PIN baru minimal 4 karakter/angka.', 'error');
-        return;
-      }
-
-      localStorage.setItem(STORAGE_KEY_ADMIN_PIN, newPin);
-      document.getElementById('new-admin-pin').value = '';
-      showToast('Menyimpan PIN baru ke Google Sheets agar berlaku di semua perangkat...', 'info');
-
-      try {
-        const res = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updatePin', pin: newPin })
-        });
-        const data = await res.json();
-        if (data && data.status === 'success') {
-          showToast('PIN Akses Admin berhasil diperbarui secara global di semua perangkat!', 'success');
-        } else {
-          showToast('PIN tersimpan lokal. Pastikan Code.gs sudah diperbarui agar sinkron ke perangkat lain.', 'info');
-        }
-      } catch (err) {
-        showToast('PIN tersimpan di perangkat ini, namun gagal menyinkronkan ke server.', 'error');
-      }
+      showToast('Sesi Admin telah dikunci.', 'info');
     }
 
     // =========================================================================
-    // 4. INISIALISASI & PENYIMPANAN LOKAL + GOOGLE SHEETS SYNC (OTOMATIS)
-    // =========================================================================
-    document.addEventListener('DOMContentLoaded', () => {
-      const yearEl = document.getElementById('footer-year');
-      if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-      const scriptBox = document.getElementById('apps-script-code-box');
-      if (scriptBox) scriptBox.value = GOOGLE_APPS_SCRIPT_TEMPLATE;
-
-      const savedLogo = localStorage.getItem(STORAGE_KEY_BRAND_LOGO) || DEFAULT_BRAND_LOGO_URL;
-      applyBrandLogo(savedLogo);
-
-      const savedGeminiKey = localStorage.getItem(STORAGE_KEY_GEMINI) || '';
-      const geminiInput = document.getElementById('ai-api-key');
-      const cloudGeminiInput = document.getElementById('cloud-gemini-key-input');
-      if (savedGeminiKey) {
-        if (geminiInput) geminiInput.value = savedGeminiKey;
-        if (cloudGeminiInput) cloudGeminiInput.value = savedGeminiKey;
-      }
-
-      loadLocalProducts();
-      loadCategories(true);
-      updateAdminLockIcon();
-
-      renderCategoryFilters();
-      updateColumnButtonsUI();
-      renderComparisonTable();
-      renderAdminProductList();
-      lucide.createIcons();
-
-      syncFromGoogleSheets(true);
-    });
-
-    function saveGeminiApiKeyLocally() {
-      const val = document.getElementById('ai-api-key').value.trim();
-      const cloudInput = document.getElementById('cloud-gemini-key-input');
-      if (cloudInput) cloudInput.value = val;
-      if (val) {
-        localStorage.setItem(STORAGE_KEY_GEMINI, val);
-      } else {
-        localStorage.removeItem(STORAGE_KEY_GEMINI);
-      }
-    }
-
-    async function saveCloudGeminiApiKey() {
-      const cloudInput = document.getElementById('cloud-gemini-key-input');
-      const keyVal = (cloudInput ? cloudInput.value : '').trim();
-      if (!keyVal) {
-        showToast('Masukkan Gemini API Key terlebih dahulu.', 'error');
-        return;
-      }
-      localStorage.setItem(STORAGE_KEY_GEMINI, keyVal);
-      const localAiInput = document.getElementById('ai-api-key');
-      if (localAiInput) localAiInput.value = keyVal;
-
-      showToast('Menyimpan Gemini API Key ke Google Sheets agar aktif di semua HP & laptop...', 'info');
-      try {
-        const res = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updateGeminiKey', apiKey: keyVal })
-        });
-        const data = await res.json();
-        if (data && data.status === 'success') {
-          showToast('Gemini API Key berhasil disinkronkan ke cloud! Tanya AI aktif di semua perangkat.', 'success');
-        } else {
-          showToast('Key tersimpan lokal. Perbarui Code.gs agar aktif otomatis di perangkat staf.', 'info');
-        }
-      } catch (e) {
-        showToast('Key tersimpan di perangkat ini, gagal menyinkronkan ke server.', 'error');
-      }
-    }
-
-    function loadLocalProducts() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY_PRODUCTS);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            products = parsed;
-            return;
-          }
-        }
-      } catch (e) {
-        console.warn('Gagal membaca localStorage:', e);
-      }
-      products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-      saveLocalProducts();
-    }
-
-    function saveLocalProducts() {
-      try {
-        localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
-      } catch (e) {
-        showToast('Penyimpanan lokal penuh. Gunakan gambar berukuran lebih kecil.', 'error');
-      }
-    }
-
-    // =========================================================================
-    // 5. LOGIKA UPLOAD & TEMPLATE EXCEL / CSV
+    // 5. IMPORT / EXPORT EXCEL (.XLSX / .XLS / .CSV)
     // =========================================================================
     function downloadExcelTemplate() {
-      if (typeof XLSX === 'undefined') {
-        showToast('Library Excel sedang dimuat, coba sesaat lagi.', 'error');
-        return;
-      }
       const sampleRows = [
         {
-          'Nama Produk': 'iPad Air M3 11 inci',
-          'Kategori': 'iPad',
-          'Tagline': 'Performa chip M3 yang gesit dalam desain super portabel.',
-          'Layar': '11 inci Liquid Retina IPS LCD, True Tone, warna luas P3',
-          'Chip': 'Chip Apple M3 (CPU 8-core, GPU 9-core)',
-          'Kamera': 'Kamera belakang 12 MP Wide + Kamera depan lanskap 12 MP Center Stage',
-          'Baterai': 'Hingga 10 jam menjelajah web via Wi-Fi, port USB-C',
-          'Fitur': 'Touch ID, dukung Apple Pencil Pro & Magic Keyboard',
-          'Kelebihan': 'Layar sudah laminated, performa kencang untuk desain & multitasking.',
-          'Kekurangan': 'Refresh rate layar masih 60Hz.',
-          'Sumber': 'https://www.apple.com/id/ipad-air/',
-          'Foto': ''
+          'Nama Produk': 'Contoh Laptop Pro 14',
+          'Kategori': categoriesList[0] || 'Laptop Windows',
+          'Tagline': 'Performa cepat untuk kerja dan kuliah',
+          'Layar': '14 inci Full HD IPS',
+          'Chip': 'Intel Core i5 / Ryzen 5, RAM 16GB, SSD 512GB',
+          'Kamera': 'Webcam HD, Wi-Fi 6, HDMI, USB-C',
+          'Baterai': 'Hingga 10 jam',
+          'Fitur': 'Backlit Keyboard, Fingerprint',
+          'Kelebihan': 'Ringan, baterai awet, port lengkap',
+          'Kekurangan': 'Tidak ada GPU diskrit',
+          'Foto': '',
+          'Sumber': 'https://www.mahadewa.id'
         }
       ];
       const ws = XLSX.utils.json_to_sheet(sampleRows);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'TemplateProduk');
-      XLSX.writeFile(wb, 'Template_Katalog_Mahadewa_id.xlsx');
+      XLSX.writeFile(wb, 'Template-Katalog-Mahadewa.xlsx');
       showToast('Template Excel berhasil diunduh!', 'success');
     }
 
@@ -1665,48 +1129,39 @@ function jsonResponse(obj) {
       const file = event.target.files?.[0];
       if (!file) return;
 
-      if (typeof XLSX === 'undefined') {
-        showToast('Library pembaca Excel belum siap. Periksa koneksi internet Anda.', 'error');
-        return;
-      }
-
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const data = new Uint8Array(e.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[firstSheetName];
-          const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-
-          if (!rows || rows.length === 0) {
-            showToast('File Excel/CSV kosong atau tidak memiliki baris data.', 'error');
-            return;
-          }
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
 
           let addedCount = 0;
           let updatedCount = 0;
 
           rows.forEach((row, index) => {
-            const getCol = (keys) => {
-              for (const k of keys) {
-                const foundKey = Object.keys(row).find(rk => rk.trim().toLowerCase() === k.toLowerCase());
-                if (foundKey && String(row[foundKey]).trim() !== '') {
-                  return String(row[foundKey]).trim();
-                }
+            const normalizedRow = {};
+            Object.keys(row).forEach(k => {
+              normalizedRow[k.trim().toLowerCase()] = String(row[k] || '').trim();
+            });
+
+            const getCol = (aliases) => {
+              for (const alias of aliases) {
+                const val = normalizedRow[alias.toLowerCase()];
+                if (val) return val;
               }
               return '';
             };
 
-            const name = getCol(['Nama Produk', 'Nama', 'Product Name', 'name', 'Tipe']);
+            const name = getCol(['Nama Produk', 'Nama', 'Product Name', 'name']);
             if (!name) return;
 
-            const rawCat = getCol(['Kategori', 'Category', 'category']);
-            const matchedCat = categoriesList.find(c => c.toLowerCase() === rawCat.toLowerCase());
-            const category = matchedCat || rawCat || detectCategoryFromName(name);
-            if (category && !categoriesList.includes(category)) {
+            const category = getCol(['Kategori', 'Category', 'Brand']) || categoriesList[0] || 'Lainnya';
+            if (!categoriesList.some(c => c.toLowerCase() === category.toLowerCase())) {
               categoriesList.push(category);
             }
+
             const imageVal = getCol(['Foto', 'Image', 'URL Foto', 'image']);
 
             const itemObj = {
@@ -1766,33 +1221,185 @@ function jsonResponse(obj) {
     function updateSyncStatusUI(state, text) {
       const dot = document.getElementById('sync-status-dot');
       const label = document.getElementById('sync-status-text');
-      const cardBadge = document.getElementById('gsheet-badge-card');
-
       if (label) label.textContent = text;
-      if (cardBadge) cardBadge.textContent = text;
+      if (!dot) return;
 
-      if (state === 'syncing') {
-        if (dot) dot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-ping';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200';
-      } else if (state === 'connected') {
-        if (dot) dot.className = 'w-2 h-2 rounded-full bg-emerald-300';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200';
-      } else if (state === 'error') {
-        if (dot) dot.className = 'w-2 h-2 rounded-full bg-red-300';
-        if (cardBadge) cardBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200';
+      if (state === 'connected') {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-300';
+      } else if (state === 'syncing') {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-ping';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-red-300';
       }
+    }
+
+    function getStoredAdminPin() {
+      return cloudState.adminPin || DEFAULT_ADMIN_PIN;
+    }
+
+    function applyBrandLogo(url) {
+      const validUrl = (url && String(url).trim() !== '') ? String(url).trim() : DEFAULT_BRAND_LOGO_URL;
+      cloudState.brandLogo = validUrl;
+      const headerImg = document.getElementById('header-logo-img');
+      const footerImg = document.getElementById('footer-logo-img');
+      const logoInput = document.getElementById('custom-logo-url-input');
+      if (headerImg) headerImg.src = validUrl;
+      if (footerImg) footerImg.src = validUrl;
+      if (logoInput && validUrl !== DEFAULT_BRAND_LOGO_URL) {
+        logoInput.value = validUrl;
+      }
+    }
+
+    async function updateBrandLogo() {
+      const input = document.getElementById('custom-logo-url-input');
+      const logoUrl = (input ? input.value : '').trim();
+      if (!logoUrl) {
+        showToast('Masukkan URL logo terlebih dahulu.', 'error');
+        return;
+      }
+      applyBrandLogo(logoUrl);
+      showToast('Menyimpan logo ke Google Sheets...', 'info');
+      try {
+        const res = await fetch(HARDCODED_GSHEET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'updateLogo', logoUrl })
+        });
+        const data = await res.json();
+        if (data && data.status === 'success') {
+          showToast('Logo toko berhasil disimpan langsung ke Spreadsheet!', 'success');
+        } else {
+          showToast('Gagal menyimpan logo ke Google Sheets.', 'error');
+        }
+      } catch (e) {
+        showToast('Gagal menyinkronkan logo ke server Google Sheets.', 'error');
+      }
+    }
+
+    async function resetBrandLogo() {
+      const input = document.getElementById('custom-logo-url-input');
+      if (input) input.value = '';
+      applyBrandLogo(DEFAULT_BRAND_LOGO_URL);
+      try {
+        await fetch(HARDCODED_GSHEET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'updateLogo', logoUrl: DEFAULT_BRAND_LOGO_URL })
+        });
+      } catch (e) {}
+      showToast('Logo dikembalikan ke default Mahadewa.id.', 'info');
+    }
+
+    async function updateAdminPin() {
+      const newPin = document.getElementById('new-admin-pin').value.trim();
+      if (!newPin || newPin.length < 4) {
+        showToast('PIN baru minimal 4 karakter/angka.', 'error');
+        return;
+      }
+
+      cloudState.adminPin = newPin;
+      document.getElementById('new-admin-pin').value = '';
+      showToast('Menyimpan PIN baru langsung ke Google Sheets...', 'info');
+
+      try {
+        const res = await fetch(HARDCODED_GSHEET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'updatePin', pin: newPin })
+        });
+        const data = await res.json();
+        if (data && data.status === 'success') {
+          showToast('PIN Akses Admin berhasil disimpan langsung ke Google Sheets!', 'success');
+        } else {
+          showToast('Gagal menyimpan PIN ke Google Sheets. Periksa koneksi/Code.gs.', 'error');
+        }
+      } catch (err) {
+        showToast('Gagal menyinkronkan PIN ke server Google Sheets.', 'error');
+      }
+    }
+
+    // =========================================================================
+    // 4. INISIALISASI & PENYIMPANAN 100% CLOUD GOOGLE SHEETS
+    // =========================================================================
+    function cleanupLegacyLocalStorage() {
+      try {
+        ['mahadewa_compare_products_v2', 'mahadewa_gemini_apikey_v1', 'mahadewa_admin_pin_v1', 'mahadewa_brand_logo_v1', 'mahadewa_categories_v1']
+          .forEach(k => localStorage.removeItem(k));
+      } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      cleanupLegacyLocalStorage();
+
+      const yearEl = document.getElementById('footer-year');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+      const scriptBox = document.getElementById('apps-script-code-box');
+      if (scriptBox) scriptBox.value = GOOGLE_APPS_SCRIPT_TEMPLATE;
+
+      applyBrandLogo(DEFAULT_BRAND_LOGO_URL);
+      updateAdminLockIcon();
+      updateColumnButtonsUI();
+      lucide.createIcons();
+
+      syncFromGoogleSheets(true);
+    });
+
+    function saveGeminiApiKeyLocally() {
+      const val = document.getElementById('ai-api-key').value.trim();
+      const cloudInput = document.getElementById('cloud-gemini-key-input');
+      if (cloudInput) cloudInput.value = val;
+      cloudState.geminiApiKey = val;
+    }
+
+    async function saveCloudGeminiApiKey() {
+      const cloudInput = document.getElementById('cloud-gemini-key-input');
+      const keyVal = (cloudInput ? cloudInput.value : '').trim();
+      if (!keyVal) {
+        showToast('Masukkan Gemini API Key terlebih dahulu.', 'error');
+        return;
+      }
+      cloudState.geminiApiKey = keyVal;
+      const localAiInput = document.getElementById('ai-api-key');
+      if (localAiInput) localAiInput.value = keyVal;
+
+      showToast('Menyimpan Gemini API Key langsung ke Google Sheets...', 'info');
+      try {
+        const res = await fetch(HARDCODED_GSHEET_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'updateGeminiKey', apiKey: keyVal })
+        });
+        const data = await res.json();
+        if (data && data.status === 'success') {
+          showToast('Gemini API Key berhasil disimpan ke Spreadsheet & aktif di semua HP/laptop!', 'success');
+        } else {
+          showToast('Gagal menyimpan API Key ke Google Sheets.', 'error');
+        }
+      } catch (e) {
+        showToast('Gagal menyinkronkan API Key ke server Google Sheets.', 'error');
+      }
+    }
+
+    function loadLocalProducts() {
+      if (products.length === 0) {
+        products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+      }
+    }
+
+    function saveLocalProducts() {
+      // Penyimpanan lokal dinonaktifkan; seluruh perubahan langsung dikirim ke Google Sheets
     }
 
     async function syncFromGoogleSheets(silent = false) {
       updateSyncStatusUI('syncing', 'Menyinkronkan...');
       try {
-        const cacheBusterUrl = `${HARDCODED_GSHEET_URL}?t=${Date.now()}`;
-        const response = await fetch(cacheBusterUrl, { method: 'GET' });
-        const data = await response.json();
+        const res = await fetch(`${HARDCODED_GSHEET_URL}?t=${Date.now()}`);
+        const data = await res.json();
 
         if (data && data.status === 'success') {
           if (data.adminPin && String(data.adminPin).trim() !== '') {
-            localStorage.setItem(STORAGE_KEY_ADMIN_PIN, String(data.adminPin).trim());
+            cloudState.adminPin = String(data.adminPin).trim();
           }
 
           if (data.brandLogo && String(data.brandLogo).trim() !== '') {
@@ -1801,7 +1408,7 @@ function jsonResponse(obj) {
 
           if (data.geminiApiKey && String(data.geminiApiKey).trim() !== '') {
             const cloudKey = String(data.geminiApiKey).trim();
-            localStorage.setItem(STORAGE_KEY_GEMINI, cloudKey);
+            cloudState.geminiApiKey = cloudKey;
             const aiKeyEl = document.getElementById('ai-api-key');
             const cloudKeyEl = document.getElementById('cloud-gemini-key-input');
             if (aiKeyEl) aiKeyEl.value = cloudKey;
@@ -1825,7 +1432,6 @@ function jsonResponse(obj) {
               ...p,
               image: p.image && p.image.trim() !== '' ? p.image : getFallbackImageByCategory(p.category, p.name)
             }));
-            saveLocalProducts();
 
             // Selalu sinkronkan kategori aktual dari 300+ baris spreadsheet Anda + pengaturan cloud
             const actualSheetCats = extractCategoriesFromProducts(products);
@@ -1847,11 +1453,15 @@ function jsonResponse(obj) {
             }
 
             saveCategoriesLocally();
+            renderComparisonTable();
+            renderAdminProductList();
+            if (!silent) showToast(`Data terbaru berhasil ditarik dari Spreadsheet (${products.length} produk & ${categoriesList.length} kategori)!`, 'success');
+          } else {
+            loadLocalProducts();
+            loadCategories(true);
             renderCategoryFilters();
             renderComparisonTable();
             renderAdminProductList();
-            if (!silent) showToast(`Data terbaru berhasil ditarik (${products.length} produk & ${categoriesList.length} kategori)!`, 'success');
-          } else {
             if (!silent) showToast('Database Google Sheets masih kosong.', 'info');
           }
 
@@ -1859,7 +1469,7 @@ function jsonResponse(obj) {
           updateSyncStatusUI('connected', 'Cloud Sync Aktif');
           const syncTextEl = document.getElementById('gsheet-last-sync');
           if (syncTextEl) {
-            syncTextEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Otomatis sinkron pukul <strong>${timeStr}</strong> (${products.length} produk & ${categoriesList.length} kategori cloud aktif).</span>`;
+            syncTextEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>100% Penyimpanan Spreadsheet aktif pukul <strong>${timeStr}</strong> (${products.length} produk & ${categoriesList.length} kategori).</span>`;
             lucide.createIcons();
           }
         } else {
@@ -1867,9 +1477,16 @@ function jsonResponse(obj) {
         }
       } catch (err) {
         console.error('Sync GET error:', err);
-        updateSyncStatusUI('error', 'Mode Offline');
+        updateSyncStatusUI('error', 'Koneksi Sheets Gagal');
+        if (products.length === 0) {
+          loadLocalProducts();
+          loadCategories(true);
+          renderCategoryFilters();
+          renderComparisonTable();
+          renderAdminProductList();
+        }
         if (!silent) {
-          showToast('Gagal memuat dari cloud. Menampilkan data lokal tersimpan.', 'error');
+          showToast('Gagal terhubung ke Google Sheets. Periksa koneksi internet Anda.', 'error');
         }
       }
     }
@@ -2435,7 +2052,7 @@ function jsonResponse(obj) {
 
     async function autoFillWithAI() {
       const query = document.getElementById('ai-product-query').value.trim();
-      const apiKey = document.getElementById('ai-api-key').value.trim();
+      const apiKey = (document.getElementById('ai-api-key').value || cloudState.geminiApiKey || '').trim();
 
       if (!query) {
         showToast('Ketik nama produk terlebih dahulu (misal: iPhone 16 Pro Max).', 'error');
@@ -2443,7 +2060,7 @@ function jsonResponse(obj) {
       }
 
       if (apiKey) {
-        localStorage.setItem(STORAGE_KEY_GEMINI, apiKey);
+        cloudState.geminiApiKey = apiKey;
       }
 
       const btn = document.getElementById('btn-ai-autofill');
@@ -2665,7 +2282,7 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
       lucide.createIcons();
 
       try {
-        const apiKey = (localStorage.getItem(STORAGE_KEY_GEMINI) || '').trim();
+        const apiKey = (cloudState.geminiApiKey || document.getElementById('ai-api-key')?.value || '').trim();
         let adviceText = '';
         let recommendedItems = [];
         let answerSourceBadge = '';
