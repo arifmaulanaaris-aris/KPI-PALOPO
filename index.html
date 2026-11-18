@@ -664,401 +664,191 @@
 
   <script>
     // =========================================================================
-    // 1. KONFIGURASI PATEN (HARDCODED) & KEAMANAN AKSES MAHADEWA.ID
+    // 1. KONFIGURASI CLOUD & STATE GLOBAL MAHADEWA.ID
     // =========================================================================
-    const HARDCODED_GSHEET_URL = 'https://script.google.com/macros/s/AKfycbynSBQ0DYihlIqREK6SB-m-9d1x9bU81Bb5XCRQOFdKtHzffGw4LTw-RrXZ2ijC01Z5UQ/exec';
-    const DEFAULT_ADMIN_PIN = '2026';
-    const DEFAULT_BRAND_LOGO_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTByyjzmv5_5XHSkxerj-ZrVJPugMEUxMFhXyHPjzOaLg&s=10';
-    const DEFAULT_LOGO_FALLBACK_SVG = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="46" fill="#C62828"/><path d="M62 20 V76 H52 V70 C48.5 74.5 43.2 77 37 77 C25.5 77 18 68.5 18 56.5 C18 44.5 25.5 36 37 36 C43.2 36 48.5 38.5 52 43 V20 H62 Z M39.5 45 C32.5 45 28.2 49.8 28.2 56.5 C28.2 63.2 32.5 68 39.5 68 C46.5 68 51.5 63.2 51.5 56.5 C51.5 49.8 46.5 45 39.5 45 Z" fill="#FFFFFF"/><circle cx="71" cy="71" r="5" fill="#FFFFFF"/></svg>`);
-
-    const SESSION_KEY_UNLOCKED = 'mahadewa_admin_unlocked_session';
-    const WHATSAPP_NUMBER = '6282344888441';
-    const DEFAULT_CATEGORIES = ['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink'];
-
-    let cloudState = {
-      adminPin: DEFAULT_ADMIN_PIN,
-      brandLogo: DEFAULT_BRAND_LOGO_URL,
-      geminiApiKey: ''
-    };
-
-    let products = [];
-    let categoriesList = [...DEFAULT_CATEGORIES];
-    let selectedCategory = 'Semua';
-    let columnCount = 3;
-    let selectedProductIds = [];
-    let headerSearchKeyword = '';
-    let isApiKeyHidden = false;
-    let editingCategoryOldName = null;
-
-    function createDeviceSvgDataUri(type, accentColor, label) {
-      const safeLabel = (label || 'Device').replace(/[<>&'"]/g, '');
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240"><rect width="240" height="240" rx="28" fill="#f5f5f7"/><rect x="52" y="34" width="136" height="172" rx="18" fill="${accentColor}" opacity="0.12"/><rect x="64" y="46" width="112" height="148" rx="12" fill="#ffffff" stroke="${accentColor}" stroke-width="3"/><text x="120" y="124" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="${accentColor}" text-anchor="middle">${safeLabel}</text></svg>`;
-      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-    }
+    const PERMANENT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-MahadewaId-KatalogSync/exec';
+    const DEFAULT_LOGO_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTByyjzmv5_5XHSkxerj-ZrVJPugMEUxMFhXyHPjzOaLg&s=10';
+    const DEFAULT_LOGO_FALLBACK_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23C62828'/%3E%3Ctext x='50' y='64' font-family='Inter,Arial,sans-serif' font-size='44' font-weight='800' fill='white' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E";
+    const STORAGE_KEY_PRODUCTS = 'mahadewa_products_cache_v2';
+    const STORAGE_KEY_SETTINGS = 'mahadewa_settings_cache_v2';
 
     const DEFAULT_PRODUCTS = [
       {
-        id: 'prod-default-1',
+        id: 'iphone-16-pro-max',
         name: 'iPhone 16 Pro Max',
         category: 'iPhone',
-        tagline: 'Layar terbesar dan performa Pro paling mutakhir.',
-        image: createDeviceSvgDataUri('iphone', '#C62828', 'iPhone 16 Pro Max'),
-        display: '6,9 inci Super Retina XDR OLED ProMotion 120Hz',
-        chip: 'Chip A18 Pro dengan Apple Intelligence',
-        camera: 'Sistem kamera Pro 48MP Fusion + Telefoto 5x',
-        battery: 'Pemutaran video hingga 33 jam, USB-C & MagSafe',
-        features: 'Bodi Titanium, Kontrol Kamera, Action Button, IP68',
-        pros: 'Kamera pro terdepan, layar super luas & terang, baterai tahan lama.',
-        cons: 'Ukuran bodi besar dan bobot terasa saat digenggam satu tangan.',
-        source: 'https://www.apple.com/id/'
+        tagline: 'iPhone paling maksimal dengan layar 6,9 inci & Kontrol Kamera.',
+        image: 'https://placehold.co/320x320/f5f5f7/1d1d1f?text=iPhone+16+Pro+Max',
+        display: '6,9 inci Super Retina XDR OLED, ProMotion 120Hz, Always-On',
+        chip: 'Chip A18 Pro (3nm) dengan Apple Intelligence',
+        camera: '48 MP Fusion + 48 MP Ultra Wide + 12 MP Telefoto 5x, Kontrol Kamera',
+        battery: 'Pemutaran video hingga 33 jam, pengisian cepat USB-C & MagSafe 25W',
+        features: 'Bodi Titanium Grade 5, Kontrol Kamera, Action Button, Tahan air IP68',
+        pros: 'Layar paling luas dan tajam, baterai paling awet di lini iPhone, kamera video ProRes 4K 120fps.',
+        cons: 'Ukuran bodi besar & bobot 227 gram terasa saat digenggam satu tangan.',
+        source: 'https://www.apple.com/id/iphone-16-pro/'
       },
       {
-        id: 'prod-default-2',
-        name: 'MacBook Air M3 13 inci',
+        id: 'macbook-air-m3-13',
+        name: 'MacBook Air 13 inci (M3)',
         category: 'MacBook',
-        tagline: 'Tipis, ringan, dan bertenaga super dengan chip M3.',
-        image: createDeviceSvgDataUri('macbook', '#1e293b', 'MacBook Air M3'),
-        display: '13,6 inci Liquid Retina IPS dengan True Tone',
-        chip: 'Apple M3 (CPU 8-core, GPU hingga 10-core)',
-        camera: 'Kamera FaceTime HD 1080p, Wi-Fi 6E, 2x Thunderbolt',
-        battery: 'Hingga 18 jam pemakaian nirkabel, MagSafe 3',
-        features: 'Desain tanpa kipas senyap, Touch ID, bobot hanya 1,24 kg',
-        pros: 'Sangat ringan untuk mobilitas kuliah/kerja, baterai seharian.',
-        cons: 'Port terbatas hanya dua Thunderbolt saat tanpa hub.',
-        source: 'https://www.apple.com/id/'
+        tagline: 'Tipis luar biasa, bertenaga super dengan chip Apple M3.',
+        image: 'https://placehold.co/320x320/f5f5f7/1d1d1f?text=MacBook+Air+M3',
+        display: '13,6 inci Liquid Retina IPS, 500 nit, dukungan 1 miliar warna P3',
+        chip: 'Chip Apple M3 (CPU 8-core, GPU hingga 10-core, Neural Engine 16-core)',
+        camera: 'Kamera FaceTime HD 1080p, Wi-Fi 6E, 2x port Thunderbolt / USB 4',
+        battery: 'Daya tahan baterai hingga 18 jam, pengisian cepat MagSafe 3',
+        features: 'Desain tanpa kipas (hening total), bobot hanya 1,24 kg, Touch ID',
+        pros: 'Sangat ringan untuk mobilitas kuliah/kerja, baterai tahan seharian penuh, performa kencang.',
+        cons: 'Port fisik terbatas pada 2 port Thunderbolt dan MagSafe.',
+        source: 'https://www.apple.com/id/macbook-air/'
       },
       {
-        id: 'prod-default-3',
-        name: 'iPad Air M2 11 inci',
+        id: 'ipad-air-m2-11',
+        name: 'iPad Air 11 inci (M2)',
         category: 'iPad',
-        tagline: 'Performa kencang dalam desain portabel serbaguna.',
-        image: createDeviceSvgDataUri('ipad', '#0284c7', 'iPad Air M2'),
-        display: '11 inci Liquid Retina Multi-Touch P3',
-        chip: 'Chip Apple M2 dengan Neural Engine cepat',
-        camera: 'Kamera belakang 12MP Wide + Kamera depan lanskap Center Stage',
-        battery: 'Hingga 10 jam penggunaan web/video, port USB-C',
-        features: 'Mendukung Apple Pencil Pro & Magic Keyboard, Touch ID',
-        pros: 'Ideal untuk mencatat kuliah, desain ringan, dan multitasking.',
-        cons: 'Apple Pencil dan keyboard dijual terpisah.',
-        source: 'https://www.apple.com/id/'
+        tagline: 'Performa bertenaga chip M2 dalam desain portabel untuk belajar & berkarya.',
+        image: 'https://placehold.co/320x320/f5f5f7/1d1d1f?text=iPad+Air+M2',
+        display: '11 inci Liquid Retina Multi-Touch, lapisan anti-reflektif, True Tone',
+        chip: 'Chip Apple M2 (CPU 8-core, GPU 9-core) untuk multitasking iPadOS',
+        camera: '12 MP Wide belakang + 12 MP Ultra Wide lanskap dengan Center Stage',
+        battery: 'Hingga 10 jam menjelajahi web via Wi-Fi atau menonton video, USB-C',
+        features: 'Mendukung Apple Pencil Pro, Magic Keyboard, Touch ID di tombol atas',
+        pros: 'Sangat ideal untuk mencatat kuliah kedokteran/teknik, ringan dibawa ke kampus.',
+        cons: 'Apple Pencil Pro dan Magic Keyboard dijual terpisah.',
+        source: 'https://www.apple.com/id/ipad-air/'
+      },
+      {
+        id: 'starlink-standard-kit',
+        name: 'Starlink Standard Kit V4',
+        category: 'Starlink',
+        tagline: 'Internet satelit kecepatan tinggi untuk rumah, kantor, hingga area pelosok.',
+        image: 'https://placehold.co/320x320/f5f5f7/1d1d1f?text=Starlink+V4',
+        display: 'Antena Electronic Phased Array tahan cuaca ekstrem (IP67)',
+        chip: 'Router Wi-Fi 6 Tri-Band Gen 3 dengan jangkauan hingga 297 m²',
+        camera: 'Konektivitas satelit orbit rendah (LEO) latensi rendah 25–50 ms',
+        battery: 'Konsumsi daya rata-rata 75–100W AC, termasuk kabel 15m & Kickstand',
+        features: 'Kecepatan unduh hingga 200+ Mbps, tahan hujan deras & angin kencang',
+        pros: 'Solusi internet cepat di wilayah tambang, perkebunan, atau area tanpa fiber optik.',
+        cons: 'Membutuhkan pandangan langit terbuka tanpa terhalang pohon atau atap.',
+        source: 'https://www.starlink.com/id'
       }
     ];
 
-    const GOOGLE_APPS_SCRIPT_TEMPLATE = `// Kode Google Apps Script Mahadewa.id (Code.gs)
-// Simpan & Deploy sebagai Web App (Akses: Siapa saja / Anyone)
-function doGet(e) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const prodSheet = ss.getSheetByName('KatalogProduk') || ss.insertSheet('KatalogProduk');
-  const setSheet = ss.getSheetByName('PengaturanAdmin') || ss.insertSheet('PengaturanAdmin');
+    let products = [];
+    let categoriesList = ['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'PC / AIO', 'Printer', 'Starlink'];
+    let selectedCategory = 'Semua';
+    let columnCount = 3;
+    let selectedProductIds = [];
+    let isAdminUnlocked = false;
+    let isApiKeyHidden = true;
+    let editingCategoryOldName = null;
 
-  const rows = prodSheet.getDataRange().getValues();
-  const products = [];
-  if (rows.length > 1) {
-    const headers = rows[0].map(h => String(h).trim().toLowerCase());
-    for (let i = 1; i < rows.length; i++) {
-      if (!rows[i][1] && !rows[i][0]) continue;
-      const obj = {};
-      headers.forEach((h, idx) => { obj[h] = rows[i][idx]; });
-      products.push({
-        id: String(obj.id || 'row-' + i),
-        name: String(obj.name || obj['nama produk'] || ''),
-        category: String(obj.category || obj.kategori || ''),
-        tagline: String(obj.tagline || ''),
-        image: String(obj.image || obj.foto || ''),
-        display: String(obj.display || obj.layar || ''),
-        chip: String(obj.chip || obj.performa || ''),
-        camera: String(obj.camera || obj.kamera || ''),
-        battery: String(obj.battery || obj.baterai || ''),
-        features: String(obj.features || obj.fitur || ''),
-        pros: String(obj.pros || obj.kelebihan || ''),
-        cons: String(obj.cons || obj.kekurangan || ''),
-        source: String(obj.source || obj.sumber || '')
-      });
-    }
-  }
-
-  const settings = {};
-  const setRows = setSheet.getDataRange().getValues();
-  for (let i = 0; i < setRows.length; i++) {
-    if (setRows[i][0]) settings[String(setRows[i][0]).trim()] = setRows[i][1];
-  }
-
-  return ContentService.createTextOutput(JSON.stringify({
-    status: 'success',
-    products: products,
-    adminPin: settings.adminPin || '2026',
-    brandLogo: settings.brandLogo || '',
-    geminiApiKey: settings.geminiApiKey || '',
-    brandCategories: settings.brandCategories || ''
-  })).setMimeType(ContentService.MimeType.JSON);
-}
-
-function doPost(e) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const prodSheet = ss.getSheetByName('KatalogProduk') || ss.insertSheet('KatalogProduk');
-  const setSheet = ss.getSheetByName('PengaturanAdmin') || ss.insertSheet('PengaturanAdmin');
-  const payload = JSON.parse(e.postData.contents || '{}');
-
-  function upsertSetting(key, val) {
-    const rows = setSheet.getDataRange().getValues();
-    for (let i = 0; i < rows.length; i++) {
-      if (String(rows[i][0]).trim() === key) {
-        setSheet.getRange(i + 1, 2).setValue(val);
-        return;
-      }
-    }
-    setSheet.appendRow([key, val]);
-  }
-
-  if (payload.action === 'updatePin') upsertSetting('adminPin', payload.pin);
-  if (payload.action === 'updateLogo') upsertSetting('brandLogo', payload.logoUrl);
-  if (payload.action === 'updateGeminiKey') upsertSetting('geminiApiKey', payload.apiKey);
-  if (payload.action === 'updateCategories') upsertSetting('brandCategories', JSON.stringify(payload.categories || []));
-
-  if (payload.action === 'syncAll' && Array.isArray(payload.products)) {
-    prodSheet.clearContents();
-    prodSheet.appendRow(['id', 'name', 'category', 'tagline', 'image', 'display', 'chip', 'camera', 'battery', 'features', 'pros', 'cons', 'source']);
-    payload.products.forEach(p => {
-      prodSheet.appendRow([p.id, p.name, p.category, p.tagline, p.image, p.display, p.chip, p.camera, p.battery, p.features, p.pros, p.cons, p.source]);
-    });
-  }
-
-  if (payload.action === 'upsert' && payload.product) {
-    const p = payload.product;
-    const rows = prodSheet.getDataRange().getValues();
-    if (rows.length === 0) {
-      prodSheet.appendRow(['id', 'name', 'category', 'tagline', 'image', 'display', 'chip', 'camera', 'battery', 'features', 'pros', 'cons', 'source']);
-    }
-    let foundRow = -1;
-    for (let i = 1; i < rows.length; i++) {
-      if (String(rows[i][0]) === String(p.id)) { foundRow = i + 1; break; }
-    }
-    const rowData = [p.id, p.name, p.category, p.tagline, p.image, p.display, p.chip, p.camera, p.battery, p.features, p.pros, p.cons, p.source];
-    if (foundRow !== -1) prodSheet.getRange(foundRow, 1, 1, rowData.length).setValues([rowData]);
-    else prodSheet.appendRow(rowData);
-  }
-
-  if (payload.action === 'delete' && payload.id) {
-    const rows = prodSheet.getDataRange().getValues();
-    for (let i = 1; i < rows.length; i++) {
-      if (String(rows[i][0]) === String(payload.id)) { prodSheet.deleteRow(i + 1); break; }
-    }
-  }
-
-  return ContentService.createTextOutput(JSON.stringify({ status: 'success' })).setMimeType(ContentService.MimeType.JSON);
-}`;
+    let cloudState = {
+      appsScriptUrl: localStorage.getItem('mahadewa_apps_script_url') || PERMANENT_APPS_SCRIPT_URL,
+      adminPin: '2026',
+      brandLogo: DEFAULT_LOGO_URL,
+      geminiApiKey: ''
+    };
 
     // =========================================================================
-    // 2. MANAJEMEN KATEGORI & FILTER PENCARIAN
+    // 2. INISIALISASI HALAMAN SAAT PERTAMA DIBUKA
     // =========================================================================
-    function extractCategoriesFromProducts(prodList) {
-      const found = [];
-      (prodList || []).forEach(p => {
-        const cat = String(p.category || '').trim();
-        if (cat && !found.some(x => x.toLowerCase() === cat.toLowerCase())) {
-          found.push(cat);
-        }
-      });
-      return found;
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      const yearEl = document.getElementById('footer-year');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    function loadCategories(mergeFromProducts = true) {
-      const actualFromSheet = extractCategoriesFromProducts(products);
-      if (categoriesList.length > 0 && mergeFromProducts && actualFromSheet.length > 0) {
-        const merged = [...categoriesList];
-        actualFromSheet.forEach(c => {
-          if (!merged.some(m => m.toLowerCase() === c.toLowerCase())) {
-            merged.push(c);
-          }
-        });
-        categoriesList = merged;
-      } else if (actualFromSheet.length > 0) {
-        categoriesList = actualFromSheet;
-      } else if (categoriesList.length === 0) {
-        categoriesList = [...DEFAULT_CATEGORIES];
-      }
+      loadCachedState();
+      applyBrandLogoUI(cloudState.brandLogo);
+      syncCategoriesFromProducts();
+      ensureValidSelectedProducts();
 
-      renderCategorySelectOptions();
-      renderAdminCategoryTags();
-    }
-
-    function saveCategoriesLocally() {
-      renderCategorySelectOptions();
-      renderAdminCategoryTags();
       renderCategoryFilters();
-    }
-
-    function renderCategorySelectOptions() {
-      const selectEl = document.getElementById('prod-category');
-      if (!selectEl) return;
-      const currentVal = selectEl.value;
-      selectEl.innerHTML = categoriesList.map(cat =>
-        `<option value="${cat}">${cat}</option>`
-      ).join('');
-      if (currentVal && categoriesList.includes(currentVal)) {
-        selectEl.value = currentVal;
-      }
-    }
-
-    function renderAdminCategoryTags() {
-      const container = document.getElementById('admin-category-tags');
-      if (!container) return;
-      container.innerHTML = categoriesList.map(cat => {
-        const count = products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase()).length;
-        const safeCat = cat.replace(/'/g, "\\'");
-        return `
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#f5f5f7] border border-gray-200 text-xs font-medium text-[#1d1d1f]">
-            <span>${cat} <span class="text-[10px] text-gray-500">(${count})</span></span>
-            <button type="button" onclick="startEditCategory('${safeCat}')" title="Ubah nama kategori" class="text-blue-600 hover:text-blue-800">
-              <i data-lucide="pencil" class="w-3 h-3"></i>
-            </button>
-            <button type="button" onclick="deleteCategory('${safeCat}')" title="Hapus kategori" class="text-[#C62828] hover:text-red-800">
-              <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-          </span>
-        `;
-      }).join('');
-      lucide.createIcons();
-    }
-
-    function startEditCategory(catName) {
-      editingCategoryOldName = catName;
-      const input = document.getElementById('new-category-input');
-      const saveBtn = document.getElementById('btn-save-category');
-      const cancelBtn = document.getElementById('btn-cancel-category-edit');
-      if (input) {
-        input.value = catName;
-        input.focus();
-      }
-      if (saveBtn) saveBtn.textContent = 'Simpan Perubahan';
-      if (cancelBtn) cancelBtn.classList.remove('hidden');
-    }
-
-    function cancelCategoryEdit() {
-      editingCategoryOldName = null;
-      const input = document.getElementById('new-category-input');
-      const saveBtn = document.getElementById('btn-save-category');
-      const cancelBtn = document.getElementById('btn-cancel-category-edit');
-      if (input) input.value = '';
-      if (saveBtn) saveBtn.textContent = '+ Tambah Kategori';
-      if (cancelBtn) cancelBtn.classList.add('hidden');
-    }
-
-    function saveCategoryAction() {
-      const input = document.getElementById('new-category-input');
-      const val = (input ? input.value : '').trim();
-      if (!val) {
-        showToast('Masukkan nama kategori terlebih dahulu.', 'error');
-        return;
-      }
-
-      if (editingCategoryOldName) {
-        const idx = categoriesList.findIndex(c => c.toLowerCase() === editingCategoryOldName.toLowerCase());
-        if (idx !== -1) categoriesList[idx] = val;
-        products.forEach(p => {
-          if ((p.category || '').toLowerCase() === editingCategoryOldName.toLowerCase()) {
-            p.category = val;
-          }
-        });
-        cancelCategoryEdit();
-        showToast(`Kategori diperbarui menjadi "${val}"!`, 'success');
-        pushAllToGoogleSheets();
-      } else {
-        if (categoriesList.some(c => c.toLowerCase() === val.toLowerCase())) {
-          showToast('Kategori tersebut sudah ada.', 'error');
-          return;
-        }
-        categoriesList.push(val);
-        if (input) input.value = '';
-        showToast(`Kategori "${val}" ditambahkan!`, 'success');
-      }
-
-      saveCategoriesLocally();
+      updateColumnButtonsUI();
       renderComparisonTable();
       renderAdminProductList();
-      syncCategoriesToSheets();
-    }
+      renderAdminCategoryTags();
+      populateCategoryDropdown();
+      populateAppsScriptCodeBox();
 
-    function deleteCategory(catName) {
-      if (categoriesList.length <= 1) {
-        showToast('Minimal harus tersisa 1 kategori.', 'error');
-        return;
+      const keyInput = document.getElementById('ai-api-key');
+      if (keyInput && cloudState.geminiApiKey) {
+        keyInput.value = cloudState.geminiApiKey;
+        keyInput.style.webkitTextSecurity = 'disc';
       }
-      categoriesList = categoriesList.filter(c => c.toLowerCase() !== catName.toLowerCase());
-      if (selectedCategory.toLowerCase() === catName.toLowerCase()) {
-        selectedCategory = 'Semua';
-      }
-      saveCategoriesLocally();
-      renderComparisonTable();
-      syncCategoriesToSheets();
-      showToast(`Kategori "${catName}" dihapus.`, 'info');
-    }
 
-    async function syncCategoriesToSheets() {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      syncFromGoogleSheets(true);
+    });
+
+    function loadCachedState() {
       try {
-        await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updateCategories', categories: categoriesList })
-        });
+        const cachedProds = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS) || 'null');
+        products = Array.isArray(cachedProds) && cachedProds.length > 0 ? cachedProds : [...DEFAULT_PRODUCTS];
+
+        const cachedSettings = JSON.parse(localStorage.getItem(STORAGE_KEY_SETTINGS) || 'null');
+        if (cachedSettings) {
+          if (cachedSettings.adminPin) cloudState.adminPin = String(cachedSettings.adminPin);
+          if (cachedSettings.brandLogo) cloudState.brandLogo = cachedSettings.brandLogo;
+          if (cachedSettings.geminiApiKey) cloudState.geminiApiKey = cachedSettings.geminiApiKey;
+          if (Array.isArray(cachedSettings.categories) && cachedSettings.categories.length > 0) {
+            categoriesList = cachedSettings.categories;
+          }
+        }
       } catch (e) {
-        console.warn('Gagal menyinkronkan kategori ke Sheets:', e);
+        products = [...DEFAULT_PRODUCTS];
       }
     }
 
-    function handleHeaderSearch(val) {
-      headerSearchKeyword = (val || '').trim().toLowerCase();
-      const desktopEl = document.getElementById('header-search-input');
-      const mobileEl = document.getElementById('mobile-search-input');
-      if (desktopEl && desktopEl.value.toLowerCase() !== headerSearchKeyword) desktopEl.value = val;
-      if (mobileEl && mobileEl.value.toLowerCase() !== headerSearchKeyword) mobileEl.value = val;
-      renderComparisonTable();
+    function saveLocalCache() {
+      try {
+        localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products));
+        localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify({
+          adminPin: cloudState.adminPin,
+          brandLogo: cloudState.brandLogo,
+          geminiApiKey: cloudState.geminiApiKey,
+          categories: categoriesList
+        }));
+      } catch (e) {
+        console.warn('Gagal menyimpan cache lokal:', e);
+      }
     }
 
     // =========================================================================
     // 3. NAVIGASI MENU & KEAMANAN PIN ADMIN
     // =========================================================================
-    function isAdminUnlocked() {
-      return sessionStorage.getItem(SESSION_KEY_UNLOCKED) === 'true';
-    }
-
-    function updateAdminLockIcon() {
-      const iconEl = document.getElementById('nav-admin-icon');
-      if (!iconEl) return;
-      iconEl.setAttribute('data-lucide', isAdminUnlocked() ? 'unlock' : 'lock');
-      lucide.createIcons();
-    }
-
     function switchMenu(menuName, event) {
       if (event) event.preventDefault();
-      const compareView = document.getElementById('view-compare');
-      const adminView = document.getElementById('view-admin');
+      const viewCompare = document.getElementById('view-compare');
+      const viewAdmin = document.getElementById('view-admin');
       const btnCompare = document.getElementById('nav-btn-compare');
       const btnAdmin = document.getElementById('nav-btn-admin');
 
       if (menuName === 'admin') {
-        if (!isAdminUnlocked()) {
+        if (!isAdminUnlocked) {
           requestAdminAccess();
           return;
         }
-        compareView.classList.add('hidden');
-        adminView.classList.remove('hidden');
-        btnAdmin.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-white/20 shadow-sm transition-all whitespace-nowrap';
-        btnCompare.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white/90 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap';
+        viewCompare.classList.add('hidden');
+        viewAdmin.classList.remove('hidden');
+        btnAdmin.classList.add('bg-white/20', 'shadow-sm');
+        btnCompare.classList.remove('bg-white/20', 'shadow-sm');
         renderAdminProductList();
         renderAdminCategoryTags();
+        populateCategoryDropdown();
       } else {
-        adminView.classList.add('hidden');
-        compareView.classList.remove('hidden');
-        btnCompare.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-white/20 shadow-sm transition-all whitespace-nowrap';
-        btnAdmin.className = 'inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white/90 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap';
+        viewAdmin.classList.add('hidden');
+        viewCompare.classList.remove('hidden');
+        btnCompare.classList.add('bg-white/20', 'shadow-sm');
+        btnAdmin.classList.remove('bg-white/20', 'shadow-sm');
+        renderCategoryFilters();
         renderComparisonTable();
       }
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function requestAdminAccess() {
-      if (isAdminUnlocked()) {
+      if (isAdminUnlocked) {
         switchMenu('admin');
         return;
       }
@@ -1067,7 +857,7 @@ function doPost(e) {
       if (modal) modal.classList.remove('hidden');
       if (input) {
         input.value = '';
-        setTimeout(() => input.focus(), 50);
+        setTimeout(() => input.focus(), 100);
       }
     }
 
@@ -1077,536 +867,355 @@ function doPost(e) {
     }
 
     function verifyAdminPin(event) {
-      event.preventDefault();
-      const inputVal = (document.getElementById('pin-auth-input').value || '').trim();
-      if (inputVal === getStoredAdminPin()) {
-        sessionStorage.setItem(SESSION_KEY_UNLOCKED, 'true');
+      if (event) event.preventDefault();
+      const input = document.getElementById('pin-auth-input');
+      const entered = (input ? input.value : '').trim();
+      const validPin = String(cloudState.adminPin || '2026').trim();
+
+      if (entered === validPin) {
+        isAdminUnlocked = true;
         closePinModal();
-        updateAdminLockIcon();
+        const lockIcon = document.getElementById('nav-admin-icon');
+        if (lockIcon) lockIcon.setAttribute('data-lucide', 'unlock');
+
+        const cloudKeyField = document.getElementById('cloud-gemini-key-input');
+        if (cloudKeyField) cloudKeyField.value = cloudState.geminiApiKey || '';
+
+        const aiKeyField = document.getElementById('ai-api-key');
+        if (aiKeyField && cloudState.geminiApiKey) aiKeyField.value = cloudState.geminiApiKey;
+
+        const logoField = document.getElementById('custom-logo-url-input');
+        if (logoField) logoField.value = cloudState.brandLogo !== DEFAULT_LOGO_URL ? cloudState.brandLogo : '';
+
         switchMenu('admin');
         showToast('Akses Administrator berhasil dibuka!', 'success');
       } else {
-        showToast('PIN salah! Silakan coba lagi.', 'error');
+        showToast('PIN salah! Silakan periksa kembali PIN Admin Anda.', 'error');
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
       }
     }
 
     function lockAdminSession() {
-      sessionStorage.removeItem(SESSION_KEY_UNLOCKED);
-      updateAdminLockIcon();
+      isAdminUnlocked = false;
+      const lockIcon = document.getElementById('nav-admin-icon');
+      if (lockIcon) lockIcon.setAttribute('data-lucide', 'lock');
       switchMenu('compare');
-      showToast('Sesi Admin telah dikunci.', 'info');
+      showToast('Sesi Administrator telah dikunci.', 'info');
     }
 
     // =========================================================================
-    // 5. IMPORT / EXPORT EXCEL (.XLSX / .XLS / .CSV)
+    // 4. SINKRONISASI CLOUD GOOGLE SHEETS (DOGET & DOPOST)
     // =========================================================================
-    function downloadExcelTemplate() {
-      const sampleRows = [
-        {
-          'Nama Produk': 'Contoh Laptop Pro 14',
-          'Kategori': categoriesList[0] || 'Laptop Windows',
-          'Tagline': 'Performa cepat untuk kerja dan kuliah',
-          'Layar': '14 inci Full HD IPS',
-          'Chip': 'Intel Core i5 / Ryzen 5, RAM 16GB, SSD 512GB',
-          'Kamera': 'Webcam HD, Wi-Fi 6, HDMI, USB-C',
-          'Baterai': 'Hingga 10 jam',
-          'Fitur': 'Backlit Keyboard, Fingerprint',
-          'Kelebihan': 'Ringan, baterai awet, port lengkap',
-          'Kekurangan': 'Tidak ada GPU diskrit',
-          'Foto': '',
-          'Sumber': 'https://www.mahadewa.id'
-        }
-      ];
-      const ws = XLSX.utils.json_to_sheet(sampleRows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'TemplateProduk');
-      XLSX.writeFile(wb, 'Template-Katalog-Mahadewa.xlsx');
-      showToast('Template Excel berhasil diunduh!', 'success');
-    }
-
-    function handleExcelImport(event) {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
-
-          let addedCount = 0;
-          let updatedCount = 0;
-
-          rows.forEach((row, index) => {
-            const normalizedRow = {};
-            Object.keys(row).forEach(k => {
-              normalizedRow[k.trim().toLowerCase()] = String(row[k] || '').trim();
-            });
-
-            const getCol = (aliases) => {
-              for (const alias of aliases) {
-                const val = normalizedRow[alias.toLowerCase()];
-                if (val) return val;
-              }
-              return '';
-            };
-
-            const name = getCol(['Nama Produk', 'Nama', 'Product Name', 'name']);
-            if (!name) return;
-
-            const category = getCol(['Kategori', 'Category', 'Brand']) || categoriesList[0] || 'Lainnya';
-            if (!categoriesList.some(c => c.toLowerCase() === category.toLowerCase())) {
-              categoriesList.push(category);
-            }
-
-            const imageVal = getCol(['Foto', 'Image', 'URL Foto', 'image']);
-
-            const itemObj = {
-              id: getCol(['id', 'ID']) || 'prod-' + Date.now() + '-' + index,
-              name,
-              category,
-              tagline: getCol(['Tagline', 'Slogan', 'tagline']) || `Spesifikasi resmi ${name} di Mahadewa.id`,
-              image: imageVal || getFallbackImageByCategory(category, name),
-              display: getCol(['Layar', 'Layar & Dimensi', 'Display', 'display']) || '-',
-              chip: getCol(['Chip', 'Performa', 'Prosesor', 'Performa & Chip', 'chip']) || '-',
-              camera: getCol(['Kamera', 'Konektivitas', 'Kamera & Konektivitas', 'camera']) || '-',
-              battery: getCol(['Baterai', 'Daya', 'Baterai & Daya', 'battery']) || '-',
-              features: getCol(['Fitur', 'Fitur Unggulan', 'Features', 'features']) || '-',
-              pros: getCol(['Kelebihan', 'Kelebihan Utama', 'Pros', 'pros']) || '-',
-              cons: getCol(['Kekurangan', 'Catatan', 'Kekurangan / Catatan', 'Cons', 'cons']) || '-',
-              source: getCol(['Sumber', 'Referensi', 'Source', 'source']) || 'https://www.apple.com/id/'
-            };
-
-            const existingIdx = products.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
-            if (existingIdx !== -1) {
-              itemObj.id = products[existingIdx].id;
-              products[existingIdx] = itemObj;
-              updatedCount++;
-            } else {
-              products.unshift(itemObj);
-              addedCount++;
-            }
-          });
-
-          if (addedCount === 0 && updatedCount === 0) {
-            showToast('Tidak ditemukan kolom "Nama Produk" pada file Excel/CSV Anda.', 'error');
-            return;
-          }
-
-          saveLocalProducts();
-          saveCategoriesLocally();
-          renderCategoryFilters();
-          renderComparisonTable();
-          renderAdminProductList();
-          showToast(`Import Excel selesai: ${addedCount} produk baru, ${updatedCount} diperbarui!`, 'success');
-
-          syncCategoriesToSheets();
-          pushAllToGoogleSheets();
-        } catch (err) {
-          console.error('Excel parse error:', err);
-          showToast('Gagal membaca file Excel/CSV. Pastikan format file valid.', 'error');
-        } finally {
-          event.target.value = '';
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    }
-
-    // =========================================================================
-    // 6. LOGIKA SINKRONISASI GOOGLE SHEETS (URL PATEN + CLOUD PIN & KATEGORI)
-    // =========================================================================
-    function updateSyncStatusUI(state, text) {
+    function updateSyncStatusUI(status, text) {
       const dot = document.getElementById('sync-status-dot');
       const label = document.getElementById('sync-status-text');
-      if (label) label.textContent = text;
-      if (!dot) return;
-
-      if (state === 'connected') {
-        dot.className = 'w-2 h-2 rounded-full bg-emerald-300';
-      } else if (state === 'syncing') {
-        dot.className = 'w-2 h-2 rounded-full bg-amber-300 animate-ping';
-      } else {
-        dot.className = 'w-2 h-2 rounded-full bg-red-300';
-      }
-    }
-
-    function getStoredAdminPin() {
-      return cloudState.adminPin || DEFAULT_ADMIN_PIN;
-    }
-
-    function applyBrandLogo(url) {
-      const validUrl = (url && String(url).trim() !== '') ? String(url).trim() : DEFAULT_BRAND_LOGO_URL;
-      cloudState.brandLogo = validUrl;
-      const headerImg = document.getElementById('header-logo-img');
-      const footerImg = document.getElementById('footer-logo-img');
-      const logoInput = document.getElementById('custom-logo-url-input');
-      if (headerImg) headerImg.src = validUrl;
-      if (footerImg) footerImg.src = validUrl;
-      if (logoInput && validUrl !== DEFAULT_BRAND_LOGO_URL) {
-        logoInput.value = validUrl;
-      }
-    }
-
-    async function updateBrandLogo() {
-      const input = document.getElementById('custom-logo-url-input');
-      const logoUrl = (input ? input.value : '').trim();
-      if (!logoUrl) {
-        showToast('Masukkan URL logo terlebih dahulu.', 'error');
-        return;
-      }
-      applyBrandLogo(logoUrl);
-      showToast('Menyimpan logo ke Google Sheets...', 'info');
-      try {
-        const res = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updateLogo', logoUrl })
-        });
-        const data = await res.json();
-        if (data && data.status === 'success') {
-          showToast('Logo toko berhasil disimpan langsung ke Spreadsheet!', 'success');
-        } else {
-          showToast('Gagal menyimpan logo ke Google Sheets.', 'error');
-        }
-      } catch (e) {
-        showToast('Gagal menyinkronkan logo ke server Google Sheets.', 'error');
-      }
-    }
-
-    async function resetBrandLogo() {
-      const input = document.getElementById('custom-logo-url-input');
-      if (input) input.value = '';
-      applyBrandLogo(DEFAULT_BRAND_LOGO_URL);
-      try {
-        await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updateLogo', logoUrl: DEFAULT_BRAND_LOGO_URL })
-        });
-      } catch (e) {}
-      showToast('Logo dikembalikan ke default Mahadewa.id.', 'info');
-    }
-
-    async function updateAdminPin() {
-      const newPin = document.getElementById('new-admin-pin').value.trim();
-      if (!newPin || newPin.length < 4) {
-        showToast('PIN baru minimal 4 karakter/angka.', 'error');
-        return;
-      }
-
-      cloudState.adminPin = newPin;
-      document.getElementById('new-admin-pin').value = '';
-      showToast('Menyimpan PIN baru langsung ke Google Sheets...', 'info');
-
-      try {
-        const res = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updatePin', pin: newPin })
-        });
-        const data = await res.json();
-        if (data && data.status === 'success') {
-          showToast('PIN Akses Admin berhasil disimpan langsung ke Google Sheets!', 'success');
-        } else {
-          showToast('Gagal menyimpan PIN ke Google Sheets. Periksa koneksi/Code.gs.', 'error');
-        }
-      } catch (err) {
-        showToast('Gagal menyinkronkan PIN ke server Google Sheets.', 'error');
-      }
-    }
-
-    // =========================================================================
-    // 4. INISIALISASI & PENYIMPANAN 100% CLOUD GOOGLE SHEETS
-    // =========================================================================
-    function cleanupLegacyLocalStorage() {
-      try {
-        ['mahadewa_compare_products_v2', 'mahadewa_gemini_apikey_v1', 'mahadewa_admin_pin_v1', 'mahadewa_brand_logo_v1', 'mahadewa_categories_v1']
-          .forEach(k => localStorage.removeItem(k));
-      } catch (e) {}
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      cleanupLegacyLocalStorage();
-
-      const yearEl = document.getElementById('footer-year');
-      if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-      const scriptBox = document.getElementById('apps-script-code-box');
-      if (scriptBox) scriptBox.value = GOOGLE_APPS_SCRIPT_TEMPLATE;
-
-      applyBrandLogo(DEFAULT_BRAND_LOGO_URL);
-      updateAdminLockIcon();
-      updateColumnButtonsUI();
-      lucide.createIcons();
-
-      syncFromGoogleSheets(true);
-    });
-
-    function saveGeminiApiKeyLocally() {
-      const val = document.getElementById('ai-api-key').value.trim();
-      const cloudInput = document.getElementById('cloud-gemini-key-input');
-      if (cloudInput) cloudInput.value = val;
-      cloudState.geminiApiKey = val;
-    }
-
-    async function saveCloudGeminiApiKey() {
-      const cloudInput = document.getElementById('cloud-gemini-key-input');
-      const keyVal = (cloudInput ? cloudInput.value : '').trim();
-      if (!keyVal) {
-        showToast('Masukkan Gemini API Key terlebih dahulu.', 'error');
-        return;
-      }
-      cloudState.geminiApiKey = keyVal;
-      const localAiInput = document.getElementById('ai-api-key');
-      if (localAiInput) localAiInput.value = keyVal;
-
-      showToast('Menyimpan Gemini API Key langsung ke Google Sheets...', 'info');
-      try {
-        const res = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'updateGeminiKey', apiKey: keyVal })
-        });
-        const data = await res.json();
-        if (data && data.status === 'success') {
-          showToast('Gemini API Key berhasil disimpan ke Spreadsheet & aktif di semua HP/laptop!', 'success');
-        } else {
-          showToast('Gagal menyimpan API Key ke Google Sheets.', 'error');
-        }
-      } catch (e) {
-        showToast('Gagal menyinkronkan API Key ke server Google Sheets.', 'error');
-      }
-    }
-
-    function loadLocalProducts() {
-      if (products.length === 0) {
-        products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-      }
-    }
-
-    function saveLocalProducts() {
-      // Penyimpanan lokal dinonaktifkan; seluruh perubahan langsung dikirim ke Google Sheets
+      if (!dot || !label) return;
+      label.textContent = text;
+      dot.className = 'w-2 h-2 rounded-full ' + (
+        status === 'ok' ? 'bg-emerald-300' :
+        status === 'loading' ? 'bg-amber-300 animate-ping' : 'bg-red-300'
+      );
     }
 
     async function syncFromGoogleSheets(silent = false) {
-      updateSyncStatusUI('syncing', 'Menyinkronkan...');
+      const url = cloudState.appsScriptUrl;
+      if (!url || url.includes('MahadewaId-KatalogSync')) {
+        updateSyncStatusUI('ok', `${products.length} Produk Lokal`);
+        return;
+      }
+
+      updateSyncStatusUI('loading', 'Sinkronisasi...');
       try {
-        const res = await fetch(`${HARDCODED_GSHEET_URL}?t=${Date.now()}`);
+        const res = await fetch(`${url}?t=${Date.now()}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
 
-        if (data && data.status === 'success') {
-          if (data.adminPin && String(data.adminPin).trim() !== '') {
-            cloudState.adminPin = String(data.adminPin).trim();
+        if (data.status === 'success') {
+          if (Array.isArray(data.products) && data.products.length > 0) {
+            products = data.products;
           }
-
-          if (data.brandLogo && String(data.brandLogo).trim() !== '') {
-            applyBrandLogo(String(data.brandLogo).trim());
+          if (data.adminPin) cloudState.adminPin = String(data.adminPin);
+          if (data.brandLogo) {
+            cloudState.brandLogo = data.brandLogo;
+            applyBrandLogoUI(cloudState.brandLogo);
           }
-
-          if (data.geminiApiKey && String(data.geminiApiKey).trim() !== '') {
-            const cloudKey = String(data.geminiApiKey).trim();
-            cloudState.geminiApiKey = cloudKey;
-            const aiKeyEl = document.getElementById('ai-api-key');
-            const cloudKeyEl = document.getElementById('cloud-gemini-key-input');
-            if (aiKeyEl) aiKeyEl.value = cloudKey;
-            if (cloudKeyEl) cloudKeyEl.value = cloudKey;
+          if (data.geminiApiKey) {
+            cloudState.geminiApiKey = String(data.geminiApiKey).trim();
+            const aiKeyInput = document.getElementById('ai-api-key');
+            if (aiKeyInput) aiKeyInput.value = cloudState.geminiApiKey;
           }
-
-          let cloudCats = [];
           if (data.brandCategories) {
             try {
-              const parsedCats = typeof data.brandCategories === 'string'
-                ? JSON.parse(data.brandCategories)
-                : data.brandCategories;
+              const parsedCats = JSON.parse(data.brandCategories);
               if (Array.isArray(parsedCats) && parsedCats.length > 0) {
-                cloudCats = parsedCats;
+                categoriesList = parsedCats;
               }
-            } catch (e) {}
+            } catch (_) {}
           }
 
-          if (Array.isArray(data.products) && data.products.length > 0) {
-            products = data.products.map(p => ({
-              ...p,
-              image: p.image && p.image.trim() !== '' ? p.image : getFallbackImageByCategory(p.category, p.name)
-            }));
-
-            const actualSheetCats = extractCategoriesFromProducts(products);
-            const isDefaultOnly = cloudCats.length === DEFAULT_CATEGORIES.length &&
-              cloudCats.every((c, idx) => c === DEFAULT_CATEGORIES[idx]);
-
-            if (actualSheetCats.length > 0 && (cloudCats.length === 0 || isDefaultOnly)) {
-              categoriesList = actualSheetCats;
-            } else if (cloudCats.length > 0) {
-              const merged = [...cloudCats];
-              actualSheetCats.forEach(c => {
-                if (!merged.some(m => m.toLowerCase() === c.toLowerCase())) {
-                  merged.push(c);
-                }
-              });
-              categoriesList = merged;
-            } else {
-              categoriesList = [...DEFAULT_CATEGORIES];
-            }
-
-            saveCategoriesLocally();
-            renderComparisonTable();
-            renderAdminProductList();
-            if (!silent) showToast(`Data terbaru berhasil ditarik dari Spreadsheet (${products.length} produk & ${categoriesList.length} kategori)!`, 'success');
-          } else {
-            loadLocalProducts();
-            loadCategories(true);
-            renderCategoryFilters();
-            renderComparisonTable();
-            renderAdminProductList();
-            if (!silent) showToast('Database Google Sheets masih kosong.', 'info');
-          }
-
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
-          const syncTextEl = document.getElementById('gsheet-last-sync');
-          if (syncTextEl) {
-            syncTextEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>100% Penyimpanan Spreadsheet aktif pukul <strong>${timeStr}</strong> (${products.length} produk & ${categoriesList.length} kategori).</span>`;
-            lucide.createIcons();
-          }
-        } else {
-          throw new Error(data.message || 'Format respons Google Sheets tidak valid');
-        }
-      } catch (err) {
-        console.error('Sync GET error:', err);
-        updateSyncStatusUI('error', 'Koneksi Sheets Gagal');
-        if (products.length === 0) {
-          loadLocalProducts();
-          loadCategories(true);
+          syncCategoriesFromProducts();
+          saveLocalCache();
+          ensureValidSelectedProducts();
           renderCategoryFilters();
           renderComparisonTable();
           renderAdminProductList();
+          renderAdminCategoryTags();
+          populateCategoryDropdown();
+
+          updateSyncStatusUI('ok', `Cloud Aktif (${products.length})`);
+          if (!silent) showToast(`Berhasil memuat ${products.length} produk terbaru dari Google Sheets!`, 'success');
         }
-        if (!silent) {
-          showToast('Gagal terhubung ke Google Sheets. Periksa koneksi internet Anda.', 'error');
-        }
+      } catch (err) {
+        console.warn('Sync Google Sheets gagal:', err);
+        updateSyncStatusUI('err', 'Mode Offline');
+        if (!silent) showToast('Gagal terhubung ke Google Sheets, menampilkan data tersimpan.', 'info');
+      }
+    }
+
+    async function postToGoogleSheets(payload) {
+      const url = cloudState.appsScriptUrl;
+      if (!url || url.includes('MahadewaId-KatalogSync')) return false;
+      try {
+        await fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        return true;
+      } catch (err) {
+        console.warn('Gagal mengirim ke Google Sheets:', err);
+        return false;
       }
     }
 
     async function pushAllToGoogleSheets() {
-      updateSyncStatusUI('syncing', 'Mengirim ke Sheets...');
-      try {
-        const response = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'syncAll',
-            products: products
-          })
-        });
-        const result = await response.json();
-        if (result && result.status === 'success') {
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
-          const syncEl = document.getElementById('gsheet-last-sync');
-          if (syncEl) {
-            syncEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Seluruh katalog (${products.length} produk) berhasil dikirim ke Sheets pukul <strong>${timeStr}</strong>.</span>`;
-            lucide.createIcons();
-          }
-          showToast(`Berhasil mengunggah ${products.length} produk ke Google Sheets!`, 'success');
-        } else {
-          throw new Error(result.message || 'Gagal menyimpan ke Sheets');
-        }
-      } catch (err) {
-        console.error('Push POST error:', err);
-        updateSyncStatusUI('error', 'Gagal Sinkronisasi');
-        showToast('Gagal mengirim data ke Google Sheets.', 'error');
-      }
-    }
-
-    async function syncSingleMutationToSheets(action, payloadObj) {
-      updateSyncStatusUI('syncing', 'Menyimpan ke Sheets...');
-      try {
-        const response = await fetch(HARDCODED_GSHEET_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action, ...payloadObj })
-        });
-        const result = await response.json();
-        if (result && result.status === 'success') {
-          const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-          updateSyncStatusUI('connected', 'Cloud Sync Aktif');
-          const syncEl = document.getElementById('gsheet-last-sync');
-          if (syncEl) {
-            syncEl.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i> <span>Perubahan otomatis tersinkron ke Google Sheets pukul <strong>${timeStr}</strong>.</span>`;
-            lucide.createIcons();
-          }
-        } else {
-          throw new Error(result.message || 'Gagal sinkron');
-        }
-      } catch (err) {
-        console.warn('Auto-sync mutation error:', err);
-        updateSyncStatusUI('error', 'Sinkron Tertunda');
-        showToast('Tersimpan lokal, namun gagal menyinkronkan ke Google Sheets.', 'error');
-      }
-    }
-
-    function openAppsScriptModal() {
-      document.getElementById('apps-script-modal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function closeAppsScriptModal() {
-      document.getElementById('apps-script-modal').classList.add('hidden');
-    }
-
-    function copyAppsScriptCode() {
-      const textarea = document.getElementById('apps-script-code-box');
-      textarea.select();
-      textarea.setSelectionRange(0, 99999);
-      try {
-        document.execCommand('copy');
-        showToast('Kode Google Apps Script (Code.gs) berhasil disalin!', 'success');
-      } catch (e) {
-        showToast('Gagal menyalin otomatis. Silakan blok kode dan tekan Ctrl+C / Cmd+C.', 'error');
+      showToast('Mengirim seluruh katalog ke Google Sheets...', 'info');
+      const ok = await postToGoogleSheets({ action: 'syncAll', products });
+      if (ok) {
+        showToast(`Berhasil menyinkronkan ${products.length} produk ke Google Sheets!`, 'success');
+      } else {
+        showToast('Perubahan tersimpan di browser. Pastikan URL Google Apps Script aktif.', 'info');
       }
     }
 
     // =========================================================================
-    // 7. RENDER TAMPILAN PERBANDINGAN GAYA APPLE COMPARE
+    // 5. PENGATURAN ADMIN GLOBAL (PIN, API KEY, LOGO, KATEGORI)
     // =========================================================================
-    function getFilteredProducts() {
-      return products.filter(p => {
-        const matchCat = selectedCategory === 'Semua' || (p.category || '').toLowerCase() === selectedCategory.toLowerCase();
-        const matchSearch = !headerSearchKeyword ||
-          p.name.toLowerCase().includes(headerSearchKeyword) ||
-          (p.category && p.category.toLowerCase().includes(headerSearchKeyword)) ||
-          (p.chip && p.chip.toLowerCase().includes(headerSearchKeyword));
-        return matchCat && matchSearch;
+    async function updateAdminPin() {
+      const newPin = document.getElementById('new-admin-pin').value.trim();
+      if (newPin.length < 4) {
+        showToast('PIN Admin minimal 4 karakter/angka.', 'error');
+        return;
+      }
+      cloudState.adminPin = newPin;
+      saveLocalCache();
+      await postToGoogleSheets({ action: 'updatePin', pin: newPin });
+      document.getElementById('new-admin-pin').value = '';
+      showToast('PIN Admin berhasil diperbarui & disinkronkan!', 'success');
+    }
+
+    function saveGeminiApiKeyLocally() {
+      const val = document.getElementById('ai-api-key').value.trim();
+      cloudState.geminiApiKey = val;
+      cachedActiveModels = null;
+      preferredGeminiModel = '';
+      saveLocalCache();
+    }
+
+    async function saveCloudGeminiApiKey() {
+      const val = document.getElementById('cloud-gemini-key-input').value.trim();
+      if (!val) {
+        showToast('Tempel Gemini API Key terlebih dahulu.', 'error');
+        return;
+      }
+      cloudState.geminiApiKey = val;
+      cachedActiveModels = null;
+      preferredGeminiModel = '';
+      const aiKeyField = document.getElementById('ai-api-key');
+      if (aiKeyField) aiKeyField.value = val;
+      saveLocalCache();
+      await postToGoogleSheets({ action: 'updateGeminiKey', apiKey: val });
+      showToast('Gemini API Key berhasil disimpan ke Cloud!', 'success');
+    }
+
+    function applyBrandLogoUI(logoUrl) {
+      const finalUrl = logoUrl || DEFAULT_LOGO_URL;
+      const hImg = document.getElementById('header-logo-img');
+      const fImg = document.getElementById('footer-logo-img');
+      if (hImg) hImg.src = finalUrl;
+      if (fImg) fImg.src = finalUrl;
+    }
+
+    async function updateBrandLogo() {
+      const url = document.getElementById('custom-logo-url-input').value.trim();
+      if (!url) {
+        showToast('Masukkan URL gambar logo yang valid.', 'error');
+        return;
+      }
+      cloudState.brandLogo = url;
+      applyBrandLogoUI(url);
+      saveLocalCache();
+      await postToGoogleSheets({ action: 'updateLogo', logoUrl: url });
+      showToast('Logo Mahadewa.id berhasil diperbarui!', 'success');
+    }
+
+    async function resetBrandLogo() {
+      cloudState.brandLogo = DEFAULT_LOGO_URL;
+      document.getElementById('custom-logo-url-input').value = '';
+      applyBrandLogoUI(DEFAULT_LOGO_URL);
+      saveLocalCache();
+      await postToGoogleSheets({ action: 'updateLogo', logoUrl: DEFAULT_LOGO_URL });
+      showToast('Logo dikembalikan ke default.', 'info');
+    }
+
+    function syncCategoriesFromProducts() {
+      const set = new Set(categoriesList);
+      products.forEach(p => {
+        if (p.category && String(p.category).trim()) {
+          set.add(String(p.category).trim());
+        }
       });
+      categoriesList = Array.from(set);
+    }
+
+    function renderAdminCategoryTags() {
+      const container = document.getElementById('admin-category-tags');
+      if (!container) return;
+      container.innerHTML = categoriesList.map(cat => `
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#f5f5f7] border border-gray-300 text-xs font-medium text-[#1d1d1f]">
+          <span>${cat}</span>
+          <button type="button" onclick="startEditCategory('${cat.replace(/'/g, "\\'")}')" title="Ubah nama kategori" class="text-gray-500 hover:text-blue-600">
+            <i data-lucide="pencil" class="w-3 h-3"></i>
+          </button>
+          <button type="button" onclick="deleteCategory('${cat.replace(/'/g, "\\'")}')" title="Hapus kategori" class="text-gray-500 hover:text-[#C62828]">
+            <i data-lucide="x" class="w-3 h-3"></i>
+          </button>
+        </span>
+      `).join('');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function startEditCategory(catName) {
+      editingCategoryOldName = catName;
+      const input = document.getElementById('new-category-input');
+      const btnSave = document.getElementById('btn-save-category');
+      const btnCancel = document.getElementById('btn-cancel-category-edit');
+      if (input) {
+        input.value = catName;
+        input.focus();
+      }
+      if (btnSave) btnSave.textContent = 'Simpan Perubahan';
+      if (btnCancel) btnCancel.classList.remove('hidden');
+    }
+
+    function cancelCategoryEdit() {
+      editingCategoryOldName = null;
+      const input = document.getElementById('new-category-input');
+      const btnSave = document.getElementById('btn-save-category');
+      const btnCancel = document.getElementById('btn-cancel-category-edit');
+      if (input) input.value = '';
+      if (btnSave) btnSave.textContent = '+ Tambah Kategori';
+      if (btnCancel) btnCancel.classList.add('hidden');
+    }
+
+    async function saveCategoryAction() {
+      const input = document.getElementById('new-category-input');
+      const val = (input ? input.value : '').trim();
+      if (!val) {
+        showToast('Nama kategori tidak boleh kosong.', 'error');
+        return;
+      }
+
+      if (editingCategoryOldName) {
+        const idx = categoriesList.findIndex(c => c.toLowerCase() === editingCategoryOldName.toLowerCase());
+        if (idx !== -1) categoriesList[idx] = val;
+        products.forEach(p => {
+          if (p.category && p.category.toLowerCase() === editingCategoryOldName.toLowerCase()) {
+            p.category = val;
+          }
+        });
+        cancelCategoryEdit();
+        showToast(`Kategori diperbarui menjadi "${val}".`, 'success');
+      } else {
+        if (categoriesList.some(c => c.toLowerCase() === val.toLowerCase())) {
+          showToast('Kategori tersebut sudah ada.', 'info');
+          return;
+        }
+        categoriesList.push(val);
+        if (input) input.value = '';
+        showToast(`Kategori "${val}" ditambahkan.`, 'success');
+      }
+
+      saveLocalCache();
+      renderAdminCategoryTags();
+      populateCategoryDropdown();
+      renderCategoryFilters();
+      await postToGoogleSheets({ action: 'updateCategories', categories: categoriesList });
+    }
+
+    async function deleteCategory(catName) {
+      if (categoriesList.length <= 1) {
+        showToast('Minimal harus tersisa 1 kategori.', 'error');
+        return;
+      }
+      categoriesList = categoriesList.filter(c => c !== catName);
+      if (selectedCategory === catName) selectedCategory = 'Semua';
+      saveLocalCache();
+      renderAdminCategoryTags();
+      populateCategoryDropdown();
+      renderCategoryFilters();
+      await postToGoogleSheets({ action: 'updateCategories', categories: categoriesList });
+      showToast(`Kategori "${catName}" dihapus.`, 'info');
+    }
+
+    function populateCategoryDropdown() {
+      const select = document.getElementById('prod-category');
+      if (!select) return;
+      const currentVal = select.value;
+      select.innerHTML = categoriesList.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (currentVal && categoriesList.includes(currentVal)) select.value = currentVal;
+    }
+
+    // =========================================================================
+    // 6. TABEL PERBANDINGAN PRODUK (FILTER, KOLOM, PENCARIAN, WHATSAPP)
+    // =========================================================================
+    function getFilteredProductsByCategory() {
+      if (selectedCategory === 'Semua') return products;
+      return products.filter(p => (p.category || '').toLowerCase() === selectedCategory.toLowerCase());
+    }
+
+    function ensureValidSelectedProducts() {
+      const pool = getFilteredProductsByCategory();
+      const fallbackPool = pool.length > 0 ? pool : products;
+      for (let i = 0; i < 4; i++) {
+        const exists = fallbackPool.some(p => p.id === selectedProductIds[i]);
+        if (!exists) {
+          const candidate = fallbackPool[i % fallbackPool.length];
+          selectedProductIds[i] = candidate ? candidate.id : '';
+        }
+      }
     }
 
     function renderCategoryFilters() {
-      const categories = ['Semua', ...categoriesList];
       const container = document.getElementById('category-filters');
       if (!container) return;
-      container.innerHTML = categories.map(cat => {
-        const isActive = selectedCategory.toLowerCase() === cat.toLowerCase();
-        const count = cat === 'Semua'
-          ? products.length
-          : products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase()).length;
-        return `
-          <button onclick="selectCategory('${cat.replace(/'/g, "\\'")}')"
-            class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 flex-shrink-0 ${
-              isActive
-                ? 'bg-[#1d1d1f] text-white shadow-sm'
-                : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-white/70'
-            }">
-            <span>${cat}</span>
-            <span class="text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-gray-200/80 text-gray-600'}">${count}</span>
-          </button>
-        `;
+      const allCats = ['Semua', ...categoriesList];
+      container.innerHTML = allCats.map(cat => {
+        const active = selectedCategory === cat;
+        const cls = active
+          ? 'bg-[#C62828] text-white shadow-sm'
+          : 'bg-white text-[#1d1d1f] hover:bg-gray-100 border border-gray-200/80';
+        return `<button onclick="selectCategoryFilter('${cat.replace(/'/g, "\\'")}')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${cls}">${cat}</button>`;
       }).join('');
     }
 
-    function selectCategory(cat) {
+    function selectCategoryFilter(cat) {
       selectedCategory = cat;
+      ensureValidSelectedProducts();
       renderCategoryFilters();
       renderComparisonTable();
     }
@@ -1614,6 +1223,7 @@ function doPost(e) {
     function setColumnCount(count) {
       columnCount = count;
       updateColumnButtonsUI();
+      ensureValidSelectedProducts();
       renderComparisonTable();
     }
 
@@ -1621,143 +1231,127 @@ function doPost(e) {
       [2, 3, 4].forEach(num => {
         const btn = document.getElementById(`col-btn-${num}`);
         if (!btn) return;
-        if (num === columnCount) {
-          btn.className = 'px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold bg-[#1d1d1f] text-white shadow-sm transition-all';
+        if (columnCount === num) {
+          btn.className = 'px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold bg-[#1d1d1f] text-white shadow-xs transition-all';
         } else {
           btn.className = 'px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold text-[#6e6e73] hover:text-[#1d1d1f] transition-all';
         }
       });
     }
 
-    function handleSelectColumnProduct(colIndex, newProductId) {
-      selectedProductIds[colIndex] = newProductId;
+    function handleHeaderSearch(query) {
+      const desktopInput = document.getElementById('header-search-input');
+      const mobileInput = document.getElementById('mobile-search-input');
+      if (desktopInput && desktopInput.value !== query) desktopInput.value = query;
+      if (mobileInput && mobileInput.value !== query) mobileInput.value = query;
+
+      const q = query.trim().toLowerCase();
+      if (!q) return;
+
+      const matches = products.filter(p =>
+        `${p.name} ${p.category} ${p.chip} ${p.features}`.toLowerCase().includes(q)
+      );
+
+      if (matches.length > 0) {
+        selectedCategory = 'Semua';
+        renderCategoryFilters();
+        for (let i = 0; i < columnCount; i++) {
+          if (matches[i]) selectedProductIds[i] = matches[i].id;
+        }
+        renderComparisonTable();
+      }
+    }
+
+    function handleSlotProductChange(slotIndex, newProdId) {
+      selectedProductIds[slotIndex] = newProdId;
       renderComparisonTable();
     }
 
-    function getFallbackImageByCategory(category, name = '') {
-      const shortLabel = (name || category || 'Device').slice(0, 14);
-      const low = (category || '').toLowerCase();
-      if (low.includes('ipad') || low.includes('tablet')) return createDeviceSvgDataUri('ipad', '#0284c7', shortLabel);
-      if (low.includes('macbook')) return createDeviceSvgDataUri('macbook', '#1e293b', shortLabel);
-      if (low.includes('laptop') || low.includes('notebook') || low.includes('windows') || low.includes('aio')) return createDeviceSvgDataUri('windows', '#334155', shortLabel);
-      if (low.includes('starlink')) return createDeviceSvgDataUri('starlink', '#0f172a', shortLabel);
-      return createDeviceSvgDataUri('iphone', '#C62828', shortLabel);
+    function getFallbackImageByCategory(category = '', name = '') {
+      const label = encodeURIComponent((name || category || 'Mahadewa.id').slice(0, 22));
+      return `https://placehold.co/320x320/f5f5f7/1d1d1f?text=${label}`;
     }
 
     function renderComparisonTable() {
-      const available = getFilteredProducts();
-      const fallbackPool = available.length > 0 ? available : products;
-
-      if (fallbackPool.length === 0) return;
-
-      const wrapper = document.getElementById('comparison-wrapper');
-      if (wrapper) {
-        if (columnCount === 2) {
-          wrapper.className = 'w-full';
-        } else if (columnCount === 3) {
-          wrapper.className = 'min-w-[660px] md:min-w-0 md:w-full';
-        } else {
-          wrapper.className = 'min-w-[840px] lg:min-w-0 lg:w-full';
-        }
-      }
-
-      const activeColumnProducts = [];
-      for (let i = 0; i < columnCount; i++) {
-        let found = fallbackPool.find(p => p.id === selectedProductIds[i]);
-        if (!found) {
-          const unused = fallbackPool.find(p => !activeColumnProducts.some(acp => acp.id === p.id));
-          found = unused || fallbackPool[i % fallbackPool.length];
-          selectedProductIds[i] = found.id;
-        }
-        activeColumnProducts.push(found);
-      }
-
-      const gridColsClass =
-        columnCount === 2 ? 'grid-cols-2' :
-        columnCount === 3 ? 'grid-cols-3' : 'grid-cols-4';
-
       const headerGrid = document.getElementById('compare-header-grid');
+      const specsContainer = document.getElementById('compare-specs-container');
+      if (!headerGrid || !specsContainer) return;
+
+      const gridColsClass = columnCount === 2 ? 'grid-cols-2' : columnCount === 3 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4';
       headerGrid.className = `grid ${gridColsClass} gap-2.5 sm:gap-6 border-b border-gray-200 pb-6 sm:pb-8 pt-2`;
 
-      headerGrid.innerHTML = activeColumnProducts.map((prod, idx) => {
-        const waText = encodeURIComponent(`Halo Mahadewa.id Palopo, saya ingin menanyakan harga dan ketersediaan stok untuk *${prod.name}*.`);
-        const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${waText}`;
+      const pool = getFilteredProductsByCategory();
+      const dropdownProducts = pool.length > 0 ? pool : products;
+      const activeProducts = [];
+
+      for (let i = 0; i < columnCount; i++) {
+        const prod = products.find(p => p.id === selectedProductIds[i]) || dropdownProducts[i % dropdownProducts.length] || products[0];
+        if (prod) {
+          selectedProductIds[i] = prod.id;
+          activeProducts.push(prod);
+        }
+      }
+
+      headerGrid.innerHTML = activeProducts.map((prod, idx) => {
         const fallbackImg = getFallbackImageByCategory(prod.category, prod.name);
+        const waText = encodeURIComponent(`Halo Admin Mahadewa.id, saya tertarik dengan produk *${prod.name}* (${prod.category}). Apakah stoknya tersedia?`);
+        const optionsHtml = dropdownProducts.map(item =>
+          `<option value="${item.id}" ${item.id === prod.id ? 'selected' : ''}>${item.name}</option>`
+        ).join('');
 
         return `
-          <div class="flex flex-col items-center text-center bg-white rounded-2xl sm:rounded-3xl p-2 sm:p-4 border border-gray-100 sm:border-transparent transition-all min-w-0">
-            <div class="w-full mb-3 sm:mb-5">
-              <select aria-label="Pilih produk kolom ${idx + 1}"
-                onchange="handleSelectColumnProduct(${idx}, this.value)"
-                class="apple-select w-full px-2.5 sm:px-3.5 py-2 sm:py-2.5 pr-7 rounded-xl border border-gray-300 bg-[#f5f5f7] hover:bg-gray-200/70 text-[11px] sm:text-sm font-semibold text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#C62828] transition cursor-pointer truncate">
-                ${fallbackPool.map(item => `
-                  <option value="${item.id}" ${item.id === prod.id ? 'selected' : ''}>
-                    ${item.name}
-                  </option>
-                `).join('')}
-              </select>
-            </div>
+          <div class="flex flex-col items-center text-center bg-white rounded-2xl p-3 sm:p-5 border border-gray-200/80 shadow-xs">
+            <select onchange="handleSlotProductChange(${idx}, this.value)" aria-label="Pilih produk kolom ${idx + 1}"
+              class="apple-select w-full px-3 py-2 pr-8 rounded-xl bg-[#f5f5f7] border border-gray-200 text-xs sm:text-sm font-bold text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#C62828] mb-4 cursor-pointer">
+              ${optionsHtml}
+            </select>
 
-            <div class="w-24 h-24 sm:w-44 sm:h-44 flex items-center justify-center mb-3 sm:mb-4 p-1.5 sm:p-2 rounded-2xl bg-[#fbfbfd]">
-              <img src="${prod.image || fallbackImg}"
-                alt="${prod.name}"
+            <div class="w-28 h-28 sm:w-44 sm:h-44 rounded-2xl bg-[#f5f5f7] p-3 flex items-center justify-center mb-4 overflow-hidden">
+              <img src="${prod.image || fallbackImg}" alt="${prod.name}"
                 onerror="this.onerror=null;this.src='${fallbackImg}';"
-                class="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105" />
+                class="w-full h-full object-contain transition-transform duration-300 hover:scale-105" />
             </div>
 
-            <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#C62828] mb-0.5 sm:mb-1">${prod.category}</span>
-            <h2 class="text-sm sm:text-xl font-bold text-[#1d1d1f] leading-snug mb-1 sm:mb-1.5 line-clamp-2">${prod.name}</h2>
-            <p class="text-[11px] sm:text-sm text-[#6e6e73] line-clamp-2 min-h-[2.2rem] sm:min-h-[2.5rem] mb-3 sm:mb-5 px-0.5">${prod.tagline}</p>
+            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#C62828] mb-1">${prod.category}</span>
+            <h3 class="text-sm sm:text-xl font-bold text-[#1d1d1f] leading-snug mb-1.5">${prod.name}</h3>
+            <p class="text-[11px] sm:text-xs text-[#6e6e73] line-clamp-2 mb-4 flex-1">${prod.tagline || ''}</p>
 
-            <a href="${waUrl}" target="_blank" rel="noopener"
-              class="mt-auto w-full inline-flex items-center justify-center gap-1.5 px-3 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#C62828] hover:bg-[#a61c1c] text-white text-[11px] sm:text-sm font-semibold shadow-sm transition-all">
-              <i data-lucide="message-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0"></i>
-              <span>Tanya Harga</span>
+            <a href="https://wa.me/6282344888441?text=${waText}" target="_blank" rel="noopener"
+              class="w-full inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold shadow-xs transition">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+              <span>Tanya Stok WA</span>
             </a>
           </div>
         `;
       }).join('');
 
       const specRows = [
-        { key: 'display', label: 'Layar & Dimensi', icon: 'maximize-2' },
-        { key: 'chip', label: 'Performa & Chip', icon: 'cpu' },
-        { key: 'camera', label: 'Kamera & Konektivitas', icon: 'camera' },
-        { key: 'battery', label: 'Baterai & Daya', icon: 'battery-charging' },
-        { key: 'features', label: 'Fitur Unggulan', icon: 'sparkles' },
-        { key: 'pros', label: 'Kelebihan Utama', icon: 'check-circle-2', accent: 'text-emerald-700' },
-        { key: 'cons', label: 'Kekurangan / Catatan', icon: 'alert-circle', accent: 'text-amber-700' },
-        { key: 'source', label: 'Sumber Referensi Resmi', icon: 'external-link', isLink: true }
+        { label: 'Layar & Dimensi', icon: 'monitor', key: 'display' },
+        { label: 'Performa & Chipset', icon: 'cpu', key: 'chip' },
+        { label: 'Kamera & Konektivitas', icon: 'camera', key: 'camera' },
+        { label: 'Baterai & Daya', icon: 'battery-charging', key: 'battery' },
+        { label: 'Fitur Unggulan', icon: 'sparkles', key: 'features' },
+        { label: 'Kelebihan Utama', icon: 'thumbs-up', key: 'pros', highlight: 'emerald' },
+        { label: 'Catatan / Kekurangan', icon: 'alert-circle', key: 'cons', highlight: 'amber' }
       ];
 
-      const specsContainer = document.getElementById('compare-specs-container');
       specsContainer.innerHTML = specRows.map(row => `
-        <div class="py-4 sm:py-6">
-          <div class="flex items-center justify-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-            <i data-lucide="${row.icon}" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C62828]"></i>
-            <h3 class="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#86868b]">${row.label}</h3>
+        <div class="py-5 sm:py-7">
+          <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#1d1d1f] mb-3 sm:mb-4">
+            <i data-lucide="${row.icon}" class="w-4 h-4 text-[#C62828]"></i>
+            <span>${row.label}</span>
           </div>
           <div class="grid ${gridColsClass} gap-2.5 sm:gap-6">
-            ${activeColumnProducts.map(prod => {
+            ${activeProducts.map(prod => {
               const val = prod[row.key] || '-';
-              if (row.isLink) {
-                if (val && val.startsWith('http')) {
-                  return `
-                    <div class="text-center px-1">
-                      <a href="${val}" target="_blank" rel="noopener"
-                        class="inline-flex items-center gap-1 text-[11px] sm:text-sm font-medium text-blue-600 hover:underline">
-                        <span>Spesifikasi Resmi</span>
-                        <i data-lucide="arrow-up-right" class="w-3 h-3 sm:w-3.5 sm:h-3.5"></i>
-                      </a>
-                    </div>
-                  `;
-                }
-                return `<div class="text-center text-[11px] text-gray-400">Katalog Mahadewa.id</div>`;
-              }
+              const cardBg = row.highlight === 'emerald'
+                ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-950'
+                : row.highlight === 'amber'
+                ? 'bg-amber-50/70 border-amber-200/80 text-amber-950'
+                : 'bg-[#f5f5f7]/70 border-gray-200/60 text-[#1d1d1f]';
               return `
-                <div class="text-center px-1.5 sm:px-4">
-                  <p class="text-[11px] sm:text-sm leading-relaxed ${row.accent || 'text-[#1d1d1f]'} font-normal break-words">
-                    ${val}
-                  </p>
+                <div class="p-3 sm:p-4 rounded-2xl border ${cardBg} text-xs sm:text-sm leading-relaxed">
+                  ${val}
                 </div>
               `;
             }).join('')}
@@ -1765,72 +1359,68 @@ function doPost(e) {
         </div>
       `).join('');
 
-      lucide.createIcons();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     // =========================================================================
-    // 8. MANAJEMEN KATALOG (TAMBAH, EDIT, HAPUS, UPLOAD GAMBAR, JSON)
+    // 7. CRUD PRODUK ADMIN, EXCEL & JSON IMPORT/EXPORT
     // =========================================================================
     function renderAdminProductList() {
-      const searchInput = document.getElementById('admin-search-input');
-      const query = (searchInput ? searchInput.value : '').toLowerCase();
-      const filtered = products.filter(p =>
-        p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query)
-      );
-
+      const container = document.getElementById('admin-product-list');
       const countEl = document.getElementById('catalog-count');
+      const searchEl = document.getElementById('admin-search-input');
+      if (!container) return;
+
+      const q = (searchEl ? searchEl.value : '').trim().toLowerCase();
+      const filtered = q
+        ? products.filter(p => `${p.name} ${p.category} ${p.chip}`.toLowerCase().includes(q))
+        : products;
+
       if (countEl) countEl.textContent = products.length;
 
-      const listEl = document.getElementById('admin-product-list');
-      if (!listEl) return;
-
       if (filtered.length === 0) {
-        listEl.innerHTML = `<p class="text-xs text-center text-gray-500 py-8">Tidak ada produk yang cocok.</p>`;
+        container.innerHTML = `<p class="text-xs text-gray-500 text-center py-8">Tidak ada produk yang cocok.</p>`;
         return;
       }
 
-      listEl.innerHTML = filtered.map(prod => {
-        const fallbackImg = getFallbackImageByCategory(prod.category, prod.name);
+      container.innerHTML = filtered.map(p => {
+        const fallbackImg = getFallbackImageByCategory(p.category, p.name);
         return `
-          <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-[#f5f5f7] hover:bg-gray-200/70 border border-gray-200/80 transition">
-            <div class="flex items-center gap-3 min-w-0">
-              <img src="${prod.image || fallbackImg}" alt="${prod.name}"
+          <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-[#f5f5f7] border border-gray-200/80">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img src="${p.image || fallbackImg}" alt="${p.name}"
                 onerror="this.onerror=null;this.src='${fallbackImg}';"
-                class="w-11 h-11 rounded-xl object-contain bg-white p-1 border border-gray-200 flex-shrink-0" />
+                class="w-10 h-10 rounded-xl object-contain bg-white p-1 border border-gray-200 flex-shrink-0" />
               <div class="min-w-0">
-                <span class="text-[10px] font-bold uppercase text-[#C62828] block">${prod.category}</span>
-                <p class="text-xs sm:text-sm font-bold text-[#1d1d1f] truncate">${prod.name}</p>
-                <p class="text-[11px] text-gray-500 truncate">${prod.chip}</p>
+                <span class="text-[10px] font-bold uppercase text-[#C62828] block">${p.category}</span>
+                <p class="text-xs font-bold text-[#1d1d1f] truncate">${p.name}</p>
               </div>
             </div>
             <div class="flex items-center gap-1.5 flex-shrink-0">
-              <button onclick="editProduct('${prod.id}')" class="p-2 rounded-xl bg-white hover:bg-blue-50 text-blue-600 border border-gray-200 transition" title="Edit Produk">
-                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+              <button type="button" onclick="editProduct('${p.id}')" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-gray-100 border border-gray-300 text-[11px] font-semibold text-[#1d1d1f]">
+                Edit
               </button>
-              <button onclick="deleteProduct('${prod.id}')" class="p-2 rounded-xl bg-white hover:bg-red-50 text-[#C62828] border border-gray-200 transition" title="Hapus Produk">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <button type="button" onclick="deleteProduct('${p.id}')" class="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-[11px] font-semibold text-[#C62828]">
+                Hapus
               </button>
             </div>
           </div>
         `;
       }).join('');
-
-      lucide.createIcons();
     }
 
-    function handleSaveProduct(e) {
-      e.preventDefault();
-      const existingId = document.getElementById('prod-id').value;
+    async function handleSaveProduct(event) {
+      event.preventDefault();
+      const existingId = document.getElementById('prod-id').value.trim();
       const name = document.getElementById('prod-name').value.trim();
-      const category = document.getElementById('prod-category').value;
-      const imageInput = document.getElementById('prod-image').value.trim();
+      const id = existingId || `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
 
-      const productData = {
-        id: existingId || 'prod-' + Date.now(),
+      const productObj = {
+        id,
         name,
-        category,
+        category: document.getElementById('prod-category').value.trim() || 'iPhone',
         tagline: document.getElementById('prod-tagline').value.trim(),
-        image: imageInput || getFallbackImageByCategory(category, name),
+        image: document.getElementById('prod-image').value.trim(),
         display: document.getElementById('prod-display').value.trim(),
         chip: document.getElementById('prod-chip').value.trim(),
         camera: document.getElementById('prod-camera').value.trim(),
@@ -1838,57 +1428,52 @@ function doPost(e) {
         features: document.getElementById('prod-features').value.trim(),
         pros: document.getElementById('prod-pros').value.trim(),
         cons: document.getElementById('prod-cons').value.trim(),
-        source: document.getElementById('prod-source').value.trim() || 'https://www.apple.com/id/'
+        source: document.getElementById('prod-source').value.trim()
       };
 
-      if (existingId) {
-        const idx = products.findIndex(p => p.id === existingId);
-        if (idx !== -1) products[idx] = productData;
-        showToast(`Produk "${name}" berhasil diperbarui!`, 'success');
+      const idx = products.findIndex(p => p.id === id);
+      if (idx !== -1) {
+        products[idx] = productObj;
       } else {
-        products.unshift(productData);
-        selectedProductIds[0] = productData.id;
-        showToast(`Produk "${name}" berhasil ditambahkan ke katalog!`, 'success');
+        products.unshift(productObj);
       }
 
-      saveLocalProducts();
-      renderCategoryFilters();
-      renderAdminCategoryTags();
-      renderComparisonTable();
-      renderAdminProductList();
+      syncCategoriesFromProducts();
+      saveLocalCache();
       resetProductForm();
+      renderAdminProductList();
+      renderAdminCategoryTags();
+      populateCategoryDropdown();
+      renderCategoryFilters();
+      renderComparisonTable();
 
-      syncSingleMutationToSheets('upsert', { product: productData });
+      await postToGoogleSheets({ action: 'upsert', product: productObj });
+      showToast(`Produk "${productObj.name}" berhasil disimpan!`, 'success');
     }
 
     function editProduct(id) {
-      const prod = products.find(p => p.id === id);
-      if (!prod) return;
+      const p = products.find(item => item.id === id);
+      if (!p) return;
 
-      if (prod.category && !categoriesList.includes(prod.category)) {
-        categoriesList.push(prod.category);
-        saveCategoriesLocally();
-      }
+      document.getElementById('prod-id').value = p.id;
+      document.getElementById('prod-name').value = p.name || '';
+      populateCategoryDropdown();
+      document.getElementById('prod-category').value = p.category || categoriesList[0];
+      document.getElementById('prod-tagline').value = p.tagline || '';
+      document.getElementById('prod-image').value = p.image || '';
+      document.getElementById('prod-display').value = p.display || '';
+      document.getElementById('prod-chip').value = p.chip || '';
+      document.getElementById('prod-camera').value = p.camera || '';
+      document.getElementById('prod-battery').value = p.battery || '';
+      document.getElementById('prod-features').value = p.features || '';
+      document.getElementById('prod-pros').value = p.pros || '';
+      document.getElementById('prod-cons').value = p.cons || '';
+      document.getElementById('prod-source').value = p.source || '';
 
-      document.getElementById('prod-id').value = prod.id;
-      document.getElementById('prod-name').value = prod.name;
-      document.getElementById('prod-category').value = prod.category;
-      document.getElementById('prod-tagline').value = prod.tagline;
-      document.getElementById('prod-image').value = prod.image.startsWith('data:image/svg+xml') ? '' : prod.image;
-      document.getElementById('prod-display').value = prod.display;
-      document.getElementById('prod-chip').value = prod.chip;
-      document.getElementById('prod-camera').value = prod.camera;
-      document.getElementById('prod-battery').value = prod.battery;
-      document.getElementById('prod-features').value = prod.features;
-      document.getElementById('prod-pros').value = prod.pros;
-      document.getElementById('prod-cons').value = prod.cons;
-      document.getElementById('prod-source').value = prod.source || '';
-
-      document.getElementById('form-title').textContent = `Edit Produk: ${prod.name}`;
-      document.getElementById('btn-submit-text').textContent = 'Simpan Perubahan';
+      document.getElementById('form-title').textContent = `Edit Produk: ${p.name}`;
+      document.getElementById('btn-submit-text').textContent = 'Simpan Perubahan Produk';
       document.getElementById('btn-cancel-edit').classList.remove('hidden');
-
-      document.getElementById('product-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('product-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function resetProductForm() {
@@ -1899,123 +1484,287 @@ function doPost(e) {
       document.getElementById('btn-cancel-edit').classList.add('hidden');
     }
 
-    function deleteProduct(id) {
-      if (products.length <= 2) {
-        showToast('Minimal harus tersisa 2 produk di katalog untuk perbandingan.', 'error');
-        return;
-      }
+    async function deleteProduct(id) {
       const target = products.find(p => p.id === id);
+      if (!target) return;
       products = products.filter(p => p.id !== id);
-      saveLocalProducts();
-      renderCategoryFilters();
-      renderAdminCategoryTags();
-      renderComparisonTable();
+      saveLocalCache();
+      ensureValidSelectedProducts();
       renderAdminProductList();
-      showToast(`Produk "${target ? target.name : ''}" dihapus.`, 'info');
-
-      syncSingleMutationToSheets('delete', { id });
+      renderComparisonTable();
+      await postToGoogleSheets({ action: 'delete', id });
+      showToast(`Produk "${target.name}" telah dihapus.`, 'info');
     }
 
     function handleProductImageUpload(event) {
       const file = event.target.files?.[0];
       if (!file) return;
-
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = (e) => {
         const img = new Image();
-        img.onload = function() {
+        img.onload = () => {
           const canvas = document.createElement('canvas');
-          const MAX_SIZE = 320;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > height && width > MAX_SIZE) {
-            height *= MAX_SIZE / width;
-            width = MAX_SIZE;
-          } else if (height > MAX_SIZE) {
-            width *= MAX_SIZE / height;
-            height = MAX_SIZE;
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          const compressedBase64 = canvas.toDataURL('image/webp', 0.82);
-          document.getElementById('prod-image').value = compressedBase64;
-          showToast('Foto produk berhasil diunggah & dikompresi!', 'success');
+          const maxSize = 420;
+          let w = img.width;
+          let h = img.height;
+          if (w > h && w > maxSize) { h = Math.round(h * maxSize / w); w = maxSize; }
+          else if (h > maxSize) { w = Math.round(w * maxSize / h); h = maxSize; }
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          document.getElementById('prod-image').value = canvas.toDataURL('image/jpeg', 0.82);
+          showToast('Foto produk berhasil dimuat!', 'success');
         };
         img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
 
+    function downloadExcelTemplate() {
+      if (typeof XLSX === 'undefined') {
+        showToast('Library Excel belum siap, coba muat ulang halaman.', 'error');
+        return;
+      }
+      const rows = products.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        tagline: p.tagline,
+        image: p.image,
+        display: p.display,
+        chip: p.chip,
+        camera: p.camera,
+        battery: p.battery,
+        features: p.features,
+        pros: p.pros,
+        cons: p.cons,
+        source: p.source
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'KatalogProduk');
+      XLSX.writeFile(wb, 'Katalog_Mahadewa_Id.xlsx');
+    }
+
+    function handleExcelImport(event) {
+      const file = event.target.files?.[0];
+      if (!file || typeof XLSX === 'undefined') return;
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const jsonRows = XLSX.utils.sheet_to_json(sheet);
+          if (!jsonRows.length) return;
+
+          const imported = jsonRows.map((r, i) => ({
+            id: String(r.id || `excel-${Date.now()}-${i}`),
+            name: String(r.name || r['Nama Produk'] || '').trim(),
+            category: String(r.category || r['Kategori'] || 'iPhone').trim(),
+            tagline: String(r.tagline || r['Tagline'] || '').trim(),
+            image: String(r.image || r['Foto'] || '').trim(),
+            display: String(r.display || r['Layar'] || '').trim(),
+            chip: String(r.chip || r['Performa'] || '').trim(),
+            camera: String(r.camera || r['Kamera'] || '').trim(),
+            battery: String(r.battery || r['Baterai'] || '').trim(),
+            features: String(r.features || r['Fitur'] || '').trim(),
+            pros: String(r.pros || r['Kelebihan'] || '').trim(),
+            cons: String(r.cons || r['Kekurangan'] || '').trim(),
+            source: String(r.source || r['Sumber'] || '').trim()
+          })).filter(item => item.name);
+
+          if (imported.length > 0) {
+            products = imported;
+            syncCategoriesFromProducts();
+            saveLocalCache();
+            ensureValidSelectedProducts();
+            renderAdminProductList();
+            renderAdminCategoryTags();
+            populateCategoryDropdown();
+            renderCategoryFilters();
+            renderComparisonTable();
+            await pushAllToGoogleSheets();
+            showToast(`Berhasil mengimpor ${imported.length} produk dari Excel!`, 'success');
+          }
+        } catch (err) {
+          showToast('Format file Excel tidak sesuai.', 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
     function exportProductsJSON() {
-      const dataStr = JSON.stringify(products, null, 2);
-      const blob = new Blob([dataStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
+      const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `katalog-mahadewa-id-${new Date().toISOString().slice(0, 10)}.json`;
+      a.href = URL.createObjectURL(blob);
+      a.download = 'mahadewa-katalog.json';
       a.click();
-      URL.revokeObjectURL(url);
-      showToast('File JSON katalog berhasil diunduh!', 'success');
     }
 
     function importProductsJSON(event) {
       const file = event.target.files?.[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = async (e) => {
         try {
-          const imported = JSON.parse(e.target.result);
-          if (!Array.isArray(imported) || imported.length === 0) {
-            throw new Error('Format JSON tidak valid');
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            products = parsed;
+            syncCategoriesFromProducts();
+            saveLocalCache();
+            ensureValidSelectedProducts();
+            renderAdminProductList();
+            renderCategoryFilters();
+            renderComparisonTable();
+            await pushAllToGoogleSheets();
+            showToast(`Berhasil mengimpor ${parsed.length} produk JSON!`, 'success');
           }
-          products = imported;
-          saveLocalProducts();
-          loadCategories(true);
-          renderCategoryFilters();
-          renderComparisonTable();
-          renderAdminProductList();
-          showToast(`Berhasil mengimpor ${products.length} produk!`, 'success');
-          pushAllToGoogleSheets();
-        } catch (err) {
-          showToast('File JSON tidak valid atau rusak.', 'error');
+        } catch (_) {
+          showToast('File JSON tidak valid.', 'error');
         }
       };
       reader.readAsText(file);
     }
 
-    function resetToDefaultCatalog() {
-      products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
-      saveLocalProducts();
-      renderCategoryFilters();
-      renderComparisonTable();
-      renderAdminProductList();
-      showToast('Katalog dikembalikan ke 3 produk bawaan Mahadewa.id.', 'info');
+    // =========================================================================
+    // 8. MODAL APPS SCRIPT CODE.GS
+    // =========================================================================
+    function populateAppsScriptCodeBox() {
+      const box = document.getElementById('apps-script-code-box');
+      if (!box) return;
+      box.value = `// Kode Google Apps Script Mahadewa.id (Code.gs)
+function doGet(e) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const prodSheet = ss.getSheetByName('KatalogProduk') || ss.insertSheet('KatalogProduk');
+  const setSheet = ss.getSheetByName('PengaturanAdmin') || ss.insertSheet('PengaturanAdmin');
+  const rows = prodSheet.getDataRange().getValues();
+  const products = [];
+  if (rows.length > 1) {
+    const headers = rows[0].map(h => String(h).trim().toLowerCase());
+    for (let i = 1; i < rows.length; i++) {
+      if (!rows[i][1] && !rows[i][0]) continue;
+      const obj = {};
+      headers.forEach((h, idx) => { obj[h] = rows[i][idx]; });
+      products.push({
+        id: String(obj.id || 'row-' + i),
+        name: String(obj.name || ''),
+        category: String(obj.category || ''),
+        tagline: String(obj.tagline || ''),
+        image: String(obj.image || ''),
+        display: String(obj.display || ''),
+        chip: String(obj.chip || ''),
+        camera: String(obj.camera || ''),
+        battery: String(obj.battery || ''),
+        features: String(obj.features || ''),
+        pros: String(obj.pros || ''),
+        cons: String(obj.cons || ''),
+        source: String(obj.source || '')
+      });
+    }
+  }
+  const settings = {};
+  const setRows = setSheet.getDataRange().getValues();
+  for (let i = 0; i < setRows.length; i++) {
+    if (setRows[i][0]) settings[String(setRows[i][0]).trim()] = setRows[i][1];
+  }
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'success',
+    products,
+    adminPin: settings.adminPin || '2026',
+    brandLogo: settings.brandLogo || '',
+    geminiApiKey: settings.geminiApiKey || '',
+    brandCategories: settings.brandCategories || ''
+  })).setMimeType(ContentService.MimeType.JSON);
+}`;
+    }
+
+    function openAppsScriptModal() {
+      const modal = document.getElementById('apps-script-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeAppsScriptModal() {
+      const modal = document.getElementById('apps-script-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function copyAppsScriptCode() {
+      const box = document.getElementById('apps-script-code-box');
+      if (!box) return;
+      box.select();
+      document.execCommand('copy');
+      showToast('Kode Code.gs berhasil disalin ke clipboard!', 'success');
     }
 
     // =========================================================================
-    // 9. HELPER PEMANGGILAN GEMINI API SUPER CEPAT (DENGAN TIMEOUT & MODEL RINGAN)
+    // 9. HELPER PEMANGGILAN GEMINI API OTOMATIS DETEKSI MODEL AKTIF (GEMINI 3+)
     // =========================================================================
     let preferredGeminiModel = '';
+    let cachedActiveModels = null;
+
+    async function discoverAvailableGeminiModels(apiKey) {
+      if (Array.isArray(cachedActiveModels) && cachedActiveModels.length > 0) {
+        return cachedActiveModels;
+      }
+
+      const fallbackModels = [
+        'gemini-3.1-flash-lite-preview',
+        'gemini-3-flash-preview',
+        'gemini-flash-latest',
+        'gemini-2.5-flash-lite',
+        'gemini-2.5-flash',
+        'gemini-2.0-flash'
+      ];
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const validTextModels = (data.models || [])
+            .filter(m =>
+              Array.isArray(m.supportedGenerationMethods) &&
+              m.supportedGenerationMethods.includes('generateContent') &&
+              /gemini/i.test(m.name) &&
+              !/(embedding|imagen|veo|tts|audio|robotics|computer-use|deep-research)/i.test(m.name)
+            )
+            .map(m => m.name.replace(/^models\//, ''));
+
+          if (validTextModels.length > 0) {
+            // Urutkan agar model flash terbaru (Gemini 3 / 3.1 / latest) dicoba pertama
+            validTextModels.sort((a, b) => {
+              const score = (name) => {
+                let s = 0;
+                if (/3\.1.*flash-lite/i.test(name)) s += 120;
+                else if (/3.*flash/i.test(name)) s += 110;
+                else if (/flash-latest/i.test(name)) s += 100;
+                else if (/2\.5-flash-lite/i.test(name)) s += 90;
+                else if (/2\.5-flash/i.test(name)) s += 80;
+                else if (/flash/i.test(name)) s += 70;
+                if (/pro/i.test(name)) s -= 15;
+                return s;
+              };
+              return score(b) - score(a);
+            });
+            cachedActiveModels = validTextModels;
+            return validTextModels;
+          }
+        }
+      } catch (e) {
+        console.warn('Gagal mengambil daftar model Gemini otomatis:', e);
+      }
+      return fallbackModels;
+    }
 
     async function callGeminiWithFallback(apiKey, promptText) {
-      const defaultOrder = [
-        'gemini-2.5-flash-lite',
-        'gemini-flash-latest',
-        'gemini-2.0-flash',
-        'gemini-2.5-flash'
-      ];
+      const discovered = await discoverAvailableGeminiModels(apiKey);
       const candidateModels = preferredGeminiModel
-        ? [preferredGeminiModel, ...defaultOrder.filter(m => m !== preferredGeminiModel)]
-        : defaultOrder;
+        ? [preferredGeminiModel, ...discovered.filter(m => m !== preferredGeminiModel)]
+        : discovered;
 
       let lastErrMsg = '';
-      for (const modelName of candidateModels) {
+      for (const modelName of candidateModels.slice(0, 6)) {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 7500);
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
         try {
           const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
           const res = await fetch(apiUrl, {
@@ -2027,7 +1776,7 @@ function doPost(e) {
               generationConfig: {
                 responseMimeType: 'application/json',
                 temperature: 0.25,
-                maxOutputTokens: 450
+                maxOutputTokens: 600
               }
             })
           });
@@ -2042,10 +1791,12 @@ function doPost(e) {
           } else {
             const errJson = await res.json().catch(() => ({}));
             lastErrMsg = errJson?.error?.message || `HTTP ${res.status}`;
+            // Jika API Key tidak valid, hentikan loop segera
+            if (/api key not valid/i.test(lastErrMsg)) break;
           }
         } catch (err) {
           clearTimeout(timeoutId);
-          lastErrMsg = err.name === 'AbortError' ? 'Timeout (>7.5 detik)' : (err.message || 'Gagal koneksi');
+          lastErrMsg = err.name === 'AbortError' ? 'Timeout (>12 detik)' : (err.message || 'Gagal koneksi');
         }
       }
       throw new Error(lastErrMsg || 'Semua model Gemini gagal merespons');
@@ -2478,9 +2229,14 @@ Aturan wajib:
           matcher: (p) => /(aio|all[\s-]*in[\s-]*one|pc\/aio|\bpc\b|desktop)/i.test(`${p.category} ${p.name}`)
         },
         {
+          label: 'Finger Print / Mesin Absensi',
+          triggers: [/finger\s*print/i, /\bfingerprint\b/i, /\babsensi\b/i, /\bsidik\s*jari\b/i],
+          matcher: (p) => /(finger\s*print|fingerprint|absensi|solution\s*[xp])/i.test(`${p.category} ${p.name}`)
+        },
+        {
           label: 'Printer',
           triggers: [/\bprinter\b/i, /\bprint\b/i, /\bcetak\b/i, /\bscanner\b/i, /\bepson\b/i, /\bcanon\b/i, /\bbrother\b/i],
-          matcher: (p) => /(printer|epson|canon|brother|pixma|ecotank|laserjet)/i.test(`${p.category} ${p.name}`)
+          matcher: (p) => /(printer|epson|canon|brother|pixma|ecotank|laserjet)/i.test(`${p.category} ${p.name}`) && !/finger/i.test(`${p.category} ${p.name}`)
         },
         {
           label: 'Monitor',
@@ -2514,9 +2270,9 @@ Aturan wajib:
 
       const matchedSheetCategories = categoriesList.filter(cat => {
         const cleanCat = cat.toLowerCase().trim();
-        if (cleanCat.length < 2) return false;
-        const parts = cleanCat.split(/[\/\s-]+/).filter(part => part.length >= 2);
-        return q.includes(cleanCat) || parts.some(part => new RegExp(`\\b${part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(q));
+        if (cleanCat.length < 3) return false;
+        // Wajib cocokkan seluruh frasa kategori agar "print" tidak salah cocok ke "Finger Print"
+        return new RegExp(`\\b${cleanCat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(q);
       });
 
       if (matchedSheetCategories.length > 0) {
@@ -2631,6 +2387,14 @@ Aturan wajib:
       });
 
       scoredCandidates.sort((a, b) => b.score - a.score);
+
+      // Jika skor tertinggi <= 0 (produk yang dicari memang tidak ada di katalog, misal alat pengukur suhu)
+      if (scoredCandidates.length === 0 || scoredCandidates[0].score <= 0) {
+        return {
+          advice: `Mohon maaf, saat ini produk yang sesuai dengan pencarian tersebut belum tersedia di katalog spreadsheet Mahadewa.id. Silakan hubungi admin WhatsApp kami di 0823-4488-8441 untuk menanyakan ketersediaan barang lainnya.`,
+          items: []
+        };
+      }
 
       const selected = [];
       const usedPrefixes = new Set();
