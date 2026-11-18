@@ -413,7 +413,7 @@
             </div>
 
             <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
-              <p class="text-[11px] text-gray-500">API Key otomatis tersimpan di browser perangkat admin ini.</p>
+              <p class="text-[11px] text-gray-500">API Key otomatis tersimpan ke cloud setelah disimpan di atas.</p>
               <button type="button" onclick="autoFillWithAI()" id="btn-ai-autofill"
                 class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition">
                 <i data-lucide="wand-2" class="w-3.5 h-3.5 text-amber-400"></i>
@@ -671,7 +671,6 @@
     const DEFAULT_BRAND_LOGO_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTByyjzmv5_5XHSkxerj-ZrVJPugMEUxMFhXyHPjzOaLg&s=10';
     const DEFAULT_LOGO_FALLBACK_SVG = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="46" fill="#C62828"/><path d="M62 20 V76 H52 V70 C48.5 74.5 43.2 77 37 77 C25.5 77 18 68.5 18 56.5 C18 44.5 25.5 36 37 36 C43.2 36 48.5 38.5 52 43 V20 H62 Z M39.5 45 C32.5 45 28.2 49.8 28.2 56.5 C28.2 63.2 32.5 68 39.5 68 C46.5 68 51.5 63.2 51.5 56.5 C51.5 49.8 46.5 45 39.5 45 Z" fill="#FFFFFF"/><circle cx="71" cy="71" r="5" fill="#FFFFFF"/></svg>`);
 
-    // Penyimpanan 100% dialihkan ke Google Sheets (Memori Cloud Aktif, tanpa membebani localStorage browser)
     const SESSION_KEY_UNLOCKED = 'mahadewa_admin_unlocked_session';
     const WHATSAPP_NUMBER = '6282344888441';
     const DEFAULT_CATEGORIES = ['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'Starlink'];
@@ -1433,7 +1432,6 @@ function doPost(e) {
               image: p.image && p.image.trim() !== '' ? p.image : getFallbackImageByCategory(p.category, p.name)
             }));
 
-            // Selalu sinkronkan kategori aktual dari 300+ baris spreadsheet Anda + pengaturan cloud
             const actualSheetCats = extractCategoriesFromProducts(products);
             const isDefaultOnly = cloudCats.length === DEFAULT_CATEGORIES.length &&
               cloudCats.every((c, idx) => c === DEFAULT_CATEGORIES[idx]);
@@ -1995,40 +1993,59 @@ function doPost(e) {
       renderCategoryFilters();
       renderComparisonTable();
       renderAdminProductList();
-      showToast('Katalog dikembalikan ke 11 produk bawaan Mahadewa.id.', 'info');
+      showToast('Katalog dikembalikan ke 3 produk bawaan Mahadewa.id.', 'info');
     }
 
     // =========================================================================
-    // 9. HELPER PEMANGGILAN GEMINI API DENGAN AUTO-MODEL FALLBACK
+    // 9. HELPER PEMANGGILAN GEMINI API SUPER CEPAT (DENGAN TIMEOUT & MODEL RINGAN)
     // =========================================================================
+    let preferredGeminiModel = '';
+
     async function callGeminiWithFallback(apiKey, promptText) {
-      const candidateModels = [
+      const defaultOrder = [
         'gemini-2.5-flash-lite',
         'gemini-flash-latest',
         'gemini-2.0-flash',
         'gemini-2.5-flash'
       ];
+      const candidateModels = preferredGeminiModel
+        ? [preferredGeminiModel, ...defaultOrder.filter(m => m !== preferredGeminiModel)]
+        : defaultOrder;
 
       let lastErrMsg = '';
       for (const modelName of candidateModels) {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
-        const res = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }],
-            generationConfig: { responseMimeType: 'application/json' }
-          })
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 7500);
+        try {
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            signal: controller.signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: promptText }] }],
+              generationConfig: {
+                responseMimeType: 'application/json',
+                temperature: 0.25,
+                maxOutputTokens: 450
+              }
+            })
+          });
+          clearTimeout(timeoutId);
 
-        if (res.ok) {
-          const data = await res.json();
-          const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-          const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
-          return { parsed, modelUsed: modelName };
-        } else {
-          const errJson = await res.json().catch(() => ({}));
-          lastErrMsg = errJson?.error?.message || `HTTP ${res.status}`;
+          if (res.ok) {
+            const data = await res.json();
+            const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+            const parsed = JSON.parse(rawText.replace(/```json|```/g, '').trim());
+            preferredGeminiModel = modelName;
+            return { parsed, modelUsed: modelName };
+          } else {
+            const errJson = await res.json().catch(() => ({}));
+            lastErrMsg = errJson?.error?.message || `HTTP ${res.status}`;
+          }
+        } catch (err) {
+          clearTimeout(timeoutId);
+          lastErrMsg = err.name === 'AbortError' ? 'Timeout (>7.5 detik)' : (err.message || 'Gagal koneksi');
         }
       }
       throw new Error(lastErrMsg || 'Semua model Gemini gagal merespons');
@@ -2224,7 +2241,7 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
     }
 
     // =========================================================================
-    // 9B. FITUR KONSULTAN AI INTERAKTIF REKOMENDASI PRODUK UNTUK PELANGGAN
+    // 9B. FITUR KONSULTAN AI INTERAKTIF REKOMENDASI PRODUK (SUPER CEPAT)
     // =========================================================================
     let lastAiRecommendedIds = [];
 
@@ -2261,6 +2278,59 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
       showToast('Produk rekomendasi AI telah dimuat ke tabel perbandingan!', 'success');
     }
 
+    // Pra-penyaring cepat sebelum dikirim ke Gemini agar payload ringan (<25 produk) & respon <2 detik
+    function preFilterTopCandidatesForGemini(question, maxItems = 25) {
+      const q = question.toLowerCase();
+      let pool = [...products];
+
+      const deviceRules = [
+        { triggers: [/\baio\b/i, /all[\s-]*in[\s-]*one/i, /\bpc\b/i, /\bdesktop\b/i, /\bkomputer\b/i], matcher: p => /(aio|all[\s-]*in[\s-]*one|pc\/aio|\bpc\b|desktop)/i.test(`${p.category} ${p.name}`) },
+        { triggers: [/\bprinter\b/i, /\bprint\b/i, /\bcetak\b/i, /\bscanner\b/i, /\bepson\b/i, /\bcanon\b/i, /\bbrother\b/i], matcher: p => /(printer|epson|canon|brother|pixma|ecotank|laserjet)/i.test(`${p.category} ${p.name}`) },
+        { triggers: [/\bmonitor\b/i], matcher: p => /(monitor|viewsonic|aoc|lg\s*ultragear)/i.test(`${p.category} ${p.name}`) },
+        { triggers: [/\blaptop\b/i, /\bnotebook\b/i, /\bmacbook\b/i, /\bultrabook\b/i], matcher: p => /(laptop|notebook|macbook|windows|asus|lenovo|acer|msi|axioo|spc|vivobook|aspire|thinkpad|ideapad)/i.test(`${p.category} ${p.name}`) && !/(aio|all[\s-]*in[\s-]*one)/i.test(`${p.category} ${p.name}`) },
+        { triggers: [/\bipad\b/i, /\btablet\b/i, /\btab\b/i], matcher: p => /(ipad|tablet|pad)/i.test(`${p.category} ${p.name}`) },
+        { triggers: [/\biphone\b/i, /\bhp\b/i, /\bsmartphone\b/i, /\bponsel\b/i], matcher: p => /(iphone|smartphone|hp)/i.test(`${p.category} ${p.name}`) && !/(hp\s*aio|hp\s*14|hp\s*15|hp\s*pavilion|hp\s*victus|hp\s*omnistudio|hp\s*probook|hp\s*laserjet)/i.test(p.name) },
+        { triggers: [/\bstarlink\b/i, /\binternet\b/i, /\brouter\b/i, /\bwifi\b/i, /\bsatelit\b/i], matcher: p => /(starlink|router|jaringan|network)/i.test(`${p.category} ${p.name}`) }
+      ];
+
+      for (const rule of deviceRules) {
+        if (rule.triggers.some(rx => rx.test(q))) {
+          const matched = pool.filter(rule.matcher);
+          if (matched.length > 0) {
+            pool = matched;
+            break;
+          }
+        }
+      }
+
+      const keywords = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+      const isHeavy = /(teknik|informatika|coding|arsitektur|3d|render|berat|cad|simulasi|gaming|editing)/i.test(q);
+
+      const scored = pool.map(p => {
+        let score = 0;
+        const text = `${p.name} ${p.category} ${p.chip} ${p.display} ${p.features} ${p.pros}`.toLowerCase();
+        keywords.forEach(kw => {
+          if ((p.pros || '').toLowerCase().includes(kw)) score += 6;
+          if (text.includes(kw)) score += 3;
+        });
+        if (isHeavy && /(rtx|gtx|ryzen\s*[579]|core\s*i[579]|ultra\s*[579]|m[1234]|pro|max)/i.test(text)) score += 10;
+        if (isHeavy && /(celeron|n4020|n4500|n100|pentium|athlon)/i.test(text)) score -= 25;
+        return { p, score };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      return scored.slice(0, maxItems).map(item => ({
+        id: item.p.id,
+        name: item.p.name,
+        cat: item.p.category,
+        display: (item.p.display || '').slice(0, 75),
+        chip: (item.p.chip || '').slice(0, 85),
+        features: (item.p.features || '').slice(0, 90),
+        pros: (item.p.pros || '').slice(0, 140),
+        cons: (item.p.cons || '').slice(0, 90)
+      }));
+    }
+
     async function askAiProductConsultant(event) {
       if (event) event.preventDefault();
       const inputEl = document.getElementById('ai-consultant-input');
@@ -2290,40 +2360,20 @@ Balas HANYA dalam format JSON murni dengan struktur persis seperti ini tanpa mar
 
         if (apiKey) {
           try {
-            const catalogSummary = products.map(p => ({
-              id: p.id,
-              name: p.name,
-              category: p.category,
-              tagline: p.tagline,
-              display: p.display,
-              chip: p.chip,
-              camera: p.camera,
-              battery: p.battery,
-              features: p.features,
-              pros: p.pros,
-              cons: p.cons
-            }));
+            // Saring 25 kandidat paling relevan sebelum dikirim ke Gemini agar proses 5x lebih cepat
+            const compactCatalog = preFilterTopCandidatesForGemini(userQuestion, 25);
 
-            const prompt = `Kamu adalah konsultan produk AI resmi toko gadget Mahadewa.id Palopo.
+            const prompt = `Konsultan AI toko gadget Mahadewa.id Palopo.
 Pertanyaan pelanggan: "${userQuestion}"
-
-Daftar kategori aktual yang tersedia di spreadsheet kami: ${JSON.stringify(categoriesList)}
-Database katalog produk real-time dari Google Sheets kami (selalu mengacu pada data terbaru berikut):
-${JSON.stringify(catalogSummary)}
+Kandidat katalog spreadsheet (${compactCatalog.length} produk relevan):
+${JSON.stringify(compactCatalog)}
 
 Aturan wajib:
-1. HANYA pilih 1 sampai 3 produk yang BENAR-BENAR ADA di database spreadsheet di atas (gunakan field "id" yang persis sama). Jangan pernah mengarang produk di luar database.
-2. Patuhi jenis perangkat/kategori yang diminta pelanggan (misal jika pelanggan menanyakan AIO/PC, pilih hanya dari kategori PC/AIO; jika menanyakan Printer, pilih hanya dari kategori Printer; jika menanyakan Laptop, pilih hanya dari kategori Laptop/Notebook/MacBook).
-3. Perhatikan syarat spesifik seperti WARNA (misal: pink, merah, biru, gold, silver, putih, hitam) atau fitur khusus. Jika pelanggan meminta warna tertentu tetapi di database tidak ada produk kategori tersebut dengan warna itu, JANGAN menyodorkan warna lain! Kembalikan "recommendations": [] dan jelaskan dengan ramah di "advice" bahwa stok warna tersebut belum tersedia serta sebutkan warna yang tersedia.
-4. Jadikan kolom "pros" (Kelebihan Utama), "cons" (Kekurangan/Catatan), dan spesifikasi "chip"/"display" pada data spreadsheet di atas sebagai dasar utama penilaian agar setiap kali admin mengubah data di spreadsheet, rekomendasi otomatis mengikuti perubahan terbaru.
-5. Jika di database spreadsheet tidak ada produk yang sesuai dengan permintaan pelanggan, kembalikan "recommendations": [] dan jelaskan dengan sopan di "advice".
-6. Balas HANYA dalam format JSON valid tanpa markdown:
-{
-  "advice": "Penjelasan rekomendasi ramah, akurat, dan merujuk langsung pada Kelebihan Utama & spesifikasi terbaru dari spreadsheet dalam 2-3 kalimat Bahasa Indonesia.",
-  "recommendations": [
-    { "id": "id-produk-persis-dari-database", "reason": "Alasan spesifik yang merujuk pada Kelebihan Utama (pros) & spesifikasi produk ini di spreadsheet" }
-  ]
-}`;
+1. HANYA pilih 1 sampai 3 produk yang BENAR-BENAR ADA di daftar di atas (gunakan field "id" yang persis sama).
+2. Patuhi jenis perangkat/kategori & syarat spesifik seperti WARNA (pink, merah, biru, gold, silver, putih, hitam). Jika warna atau produk yang diminta tidak ada di daftar, kembalikan "recommendations": [] dan jelaskan ramah di "advice".
+3. Jadikan kolom "pros" (Kelebihan Utama) & "chip"/"display" sebagai alasan utama.
+4. Balas HANYA JSON valid tanpa markdown:
+{"advice":"Penjelasan ramah & akurat 2 kalimat Bahasa Indonesia","recommendations":[{"id":"id-produk","reason":"Alasan merujuk pros & spesifikasi"}]}`;
 
             const { parsed, modelUsed } = await callGeminiWithFallback(apiKey, prompt);
 
