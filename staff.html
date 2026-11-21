@@ -310,15 +310,15 @@ Katalog unit READY STOCK beserta harga:
 ${JSON.stringify(catalog)}
 Balas HANYA JSON murni: {"advice":"Jawaban singkat untuk staf","recommendations":[{"id":"id-produk","reason":"Alasan singkat"}]}`;
 
-          const isVertex = geminiApiKey.startsWith('AQ.');
-          const endpoint = isVertex
-            ? `https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash-lite:generateContent?key=${encodeURIComponent(geminiApiKey)}`
-            : `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
+          const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
           const res = await fetch(endpoint, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } })
+            headers: {
+              'Content-Type': 'application/json',
+              'X-goog-api-key': geminiApiKey
+            },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } })
           });
           if (res.ok) {
             const data = await res.json();
