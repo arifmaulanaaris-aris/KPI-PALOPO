@@ -439,6 +439,7 @@
     }
 
     async function discoverModel(apiKey) {
+      if (apiKey.startsWith('AQ.')) return 'gemini-2.5-flash-lite';
       if (preferredGeminiModel) return preferredGeminiModel;
       try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
@@ -452,6 +453,43 @@
         }
       } catch (_) {}
       return 'gemini-3.1-flash-lite-preview';
+    }
+
+    async function callGeminiUniversal(apiKey, prompt) {
+      const isVertexExpress = apiKey.startsWith('AQ.');
+      const candidateModels = isVertexExpress
+        ? ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash']
+        : [await discoverModel(apiKey)];
+
+      let lastError = '';
+      for (const model of candidateModels) {
+        try {
+          const endpoint = isVertexExpress
+            ? `https://aiplatform.googleapis.com/v1/publishers/google/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`
+            : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: 'application/json', temperature: 0.25 }
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+            return { parsed: JSON.parse(raw.replace(/```json|```/g, '').trim()), model };
+          } else {
+            const errBody = await res.json().catch(() => ({}));
+            lastError = errBody?.error?.message || `HTTP ${res.status}`;
+          }
+        } catch (err) {
+          lastError = err.message || 'Gagal terhubung';
+        }
+      }
+      throw new Error(lastError || 'Gagal memanggil Gemini');
     }
 
     // Saring & prioritaskan kandidat Ready Stock sesuai jenis perangkat agar tidak terpotong baris Aksesoris
@@ -563,13 +601,13 @@
       const { candidates, detectedDeviceLabel, emptyDeviceCategory } = preFilterReadyCandidates(q, availPool, 35);
       let advice = '';
       let recs = [];
+      let sourceBadge = '';
 
       if (emptyDeviceCategory) {
         advice = `Mohon maaf, saat ini belum ada stok unit <strong>${detectedDeviceLabel}</strong> yang tersedia di Mahadewa.id Palopo. Silakan hubungi WhatsApp Admin kami di 0823-4488-8441 untuk cek jadwal kedatangan unit baru.`;
       } else {
         try {
           if (geminiApiKey && candidates.length > 0) {
-            const model = await discoverModel(geminiApiKey);
             const compact = candidates.map(p => ({
               id: p.id, name: p.name, cat: p.category, stock: parseStockNumber(p.stock ?? p.Stock),
               chip: (p.chip || '').slice(0, 85), display: (p.display || '').slice(0, 75), pros: (p.pros || '').slice(0, 130)
@@ -579,22 +617,17 @@ Daftar unit READY STOCK yang relevan saat ini (JANGAN sebutkan harga, HANYA pili
 ${JSON.stringify(compact)}
 Balas HANYA JSON murni: {"advice":"Saran singkat 2 kalimat Bahasa Indonesia","recommendations":[{"id":"id-produk","reason":"Alasan singkat berdasarkan spesifikasi & pros"}]}`;
 
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.25 } })
+            const { parsed, model } = await callGeminiUniversal(geminiApiKey, prompt);
+            advice = parsed.advice || '';
+            sourceBadge = `<span class="inline-block mb-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">✨ Dijawab oleh Gemini AI (${model})</span><br/>`;
+            (parsed.recommendations || []).forEach(r => {
+              const found = candidates.find(p => p.id === r.id);
+              if (found) recs.push({ p: found, reason: r.reason || found.pros || found.tagline });
             });
-            if (res.ok) {
-              const data = await res.json();
-              const parsed = JSON.parse((data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}').replace(/```json|```/g, '').trim());
-              advice = parsed.advice || '';
-              (parsed.recommendations || []).forEach(r => {
-                const found = candidates.find(p => p.id === r.id);
-                if (found) recs.push({ p: found, reason: r.reason || found.pros || found.tagline });
-              });
-            }
           }
-        } catch (_) {}
+        } catch (err) {
+          sourceBadge = `<span class="inline-block mb-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">⚡ Mode Katalog Lokal (${(err.message || '').slice(0, 50)})</span><br/>`;
+        }
 
         if (recs.length === 0 && !advice && candidates.length > 0) {
           const top = candidates.slice(0, 3);
@@ -607,7 +640,7 @@ Balas HANYA JSON murni: {"advice":"Saran singkat 2 kalimat Bahasa Indonesia","re
       }
 
       lastAiRecommendedIds = recs.map(r => r.p.id);
-      document.getElementById('ai-consultant-answer').innerHTML = `<span class="font-bold text-[#C62828]">Saran AI Mahadewa.id:</span> ${advice}`;
+      document.getElementById('ai-consultant-answer').innerHTML = `${sourceBadge}<span class="font-bold text-[#C62828]">Saran AI Mahadewa.id:</span> ${advice}`;
       document.getElementById('ai-consultant-cards').innerHTML = recs.map(r => {
         const p = r.p;
         const fallbackImg = `https://placehold.co/120x120/f5f5f7/1d1d1f?text=${encodeURIComponent(p.name.slice(0, 12))}`;
