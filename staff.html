@@ -11,18 +11,13 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #f5f5f7; color: #1d1d1f; }
-    .apple-select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem;
-    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col overflow-x-hidden">
 
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- Gerbang Login PIN Staf (Wajib sebelum Harga ditampilkan) -->
+  <!-- Gerbang Login PIN Staf -->
   <div id="staff-login-gate" class="fixed inset-0 z-50 bg-[#1d1d1f]/95 backdrop-blur-md flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-sm w-full p-7 shadow-2xl border border-gray-200 text-center space-y-5">
       <div class="w-14 h-14 rounded-2xl bg-red-50 border border-red-200 text-[#C62828] flex items-center justify-center mx-auto">
@@ -36,7 +31,7 @@
       <form onsubmit="verifyStaffPin(event)" class="space-y-4">
         <input type="password" id="staff-pin-input" required placeholder="Masukkan PIN Staf..."
           class="w-full px-4 py-3 rounded-2xl bg-[#f5f5f7] border border-gray-300 text-center text-base font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
-        <p class="text-[11px] text-gray-400">PIN Default Staf: <code class="font-semibold text-gray-600">****</code></p>
+        <p class="text-[11px] text-gray-400">PIN Default Staf: <code class="font-semibold text-gray-600">1234</code></p>
         <div class="flex gap-2">
           <a href="user.html" class="w-1/2 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] text-xs font-semibold flex items-center justify-center">
             Katalog Publik
@@ -50,26 +45,26 @@
   </div>
 
   <!-- Header Portal Staf -->
-  <header class="sticky top-0 z-40 bg-[#1d1d1f] text-white shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5">
-        <span class="px-2.5 py-1 rounded-lg bg-[#C62828] text-white text-xs font-extrabold tracking-wide">STAF</span>
-        <span class="text-base sm:text-xl font-bold">mahadewa.id — Harga & Stok Ready</span>
+  <header class="sticky top-0 z-40 bg-[#1d1d1f] text-white shadow-md w-full">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-[#C62828] text-white text-[10px] sm:text-xs font-extrabold tracking-wide flex-shrink-0">STAF</span>
+        <span class="text-sm sm:text-xl font-bold truncate">mahadewa.id <span class="hidden md:inline font-normal text-gray-300">— Harga & Stok Ready</span></span>
       </div>
-      <div class="flex items-center gap-2">
-        <button onclick="syncFromGoogleSheets(false)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold transition">
+      <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+        <button onclick="syncFromGoogleSheets(false)" title="Sinkronkan Cloud" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold transition">
           <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-400"></i>
-          <span class="hidden sm:inline">Sync Cloud</span>
+          <span class="hidden sm:inline">Sync</span>
         </button>
-        <a href="user.html" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold">Mode User</a>
-        <a href="admin.html" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold">Admin</a>
-        <button onclick="logoutStaff()" class="px-3 py-1.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-xs font-semibold">Kunci</button>
+        <a href="user.html" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] sm:text-xs font-semibold whitespace-nowrap">User</a>
+        <a href="admin.html" class="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] sm:text-xs font-semibold whitespace-nowrap">Admin</a>
+        <button onclick="logoutStaff()" class="px-2.5 py-1.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-[11px] sm:text-xs font-semibold whitespace-nowrap">Kunci</button>
       </div>
     </div>
   </header>
 
   <!-- Konten Utama Staf -->
-  <main id="staff-main-content" class="hidden max-w-7xl mx-auto w-full px-3.5 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
+  <main id="staff-main-content" class="hidden max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-5 sm:py-6 space-y-5 sm:space-y-6 flex-1">
     
     <!-- Filter Kategori & Pencarian Cepat Harga -->
     <div class="bg-white p-4 rounded-3xl border border-gray-200 shadow-sm space-y-3">
@@ -89,10 +84,10 @@
       <div id="staff-category-filters" class="flex items-center gap-1.5 overflow-x-auto pb-1"></div>
     </div>
 
-    <!-- Tanya AI Khusus Staf (Menampilkan Harga + Stok Ready) -->
+    <!-- Tanya AI Khusus Staf -->
     <div class="bg-white p-4 sm:p-5 rounded-3xl border border-red-200 shadow-sm space-y-3">
       <div class="flex items-center gap-2">
-        <span class="w-7 h-7 rounded-xl bg-[#C62828] text-white flex items-center justify-center"><i data-lucide="sparkles" class="w-4 h-4"></i></span>
+        <span class="w-7 h-7 rounded-xl bg-[#C62828] text-white flex items-center justify-center flex-shrink-0"><i data-lucide="sparkles" class="w-4 h-4"></i></span>
         <div>
           <h2 class="text-xs sm:text-sm font-bold text-[#1d1d1f]">Asisten AI Staf — Rekomendasi + Cek Harga & Stok Ready</h2>
           <p class="text-[11px] text-[#6e6e73]">Tanyakan budget pelanggan (misal: "Laptop teknik budget 12 jutaan yang ready stock").</p>
@@ -106,18 +101,23 @@
         </button>
       </form>
       <div id="staff-ai-result" class="hidden pt-3 border-t border-gray-200 space-y-2.5">
-        <p id="staff-ai-answer" class="text-xs sm:text-sm text-[#1d1d1f]"></p>
-        <div id="staff-ai-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5"></div>
+        <div id="staff-ai-answer" class="text-xs sm:text-sm text-[#1d1d1f]"></div>
+        <div id="staff-ai-cards" class="grid grid-cols-1 md:grid-cols-3 gap-2.5"></div>
       </div>
     </div>
 
-    <!-- Daftar Harga & Stok Ready (Tabel / Kartu Responsif) -->
+    <!-- Daftar Harga & Stok Ready (Kartu di HP, Tabel di Desktop) -->
     <div class="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
-      <div class="px-5 py-4 border-b border-gray-200 flex items-center justify-between">
-        <h3 class="text-sm sm:text-base font-bold text-[#1d1d1f]">Daftar Harga Produk Ready Stock</h3>
-        <span class="text-[11px] text-gray-500">Produk dengan stok 0 otomatis disembunyikan</span>
+      <div class="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-gray-200 flex items-center justify-between gap-2">
+        <h3 class="text-sm sm:text-base font-bold text-[#1d1d1f]">Daftar Harga Ready Stock</h3>
+        <span class="text-[11px] text-gray-500">Stok 0 otomatis sembunyi</span>
       </div>
-      <div class="overflow-x-auto">
+
+      <!-- Tampilan Kartu Rapi Khusus Layar HP (< md) -->
+      <div id="staff-mobile-cards" class="md:hidden divide-y divide-gray-200"></div>
+
+      <!-- Tampilan Tabel Khusus Layar Desktop (>= md) -->
+      <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-[#f5f5f7] text-[11px] font-bold uppercase text-gray-600 border-b border-gray-200">
@@ -256,28 +256,54 @@
       });
 
       const tbody = document.getElementById('staff-price-tbody');
-      if (!tbody) return;
+      const mobileCards = document.getElementById('staff-mobile-cards');
+      if (!tbody || !mobileCards) return;
+
       if (filtered.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-xs text-gray-500">Tidak ada unit ready stock yang cocok dengan filter ini.</td></tr>`;
+        mobileCards.innerHTML = `<p class="py-8 px-4 text-center text-xs text-gray-500">Tidak ada unit ready stock yang cocok dengan filter ini.</p>`;
         return;
       }
+
+      mobileCards.innerHTML = filtered.map(p => {
+        const stockQty = parseStockNumber(p.stock ?? p.Stock);
+        const priceStr = formatRupiah(p.price ?? p.harga);
+        const copySummary = `${p.name} — Harga: ${priceStr} (Stok Ready: ${stockQty} unit) | Spek: ${p.chip || p.display}`;
+        return `
+          <div class="p-4 space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <span class="inline-block px-2 py-0.5 rounded-md bg-red-50 text-[#C62828] text-[10px] font-bold uppercase">${p.category}</span>
+                <h4 class="text-sm font-bold text-[#1d1d1f] leading-snug mt-1">${p.name}</h4>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold flex-shrink-0">Stok: ${stockQty}</span>
+            </div>
+            <p class="text-xs text-gray-600 line-clamp-2">${p.chip || p.display || '-'}</p>
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-sm font-extrabold text-emerald-700">${priceStr}</span>
+              <button type="button" onclick='copyTextToClipboard(${JSON.stringify(copySummary)})'
+                class="px-3.5 py-1.5 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold">
+                Salin Info
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
 
       tbody.innerHTML = filtered.map(p => {
         const stockQty = parseStockNumber(p.stock ?? p.Stock);
         const priceStr = formatRupiah(p.price ?? p.harga);
         const copySummary = `${p.name} — Harga: ${priceStr} (Stok Ready: ${stockQty} unit) | Spek: ${p.chip || p.display}`;
         return `
-          <tr class="hover:bg-gray-50 transition">
-            <td class="py-3.5 px-4 font-bold text-[#1d1d1f]">${p.name}</td>
-            <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded-md bg-red-50 text-[#C62828] text-[11px] font-bold">${p.category}</span></td>
-            <td class="py-3.5 px-4 text-xs text-gray-600 max-w-xs truncate">${p.chip || p.display || '-'}</td>
-            <td class="py-3.5 px-4 text-right font-extrabold text-emerald-700 whitespace-nowrap">${priceStr}</td>
-            <td class="py-3.5 px-4 text-center">
-              <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">${stockQty}</span>
-            </td>
-            <td class="py-3.5 px-4 text-right">
+          <tr class="hover:bg-gray-50">
+            <td class="py-3 px-4 font-bold text-[#1d1d1f]">${p.name}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-md bg-red-50 text-[#C62828] text-[11px] font-bold">${p.category}</span></td>
+            <td class="py-3 px-4 text-xs text-gray-600 max-w-xs truncate">${p.chip || p.display || '-'}</td>
+            <td class="py-3 px-4 text-right font-extrabold text-emerald-700 whitespace-nowrap">${priceStr}</td>
+            <td class="py-3 px-4 text-center"><span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">${stockQty}</span></td>
+            <td class="py-3 px-4 text-right">
               <button type="button" onclick='copyTextToClipboard(${JSON.stringify(copySummary)})'
-                class="px-3 py-1.5 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-[11px] font-semibold">
+                class="px-3 py-1.5 rounded-lg bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold whitespace-nowrap">
                 Salin Info
               </button>
             </td>
@@ -289,7 +315,7 @@
     async function askStaffAi(event) {
       event.preventDefault();
       const q = document.getElementById('staff-ai-input').value.trim();
-      if (!q) return showToast('Ketik pertanyaan terlebih dahulu.', 'error');
+      if (!q) return showToast('Ketik pertanyaan kebutuhan & budget pelanggan.', 'error');
 
       const btn = document.getElementById('btn-staff-ai');
       btn.disabled = true;
@@ -297,66 +323,73 @@
 
       const avail = getAvailableProducts();
       let advice = '';
-      let items = [];
+      let recs = [];
+      let sourceBadge = '';
 
       try {
         if (geminiApiKey && avail.length > 0) {
-          const catalog = avail.slice(0, 35).map(p => ({
-            id: p.id, name: p.name, cat: p.category, price: formatRupiah(p.price ?? p.harga), stock: parseStockNumber(p.stock ?? p.Stock),
-            chip: (p.chip || '').slice(0, 75), pros: (p.pros || '').slice(0, 100)
+          const compact = avail.slice(0, 35).map(p => ({
+            id: p.id, name: p.name, cat: p.category,
+            price: Number(p.price ?? p.harga ?? 0), stock: parseStockNumber(p.stock ?? p.Stock),
+            chip: (p.chip || '').slice(0, 70), pros: (p.pros || '').slice(0, 100)
           }));
-          const prompt = `Asisten AI Staf Mahadewa.id. Pertanyaan staf: "${q}".
-Katalog unit READY STOCK beserta harga:
-${JSON.stringify(catalog)}
-Balas HANYA JSON murni: {"advice":"Jawaban singkat untuk staf","recommendations":[{"id":"id-produk","reason":"Alasan singkat"}]}`;
+          const prompt = `Asisten internal staf toko Mahadewa.id. Pertanyaan staf: "${q}".
+Daftar unit READY STOCK beserta harga (Rp) dan stok:
+${JSON.stringify(compact)}
+Pilih maksimal 3 produk paling cocok dan sebutkan harga + stoknya. Balas JSON murni:
+{"advice":"Penjelasan singkat untuk staf","recommendations":[{"id":"id-produk","reason":"Alasan & kecocokan budget"}]}`;
 
-          const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
-
-          const res = await fetch(endpoint, {
+          const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'X-goog-api-key': geminiApiKey
             },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.2 } })
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: 'application/json', temperature: 0.25 }
+            })
           });
           if (res.ok) {
             const data = await res.json();
             const parsed = JSON.parse((data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}').replace(/```json|```/g, '').trim());
             advice = parsed.advice || '';
+            sourceBadge = `<span class="inline-block mb-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">✨ Dijawab oleh Gemini AI</span><br/>`;
             (parsed.recommendations || []).forEach(r => {
               const found = avail.find(p => p.id === r.id);
-              if (found) items.push({ p: found, reason: r.reason || found.pros || found.tagline });
+              if (found) recs.push({ p: found, reason: r.reason });
             });
           }
         }
       } catch (_) {}
 
-      if (items.length === 0) {
+      if (recs.length === 0) {
         const tokens = q.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-        const scored = avail.map(p => {
-          const blob = `${p.name} ${p.category} ${p.chip} ${p.pros}`.toLowerCase();
-          let score = 0;
-          tokens.forEach(t => { if (blob.includes(t)) score += 5; });
-          return { p, score };
-        }).sort((a, b) => b.score - a.score).slice(0, 3);
-
-        advice = scored.length > 0 ? 'Rekomendasi unit Ready Stock yang sesuai:' : 'Tidak ada unit ready stock yang cocok.';
-        items = scored.map(it => ({ p: it.p, reason: it.p.pros || it.p.tagline || it.p.chip }));
+        const matches = avail.filter(p => tokens.some(t => `${p.name} ${p.category} ${p.chip} ${p.pros}`.toLowerCase().includes(t)));
+        const pool = matches.length > 0 ? matches : avail;
+        recs = pool.slice(0, 3).map(p => ({ p, reason: p.pros || p.chip }));
+        advice = `Berikut rekomendasi unit Ready Stock beserta harga untuk ditawarkan ke pelanggan:`;
       }
 
-      document.getElementById('staff-ai-answer').innerHTML = `<strong class="text-[#C62828]">Saran AI Staf:</strong> ${advice}`;
-      document.getElementById('staff-ai-cards').innerHTML = items.map(it => `
-        <div class="p-3 rounded-2xl bg-[#f5f5f7] border border-gray-200">
-          <div class="flex justify-between text-[11px] font-bold">
-            <span class="text-[#C62828]">${it.p.category}</span>
-            <span class="text-emerald-700">Stok: ${parseStockNumber(it.p.stock ?? it.p.Stock)}</span>
+      document.getElementById('staff-ai-answer').innerHTML = `${sourceBadge}<strong class="text-[#C62828]">Saran AI Staf:</strong> ${advice}`;
+      document.getElementById('staff-ai-cards').innerHTML = recs.map(r => {
+        const p = r.p;
+        const priceStr = formatRupiah(p.price ?? p.harga);
+        const stockQty = parseStockNumber(p.stock ?? p.Stock);
+        const copySummary = `${p.name} — Harga: ${priceStr} (Stok: ${stockQty} unit) | ${p.chip || p.display}`;
+        return `
+          <div class="p-3 rounded-2xl bg-[#f5f5f7] border border-gray-200 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase text-[#C62828]">${p.category}</span>
+              <span class="text-[10px] font-bold text-emerald-700">Stok: ${stockQty}</span>
+            </div>
+            <p class="text-xs font-bold text-[#1d1d1f]">${p.name}</p>
+            <p class="text-sm font-extrabold text-emerald-700">${priceStr}</p>
+            <p class="text-[11px] text-gray-600 line-clamp-2">${r.reason}</p>
+            <button type="button" onclick='copyTextToClipboard(${JSON.stringify(copySummary)})' class="w-full py-1.5 rounded-lg bg-[#1d1d1f] text-white text-[11px] font-semibold">Salin Penawaran</button>
           </div>
-          <p class="text-xs font-extrabold text-[#1d1d1f] mt-0.5">${it.p.name}</p>
-          <p class="text-sm font-extrabold text-emerald-700 my-1">${formatRupiah(it.p.price ?? it.p.harga)}</p>
-          <p class="text-[11px] text-gray-600 line-clamp-2">${it.reason}</p>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       document.getElementById('staff-ai-result').classList.remove('hidden');
       btn.disabled = false;
