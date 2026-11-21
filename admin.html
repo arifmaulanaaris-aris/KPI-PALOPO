@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mahadewa.id — Panel Pengelola / Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f5f5f7; color: #1d1d1f; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Gerbang Login PIN Admin -->
+  <div id="admin-login-gate" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-7 shadow-2xl border border-gray-200 text-center space-y-5">
+      <div class="w-14 h-14 rounded-2xl bg-red-50 border border-red-200 text-[#C62828] flex items-center justify-center mx-auto">
+        <i data-lucide="shield-alert" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-extrabold text-[#1d1d1f]">Panel Pengelola / Admin</h1>
+        <p class="text-xs text-[#6e6e73] mt-1">Kelola Harga, Stok, Spesifikasi, Upload Excel & Pengaturan Cloud.</p>
+      </div>
+      <form onsubmit="verifyAdminPin(event)" class="space-y-4">
+        <input type="password" id="admin-pin-input" required placeholder="Masukkan PIN Admin..."
+          class="w-full px-4 py-3 rounded-2xl bg-[#f5f5f7] border border-gray-300 text-center text-base font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
+        <p class="text-[11px] text-gray-400">PIN Default Admin: <code class="font-semibold text-gray-600">2026</code></p>
+        <div class="flex gap-2">
+          <a href="user.html" class="w-1/2 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] text-xs font-semibold flex items-center justify-center">Batal</a>
+          <button type="submit" class="w-1/2 py-2.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold shadow-sm">Buka Admin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Header Admin -->
+  <header class="sticky top-0 z-40 bg-[#C62828] text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <i data-lucide="shield-check" class="w-6 h-6"></i>
+        <span class="text-base sm:text-xl font-extrabold">Admin Mahadewa.id</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="user.html" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-semibold">Lihat Web User</a>
+        <a href="staff.html" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-semibold">Lihat Web Staf</a>
+        <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-xl bg-[#1d1d1f] text-white text-xs font-semibold">Kunci</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="admin-main-content" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Baris Atas: Upload & Download Template Excel (Harga, Stok, Spesifikasi) -->
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Import / Export Massal</span>
+        <h2 class="text-lg font-bold text-[#1d1d1f] mt-1.5">Upload Excel Harga, Stok & Spesifikasi</h2>
+        <p class="text-xs text-[#6e6e73]">Kolom Excel mendukung: <code class="font-mono text-[#C62828]">name, category, price, stock, tagline, image, display, chip, camera, battery, features, pros, cons</code>.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button onclick="downloadExcelTemplate()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Download Excel Saat Ini / Template
+        </button>
+        <label class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm cursor-pointer">
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload File Excel (.xlsx)
+          <input type="file" accept=".xlsx,.xls,.csv" onchange="handleExcelImport(event)" class="hidden" />
+        </label>
+        <button onclick="pushAllToGoogleSheets()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#1d1d1f] hover:bg-black text-white">
+          <i data-lucide="cloud-upload" class="w-4 h-4 text-amber-400"></i> Sync Semua ke Cloud
+        </button>
+      </div>
+    </div>
+
+    <!-- Pengaturan PIN Staf, PIN Admin & Gemini API Key -->
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-xs font-bold text-gray-700 mb-1.5">PIN Akses Staf (Untuk Cek Harga)</label>
+        <div class="flex gap-2">
+          <input type="text" id="set-staff-pin" placeholder="PIN Staf baru..." class="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs" />
+          <button onclick="saveSetting('updateStaffPin', 'staffPin', 'set-staff-pin')" class="px-3.5 py-2 rounded-xl bg-[#1d1d1f] text-white text-xs font-semibold">Simpan</button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-700 mb-1.5">PIN Akses Pengelola / Admin</label>
+        <div class="flex gap-2">
+          <input type="text" id="set-admin-pin" placeholder="PIN Admin baru..." class="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs" />
+          <button onclick="saveSetting('updatePin', 'pin', 'set-admin-pin')" class="px-3.5 py-2 rounded-xl bg-[#1d1d1f] text-white text-xs font-semibold">Simpan</button>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-700 mb-1.5">Gemini API Key Global</label>
+        <div class="flex gap-2">
+          <input type="password" id="set-gemini-key" placeholder="AIza..." class="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs" />
+          <button onclick="saveSetting('updateGeminiKey', 'apiKey', 'set-gemini-key')" class="px-3.5 py-2 rounded-xl bg-[#C62828] text-white text-xs font-semibold">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Tambah/Edit Produk + Daftar Katalog -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- Form Produk -->
+      <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200 space-y-4">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+          <h3 id="form-title" class="text-lg font-bold">Tambah / Edit Produk</h3>
+          <button type="button" onclick="resetForm()" id="btn-cancel-edit" class="hidden text-xs font-semibold text-[#C62828] bg-red-50 px-3 py-1 rounded-lg">Batal Edit</button>
+        </div>
+
+        <form id="product-form" onsubmit="handleSaveProduct(event)" class="space-y-3.5">
+          <input type="hidden" id="prod-id" />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Produk *</label>
+              <input type="text" id="prod-name" required class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Kategori *</label>
+              <input type="text" id="prod-category" list="cat-suggestions" required placeholder="iPhone / MacBook / Laptop Windows..." class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+              <datalist id="cat-suggestions"></datalist>
+            </div>
+          </div>
+
+          <!-- HARGA & STOK -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
+            <div>
+              <label class="block text-xs font-bold text-emerald-900 mb-1">Harga Jual (Rp) — Khusus Staf *</label>
+              <input type="number" id="prod-price" min="0" step="1000" required placeholder="Contoh: 18500000" class="w-full px-3.5 py-2 rounded-xl bg-white border border-emerald-300 text-sm font-bold" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-emerald-900 mb-1">Jumlah Stok Tersedia (0 = Sembunyi dari User) *</label>
+              <input type="number" id="prod-stock" min="0" required placeholder="Contoh: 5" class="w-full px-3.5 py-2 rounded-xl bg-white border border-emerald-300 text-sm font-bold" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Tagline Singkat</label>
+              <input type="text" id="prod-tagline" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">URL Foto Produk</label>
+              <input type="text" id="prod-image" placeholder="https://..." class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Layar / Dimensi</label>
+              <input type="text" id="prod-display" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Performa / Chipset</label>
+              <input type="text" id="prod-chip" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Kamera / Konektivitas</label>
+              <input type="text" id="prod-camera" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1">Baterai / Daya</label>
+              <input type="text" id="prod-battery" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Fitur Unggulan</label>
+            <input type="text" id="prod-features" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm" />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="block text-xs font-semibold text-emerald-700 mb-1">Kelebihan Utama</label>
+              <textarea id="prod-pros" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm"></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-amber-700 mb-1">Kekurangan / Catatan</label>
+              <textarea id="prod-cons" rows="2" class="w-full px-3.5 py-2 rounded-xl border border-gray-300 text-sm"></textarea>
+            </div>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button type="submit" class="px-6 py-2.5 rounded-full bg-[#C62828] hover:bg-[#a61c1c] text-white text-sm font-semibold shadow-md">
+              Simpan Produk & Sinkronkan
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Daftar Produk -->
+      <div class="lg:col-span-5 bg-white rounded-3xl p-6 shadow-sm border border-gray-200 flex flex-col">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+          <h3 class="text-base font-bold">Semua Produk (<span id="catalog-count">0</span>)</h3>
+          <input type="text" id="admin-search" oninput="renderAdminList()" placeholder="Cari produk..." class="px-3 py-1.5 rounded-xl border border-gray-300 text-xs w-40" />
+        </div>
+        <div id="admin-product-list" class="space-y-2.5 overflow-y-auto max-h-[680px] pr-1"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const PERMANENT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynSBQ0DYihlIqREK6SB-m-9d1x9bU81Bb5XCRQOFdKtHzffGw4LTw-RrXZ2ijC01Z5UQ/exec';
+    let products = [];
+    let adminPin = '2026';
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      await syncFromGoogleSheets();
+      if (sessionStorage.getItem('mahadewa_admin_auth') === '1') unlockAdminUI();
+    });
+
+    async function syncFromGoogleSheets() {
+      try {
+        const res = await fetch(`${PERMANENT_APPS_SCRIPT_URL}?t=${Date.now()}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          if (Array.isArray(data.products)) products = data.products;
+          if (data.adminPin) adminPin = String(data.adminPin).trim();
+          if (data.geminiApiKey) document.getElementById('set-gemini-key').value = data.geminiApiKey;
+          renderAdminList();
+          updateCategorySuggestions();
+        }
+      } catch (_) {}
+    }
+
+    function verifyAdminPin(e) {
+      e.preventDefault();
+      if (document.getElementById('admin-pin-input').value.trim() === adminPin) {
+        sessionStorage.setItem('mahadewa_admin_auth', '1');
+        unlockAdminUI();
+      } else {
+        showToast('PIN Admin salah!', 'error');
+      }
+    }
+
+    function unlockAdminUI() {
+      document.getElementById('admin-login-gate').classList.add('hidden');
+      document.getElementById('admin-main-content').classList.remove('hidden');
+      renderAdminList();
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('mahadewa_admin_auth');
+      location.reload();
+    }
+
+    async function postToCloud(payload) {
+      await fetch(PERMANENT_APPS_SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    async function saveSetting(action, key, inputId) {
+      const val = document.getElementById(inputId).value.trim();
+      if (!val) return showToast('Nilai tidak boleh kosong.', 'error');
+      await postToCloud({ action, [key]: val });
+      if (action === 'updatePin') adminPin = val;
+      showToast('Pengaturan berhasil disimpan ke Cloud!', 'success');
+    }
+
+    function updateCategorySuggestions() {
+      const cats = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
+      document.getElementById('cat-suggestions').innerHTML = cats.map(c => `<option value="${c}">`).join('');
+    }
+
+    function renderAdminList() {
+      const q = (document.getElementById('admin-search')?.value || '').toLowerCase();
+      const filtered = products.filter(p => `${p.name} ${p.category}`.toLowerCase().includes(q));
+      document.getElementById('catalog-count').textContent = products.length;
+      document.getElementById('admin-product-list').innerHTML = filtered.map(p => {
+        const stock = Number(p.stock ?? 0);
+        const price = Number(p.price ?? 0);
+        return `
+          <div class="flex items-center justify-between gap-2 p-3 rounded-2xl bg-[#f5f5f7] border border-gray-200">
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[10px] font-bold uppercase text-[#C62828]">${p.category}</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${stock > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">
+                  Stok: ${stock}
+                </span>
+              </div>
+              <p class="text-xs font-bold text-[#1d1d1f] truncate">${p.name}</p>
+              <p class="text-[11px] font-semibold text-emerald-700">Rp ${price.toLocaleString('id-ID')}</p>
+            </div>
+            <div class="flex gap-1.5 flex-shrink-0">
+              <button onclick="editProduct('${p.id}')" class="px-2.5 py-1 rounded-lg bg-white border border-gray-300 text-[11px] font-semibold">Edit</button>
+              <button onclick="deleteProduct('${p.id}')" class="px-2.5 py-1 rounded-lg bg-red-50 border border-red-200 text-[#C62828] text-[11px] font-semibold">Hapus</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    async function handleSaveProduct(e) {
+      e.preventDefault();
+      const existingId = document.getElementById('prod-id').value.trim();
+      const name = document.getElementById('prod-name').value.trim();
+      const id = existingId || `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
+      const obj = {
+        id, name,
+        category: document.getElementById('prod-category').value.trim(),
+        price: Number(document.getElementById('prod-price').value || 0),
+        stock: Number(document.getElementById('prod-stock').value || 0),
+        tagline: document.getElementById('prod-tagline').value.trim(),
+        image: document.getElementById('prod-image').value.trim(),
+        display: document.getElementById('prod-display').value.trim(),
+        chip: document.getElementById('prod-chip').value.trim(),
+        camera: document.getElementById('prod-camera').value.trim(),
+        battery: document.getElementById('prod-battery').value.trim(),
+        features: document.getElementById('prod-features').value.trim(),
+        pros: document.getElementById('prod-pros').value.trim(),
+        cons: document.getElementById('prod-cons').value.trim(),
+        source: ''
+      };
+      const idx = products.findIndex(p => p.id === id);
+      if (idx !== -1) products[idx] = obj; else products.unshift(obj);
+      resetForm();
+      renderAdminList();
+      await postToCloud({ action: 'upsert', product: obj });
+      showToast(`Produk "${obj.name}" (Harga & Stok) berhasil disimpan!`, 'success');
+    }
+
+    function editProduct(id) {
+      const p = products.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('prod-id').value = p.id;
+      document.getElementById('prod-name').value = p.name || '';
+      document.getElementById('prod-category').value = p.category || '';
+      document.getElementById('prod-price').value = Number(p.price || 0);
+      document.getElementById('prod-stock').value = Number(p.stock ?? 0);
+      document.getElementById('prod-tagline').value = p.tagline || '';
+      document.getElementById('prod-image').value = p.image || '';
+      document.getElementById('prod-display').value = p.display || '';
+      document.getElementById('prod-chip').value = p.chip || '';
+      document.getElementById('prod-camera').value = p.camera || '';
+      document.getElementById('prod-battery').value = p.battery || '';
+      document.getElementById('prod-features').value = p.features || '';
+      document.getElementById('prod-pros').value = p.pros || '';
+      document.getElementById('prod-cons').value = p.cons || '';
+      document.getElementById('btn-cancel-edit').classList.remove('hidden');
+      document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+      document.getElementById('product-form').reset();
+      document.getElementById('prod-id').value = '';
+      document.getElementById('btn-cancel-edit').classList.add('hidden');
+    }
+
+    async function deleteProduct(id) {
+      products = products.filter(p => p.id !== id);
+      renderAdminList();
+      await postToCloud({ action: 'delete', id });
+      showToast('Produk dihapus.', 'info');
+    }
+
+    function downloadExcelTemplate() {
+      const rows = (products.length ? products : [{
+        id: 'iphone-16-pro', name: 'iPhone 16 Pro 256GB', category: 'iPhone', price: 21999000, stock: 4,
+        tagline: 'Titanium Pro', image: '', display: '6.3 inci OLED 120Hz', chip: 'Apple A18 Pro',
+        camera: '48MP Triple Camera', battery: '27 Jam Video', features: 'Camera Control, IP68',
+        pros: 'Kamera ProRes & bodi ringkas', cons: 'Charger terpisah'
+      }]).map(p => ({
+        id: p.id, name: p.name, category: p.category, price: Number(p.price || 0), stock: Number(p.stock ?? 0),
+        tagline: p.tagline, image: p.image, display: p.display, chip: p.chip,
+        camera: p.camera, battery: p.battery, features: p.features, pros: p.pros, cons: p.cons
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'KatalogHargaStok');
+      XLSX.writeFile(wb, 'Mahadewa_Harga_Stok_Spesifikasi.xlsx');
+    }
+
+    function handleExcelImport(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        const imported = rows.map((r, i) => ({
+          id: String(r.id || `excel-${Date.now()}-${i}`),
+          name: String(r.name || r['Nama Produk'] || '').trim(),
+          category: String(r.category || r['Kategori'] || 'iPhone').trim(),
+          price: Number(String(r.price ?? r['Harga'] ?? 0).replace(/[^0-9]/g, '')) || 0,
+          stock: Number(String(r.stock ?? r['Stok'] ?? 0).replace(/[^0-9]/g, '')) || 0,
+          tagline: String(r.tagline || r['Tagline'] || '').trim(),
+          image: String(r.image || r['Foto'] || '').trim(),
+          display: String(r.display || r['Layar'] || '').trim(),
+          chip: String(r.chip || r['Performa'] || '').trim(),
+          camera: String(r.camera || r['Kamera'] || '').trim(),
+          battery: String(r.battery || r['Baterai'] || '').trim(),
+          features: String(r.features || r['Fitur'] || '').trim(),
+          pros: String(r.pros || r['Kelebihan'] || '').trim(),
+          cons: String(r.cons || r['Kekurangan'] || '').trim(),
+          source: ''
+        })).filter(x => x.name);
+
+        if (imported.length > 0) {
+          products = imported;
+          renderAdminList();
+          await pushAllToGoogleSheets();
+          showToast(`Berhasil upload ${imported.length} produk (Harga, Stok & Spek) dari Excel!`, 'success');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    async function pushAllToGoogleSheets() {
+      showToast('Menyinkronkan harga, stok & spesifikasi ke Google Sheets...', 'info');
+      await postToCloud({ action: 'syncAll', products });
+      showToast('Semua data berhasil tersimpan di Google Sheets!', 'success');
+    }
+
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl text-xs font-semibold text-white ${type === 'error' ? 'bg-[#C62828]' : 'bg-[#1d1d1f]'}`;
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+  </script>
+</body>
+</html>
