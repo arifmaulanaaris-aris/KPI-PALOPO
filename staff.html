@@ -316,53 +316,70 @@
       event.preventDefault();
       const q = document.getElementById('staff-ai-input').value.trim();
       if (!q) return showToast('Ketik pertanyaan kebutuhan & budget pelanggan.', 'error');
+      if (!geminiApiKey) return showToast('API Key Gemini belum diatur oleh Admin.', 'error');
 
       const btn = document.getElementById('btn-staff-ai');
       btn.disabled = true;
-      btn.textContent = 'Mencari...';
+      btn.textContent = 'Gemini 3 Flash Menganalisis...';
 
       const avail = getAvailableProducts();
-      let advice = '';
-      let recs = [];
-      let sourceBadge = '';
+      const resultBox = document.getElementById('staff-ai-result');
+      const answerEl = document.getElementById('staff-ai-answer');
+      const cardsEl = document.getElementById('staff-ai-cards');
 
       try {
-        if (geminiApiKey && avail.length > 0) {
-          const ql = q.toLowerCase();
-          const isGaming = /(gaming|game|rtx|gtx)/i.test(ql);
-          const isHeavy = isGaming || /(teknik|coding|render|3d|editing|desain)/i.test(ql);
-          const isLaptop = /(laptop|notebook|macbook)/i.test(ql);
+        if (avail.length === 0) {
+          answerEl.innerHTML = `<span class="inline-block mb-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold">✨ Gemini 3 Flash</span><br/><strong>Saran AI Staf:</strong> Saat ini belum ada unit Ready Stock di katalog.`;
+          cardsEl.innerHTML = '';
+          resultBox.classList.remove('hidden');
+          return;
+        }
 
-          let filteredPool = avail.filter(p => !isLaptop || /(notebook|laptop|macbook|windows)/i.test(`${p.category} ${p.name}`));
-          if (filteredPool.length === 0) filteredPool = avail;
+        const ql = q.toLowerCase();
+        const isGaming = /(gaming|game|rtx|gtx)/i.test(ql);
+        const isHeavy = isGaming || /(teknik|coding|render|3d|editing|desain)/i.test(ql);
+        const isLaptop = /(laptop|notebook|macbook)/i.test(ql);
 
-          const ranked = filteredPool.map(p => {
-            let s = 0;
-            const txt = `${p.name} ${p.category} ${p.chip} ${p.pros}`.toLowerCase();
-            if (isGaming && /(rtx|gtx|rog|tuf|victus|loq|nitro|gaming)/i.test(txt)) s += 25;
-            if (isHeavy && /(celeron|n4020|n4500|n100|pentium)/i.test(txt)) s -= 35;
-            if (isHeavy && /(rtx|ryzen\s*[579]|core\s*i[579]|ultra\s*[579]|m[1234])/i.test(txt)) s += 15;
-            return { p, s };
-          }).sort((a, b) => b.s - a.s);
+        let filteredPool = avail.filter(p => !isLaptop || /(notebook|laptop|macbook|windows)/i.test(`${p.category} ${p.name}`));
+        if (filteredPool.length === 0) filteredPool = avail;
 
-          const compact = ranked.slice(0, 15).map(it => {
-            const p = it.p;
-            return {
-              id: p.id, name: p.name, cat: p.category,
-              price: Number(p.price ?? p.harga ?? 0), stock: parseStockNumber(p.stock ?? p.Stock),
-              chip: (p.chip || '').slice(0, 60), pros: (p.pros || '').slice(0, 75), cons: (p.cons || '').slice(0, 45)
-            };
-          });
-          const prompt = `Asisten staf Mahadewa.id. Permintaan: "${q}".
-Kandidat READY STOCK:
+        const ranked = filteredPool.map(p => {
+          let s = 0;
+          const txt = `${p.name} ${p.category} ${p.chip} ${p.pros}`.toLowerCase();
+          if (isGaming && /(rtx|gtx|rog|tuf|victus|loq|nitro|gaming)/i.test(txt)) s += 25;
+          if (isHeavy && /(celeron|n4020|n4500|n100|pentium|ryzen\s*3|\br3\b)/i.test(txt)) s -= 35;
+          if (isHeavy && /(rtx|ryzen\s*[579]|core\s*i[579]|ultra\s*[579]|m[1234])/i.test(txt)) s += 20;
+          return { p, s };
+        }).sort((a, b) => b.s - a.s);
+
+        const compact = ranked.slice(0, 20).map(it => {
+          const p = it.p;
+          return {
+            id: p.id, name: p.name, cat: p.category,
+            price: Number(p.price ?? p.harga ?? 0), stock: parseStockNumber(p.stock ?? p.Stock),
+            chip: (p.chip || '').slice(0, 75), display: (p.display || '').slice(0, 60),
+            pros: (p.pros || '').slice(0, 90), cons: (p.cons || '').slice(0, 50)
+          };
+        });
+
+        const prompt = `Asisten staf Mahadewa.id Palopo. Permintaan pelanggan: "${q}".
+Kandidat READY STOCK beserta harga & spesifikasi:
 ${JSON.stringify(compact)}
-Aturan ketat: Cocokkan budget (field price dalam Rupiah) & spesifikasi teknis dengan akurat. Jika ada syarat budget (misal di bawah 15 juta), hanya pilih yang harganya sesuai.
-Balas JSON murni (max 3 produk): {"advice":"Saran akurat 2 kalimat","recommendations":[{"id":"id-produk","reason":"Alasan spek & harga"}]}`;
+Aturan wajib:
+1. Cocokkan budget (field price dalam Rupiah) & spesifikasi teknis dengan akurat. Jika ada syarat budget (misal di bawah 15 juta), hanya pilih yang harganya sesuai.
+2. Pilih 1 sampai 3 produk paling tepat menggunakan field "id" yang persis sama.
+3. Balas HANYA JSON murni tanpa markdown: {"advice":"Saran akurat 2 kalimat","recommendations":[{"id":"id-produk","reason":"Alasan spek & harga"}]}`;
 
+        const candidateModels = ['gemini-3-flash-preview', 'gemini-3.1-flash-lite-preview', 'gemini-flash-latest'];
+        let parsed = null;
+        let usedModel = '';
+        let lastErr = '';
+
+        for (const model of candidateModels) {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 6500);
+          const timer = setTimeout(() => controller.abort(), 14000);
           try {
-            const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent', {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
               method: 'POST',
               signal: controller.signal,
               headers: {
@@ -374,7 +391,7 @@ Balas JSON murni (max 3 produk): {"advice":"Saran akurat 2 kalimat","recommendat
                 generationConfig: {
                   responseMimeType: 'application/json',
                   temperature: 0.2,
-                  maxOutputTokens: 320
+                  maxOutputTokens: 450
                 }
               })
             });
@@ -382,42 +399,32 @@ Balas JSON murni (max 3 produk): {"advice":"Saran akurat 2 kalimat","recommendat
             if (res.ok) {
               const data = await res.json();
               const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-              const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
-              advice = parsed.advice || '';
-              if (Array.isArray(parsed.recommendations)) {
-                parsed.recommendations.forEach(r => {
-                  const p = avail.find(item => item.id === r.id);
-                  if (p) recs.push({ product: p, reason: r.reason || p.pros || p.chip });
-                });
-              }
-              sourceBadge = '✨ Dijawab oleh Gemini AI';
+              parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+              usedModel = model;
+              break;
+            } else {
+              const errBody = await res.json().catch(() => ({}));
+              lastErr = errBody?.error?.message || `HTTP ${res.status}`;
+              if (/api key/i.test(lastErr)) break;
             }
-          } catch (_) {
+          } catch (err) {
             clearTimeout(timer);
+            lastErr = err.name === 'AbortError' ? 'Waktu tunggu habis' : (err.message || 'Gagal koneksi');
           }
         }
 
-        if (!sourceBadge) {
-          const budgetMatch = q.match(/(\d+(?:[.,]\d+)?)\s*(juta|jt)/i);
-          const maxBudget = budgetMatch ? parseFloat(budgetMatch[1].replace(',', '.')) * 1000000 : Infinity;
-          const matches = avail.filter(p => {
-            const price = Number(p.price ?? p.harga ?? 0);
-            const withinBudget = maxBudget === Infinity || (price > 0 && price <= maxBudget);
-            return withinBudget;
-          }).slice(0, 3);
+        if (!parsed) throw new Error(lastErr || 'Gagal terhubung ke Gemini 3 Flash');
 
-          advice = matches.length > 0
-            ? 'Berikut rekomendasi unit Ready Stock beserta harga jual yang sesuai:'
-            : 'Tidak ditemukan unit Ready Stock dalam rentang budget tersebut.';
-          recs = matches.map(p => ({ product: p, reason: p.pros || p.chip || 'Ready stock' }));
-          sourceBadge = '⚡ Mode Katalog Lokal';
+        const advice = parsed.advice || 'Berikut rekomendasi unit Ready Stock yang sesuai:';
+        const recs = [];
+        if (Array.isArray(parsed.recommendations)) {
+          parsed.recommendations.forEach(r => {
+            const p = avail.find(item => item.id === r.id);
+            if (p) recs.push({ product: p, reason: r.reason || p.pros || p.chip });
+          });
         }
 
-        const resultBox = document.getElementById('staff-ai-result');
-        const answerEl = document.getElementById('staff-ai-answer');
-        const cardsEl = document.getElementById('staff-ai-cards');
-
-        answerEl.innerHTML = `<span class="inline-block mb-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold">${sourceBadge}</span><br/><strong>Saran AI Staf:</strong> ${advice}`;
+        answerEl.innerHTML = `<span class="inline-block mb-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold">✨ Dijawab oleh Gemini 3 Flash (${usedModel})</span><br/><strong>Saran AI Staf:</strong> ${advice}`;
         cardsEl.innerHTML = recs.map(r => {
           const p = r.product;
           const priceStr = formatRupiah(p.price ?? p.harga);
@@ -434,6 +441,10 @@ Balas JSON murni (max 3 produk): {"advice":"Saran akurat 2 kalimat","recommendat
             </div>
           `;
         }).join('');
+        resultBox.classList.remove('hidden');
+      } catch (err) {
+        answerEl.innerHTML = `<span class="inline-block mb-1 px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold">⚠️ Gangguan Gemini 3 Flash</span><br/><strong>Saran AI Staf:</strong> Gagal memuat analisis dari Gemini 3 Flash (${err.message}). Silakan coba lagi.`;
+        cardsEl.innerHTML = '';
         resultBox.classList.remove('hidden');
       } finally {
         btn.disabled = false;
