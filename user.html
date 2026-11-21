@@ -454,6 +454,100 @@
       return 'gemini-3.1-flash-lite-preview';
     }
 
+    // Saring & prioritaskan kandidat Ready Stock sesuai jenis perangkat agar tidak terpotong baris Aksesoris
+    function preFilterReadyCandidates(question, availPool, maxItems = 35) {
+      const q = question.toLowerCase();
+      let pool = [...availPool];
+      let detectedDeviceLabel = '';
+
+      const deviceRules = [
+        {
+          label: 'Laptop / NoteBook / MacBook',
+          triggers: [/\blaptop\b/i, /\bnotebook\b/i, /\bmacbook\b/i, /\bultrabook\b/i, /\bgaming\b/i],
+          matcher: p => /(notebook|laptop|macbook|windows|asus|lenovo|acer|msi|axioo|spc|vivobook|zenbook|aspire|thinkpad|ideapad|tuf|rog|victus|loq)/i.test(`${p.category} ${p.name}`) && !/(aio|all[\s-]*in[\s-]*one|aksesoris)/i.test(`${p.category}`)
+        },
+        {
+          label: 'PC / All-in-One (AIO)',
+          triggers: [/\baio\b/i, /all[\s-]*in[\s-]*one/i, /\bpc\b/i, /\bdesktop\b/i, /\bkomputer\b/i],
+          matcher: p => /(aio|all[\s-]*in[\s-]*one|pc\/aio|\bpc\b|desktop)/i.test(`${p.category} ${p.name}`)
+        },
+        {
+          label: 'Printer',
+          triggers: [/\bprinter\b/i, /\bprint\b/i, /\bcetak\b/i, /\bepson\b/i, /\bcanon\b/i, /\bbrother\b/i],
+          matcher: p => /(printer|epson|canon|brother|pixma|ecotank|laserjet)/i.test(`${p.category} ${p.name}`) && !/finger/i.test(`${p.category}`)
+        },
+        {
+          label: 'Scanner',
+          triggers: [/\bscanner\b/i, /\bscan\b/i],
+          matcher: p => /(scanner)/i.test(`${p.category} ${p.name}`)
+        },
+        {
+          label: 'Monitor',
+          triggers: [/\bmonitor\b/i],
+          matcher: p => /(monitor|viewsonic|aoc|lg\s*ultragear)/i.test(`${p.category} ${p.name}`)
+        },
+        {
+          label: 'Projector',
+          triggers: [/\bprojector\b/i, /\bproyektor\b/i, /\binfocus\b/i],
+          matcher: p => /(projector|proyektor|infocus|benq)/i.test(`${p.category} ${p.name}`)
+        },
+        {
+          label: 'CCTV',
+          triggers: [/\bcctv\b/i, /\bkamera\s*pengawas\b/i, /\bezviz\b/i, /\bhikvision\b/i, /\bdahua\b/i],
+          matcher: p => /(cctv|ezviz|hikvision|dahua)/i.test(`${p.category} ${p.name}`)
+        },
+        {
+          label: 'Finger Print / Mesin Absensi',
+          triggers: [/finger\s*print/i, /\bfingerprint\b/i, /\babsensi\b/i],
+          matcher: p => /(finger\s*print|fingerprint|absensi|solution)/i.test(`${p.category} ${p.name}`)
+        },
+        {
+          label: 'iPad / Tablet',
+          triggers: [/\bipad\b/i, /\btablet\b/i, /\btab\b/i],
+          matcher: p => /(ipad|tablet|pad)/i.test(`${p.category} ${p.name}`)
+        },
+        {
+          label: 'iPhone / Smartphone',
+          triggers: [/\biphone\b/i, /\bhp\b/i, /\bsmartphone\b/i],
+          matcher: p => /(iphone|smartphone)/i.test(`${p.category} ${p.name}`)
+        }
+      ];
+
+      for (const rule of deviceRules) {
+        if (rule.triggers.some(rx => rx.test(q))) {
+          const matched = pool.filter(rule.matcher);
+          detectedDeviceLabel = rule.label;
+          if (matched.length > 0) {
+            pool = matched;
+          } else {
+            return { candidates: [], detectedDeviceLabel, emptyDeviceCategory: true };
+          }
+          break;
+        }
+      }
+
+      const keywords = q.replace(/[^\w\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+      const isHeavy = /(gaming|teknik|informatika|coding|arsitektur|3d|render|berat|cad|editing)/i.test(q);
+
+      const scored = pool.map(p => {
+        let score = 0;
+        const text = `${p.name} ${p.category} ${p.chip} ${p.display} ${p.features} ${p.pros}`.toLowerCase();
+        keywords.forEach(kw => {
+          if ((p.pros || '').toLowerCase().includes(kw)) score += 6;
+          if (text.includes(kw)) score += 3;
+        });
+        if (isHeavy && /(rtx|gtx|ryzen\s*[579]|core\s*i[579]|ultra\s*[579]|m[1234]|pro|max|oled)/i.test(text)) score += 12;
+        if (isHeavy && /(celeron|n4020|n4500|n100|pentium|athlon)/i.test(text)) score -= 20;
+        return { p, score };
+      }).sort((a, b) => b.score - a.score);
+
+      return {
+        candidates: scored.slice(0, maxItems).map(it => it.p),
+        detectedDeviceLabel,
+        emptyDeviceCategory: false
+      };
+    }
+
     async function askAiProductConsultant(event) {
       event.preventDefault();
       const q = document.getElementById('ai-consultant-input').value.trim();
@@ -466,52 +560,48 @@
       if (typeof lucide !== 'undefined') lucide.createIcons();
 
       const availPool = getAvailableProducts();
+      const { candidates, detectedDeviceLabel, emptyDeviceCategory } = preFilterReadyCandidates(q, availPool, 35);
       let advice = '';
       let recs = [];
 
-      try {
-        if (geminiApiKey && availPool.length > 0) {
-          const model = await discoverModel(geminiApiKey);
-          const compact = availPool.slice(0, 30).map(p => ({
-            id: p.id, name: p.name, cat: p.category, stock: parseStockNumber(p.stock ?? p.Stock),
-            chip: (p.chip || '').slice(0, 80), display: (p.display || '').slice(0, 70), pros: (p.pros || '').slice(0, 120)
-          }));
-          const prompt = `Konsultan AI Mahadewa.id Palopo. Pertanyaan pelanggan: "${q}".
-Daftar unit READY STOCK saat ini (JANGAN sebutkan harga, hanya pilih dari daftar ini):
+      if (emptyDeviceCategory) {
+        advice = `Mohon maaf, saat ini belum ada stok unit <strong>${detectedDeviceLabel}</strong> yang tersedia di Mahadewa.id Palopo. Silakan hubungi WhatsApp Admin kami di 0823-4488-8441 untuk cek jadwal kedatangan unit baru.`;
+      } else {
+        try {
+          if (geminiApiKey && candidates.length > 0) {
+            const model = await discoverModel(geminiApiKey);
+            const compact = candidates.map(p => ({
+              id: p.id, name: p.name, cat: p.category, stock: parseStockNumber(p.stock ?? p.Stock),
+              chip: (p.chip || '').slice(0, 85), display: (p.display || '').slice(0, 75), pros: (p.pros || '').slice(0, 130)
+            }));
+            const prompt = `Konsultan AI Mahadewa.id Palopo. Pertanyaan pelanggan: "${q}".
+Daftar unit READY STOCK yang relevan saat ini (JANGAN sebutkan harga, HANYA pilih dari daftar ini dan JANGAN mengganti laptop/perangkat utama dengan aksesoris RAM/SSD):
 ${JSON.stringify(compact)}
-Balas HANYA JSON murni: {"advice":"Saran singkat 2 kalimat Bahasa Indonesia","recommendations":[{"id":"id-produk","reason":"Alasan singkat"}]}`;
+Balas HANYA JSON murni: {"advice":"Saran singkat 2 kalimat Bahasa Indonesia","recommendations":[{"id":"id-produk","reason":"Alasan singkat berdasarkan spesifikasi & pros"}]}`;
 
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.25 } })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            const parsed = JSON.parse((data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}').replace(/```json|```/g, '').trim());
-            advice = parsed.advice || '';
-            (parsed.recommendations || []).forEach(r => {
-              const found = availPool.find(p => p.id === r.id);
-              if (found) recs.push({ p: found, reason: r.reason || found.pros || found.tagline });
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.25 } })
             });
+            if (res.ok) {
+              const data = await res.json();
+              const parsed = JSON.parse((data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}').replace(/```json|```/g, '').trim());
+              advice = parsed.advice || '';
+              (parsed.recommendations || []).forEach(r => {
+                const found = candidates.find(p => p.id === r.id);
+                if (found) recs.push({ p: found, reason: r.reason || found.pros || found.tagline });
+              });
+            }
           }
-        }
-      } catch (_) {}
+        } catch (_) {}
 
-      if (recs.length === 0) {
-        const tokens = q.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-        const scored = availPool.map(p => {
-          const blob = `${p.name} ${p.category} ${p.chip} ${p.display} ${p.pros} ${p.features}`.toLowerCase();
-          let score = 0;
-          tokens.forEach(t => { if (blob.includes(t)) score += 5; });
-          return { p, score };
-        }).sort((a, b) => b.score - a.score);
-
-        const top = scored.slice(0, 3);
-        if (top.length > 0) {
-          advice = `Berikut unit Ready Stock di Mahadewa.id yang paling sesuai dengan kebutuhan Anda:`;
-          recs = top.map(it => ({ p: it.p, reason: it.p.pros || it.p.tagline || it.p.chip }));
-        } else {
+        if (recs.length === 0 && !advice && candidates.length > 0) {
+          const top = candidates.slice(0, 3);
+          const scopeLabel = detectedDeviceLabel ? ` kategori <strong>${detectedDeviceLabel}</strong>` : '';
+          advice = `Berikut unit Ready Stock${scopeLabel} di Mahadewa.id yang paling sesuai dengan kebutuhan Anda:`;
+          recs = top.map(p => ({ p, reason: p.pros || p.tagline || p.chip }));
+        } else if (!advice && candidates.length === 0) {
           advice = `Saat ini belum ada unit ready stock yang sesuai. Silakan hubungi WhatsApp Admin kami di 0823-4488-8441.`;
         }
       }
