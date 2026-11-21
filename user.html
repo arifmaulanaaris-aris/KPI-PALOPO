@@ -180,7 +180,6 @@
     let selectedProductIds = [];
     let geminiApiKey = '';
     let preferredGeminiModel = '';
-    let cachedActiveModels = null;
     let lastAiRecommendedIds = [];
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -197,7 +196,6 @@
       return isNaN(n) ? 0 : n;
     }
 
-    // HANYA PRODUK DENGAN KOLOM Stock > 0 YANG DITAMPILKAN KE USER
     function getAvailableProducts() {
       return allProducts.filter(p => parseStockNumber(p.stock ?? p.Stock) > 0);
     }
@@ -493,7 +491,6 @@
       throw new Error(lastError || 'Gagal memanggil Gemini');
     }
 
-    // Saring & prioritaskan kandidat Ready Stock sesuai jenis perangkat agar tidak terpotong baris Aksesoris
     function preFilterReadyCandidates(question, availPool, maxItems = 35) {
       const q = question.toLowerCase();
       let pool = [...availPool];
