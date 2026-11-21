@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mahadewa.id — Perbandingan Produk & Spesifikasi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background-color: #ffffff; color: #1d1d1f; -webkit-font-smoothing: antialiased; }
+    .apple-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem;
+    }
+  </style>
+</head>
+<body class="bg-white text-[#1d1d1f] selection:bg-[#C62828] selection:text-white overflow-x-hidden">
+
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Navbar Publik -->
+  <header class="sticky top-0 z-40 bg-[#C62828] text-white shadow-md w-full">
+    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 h-14 sm:h-[68px] flex items-center justify-between gap-2 sm:gap-4">
+      <a href="user.html" class="flex items-center gap-2.5 flex-shrink-0 group">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white p-0.5 shadow-sm overflow-hidden flex items-center justify-center flex-shrink-0">
+          <img id="header-logo-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTByyjzmv5_5XHSkxerj-ZrVJPugMEUxMFhXyHPjzOaLg&s=10"
+            alt="Logo Mahadewa.id" onerror="this.onerror=null;this.src=DEFAULT_LOGO_FALLBACK_SVG;" class="w-full h-full object-contain rounded-full" />
+        </div>
+        <span class="text-lg sm:text-2xl font-extrabold tracking-tight text-white">mahadewa.id</span>
+      </a>
+
+      <!-- Search Desktop -->
+      <div class="hidden md:flex flex-1 max-w-md mx-4">
+        <div class="relative w-full">
+          <i data-lucide="search" class="w-4 h-4 text-[#C62828] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <input type="text" id="header-search-input" oninput="handleHeaderSearch(this.value)"
+            placeholder="Cari perangkat ready stock di mahadewa.id..."
+            class="w-full pl-10 pr-4 py-2 rounded-full bg-white text-[#1d1d1f] placeholder-gray-400 text-xs sm:text-sm font-medium focus:outline-none shadow-inner" />
+        </div>
+      </div>
+
+      <!-- Navigasi Portal -->
+      <nav class="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+        <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-white/20">
+          <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-300"></i>
+          <span>Ready Stock</span>
+        </span>
+        <a href="staff.html" title="Portal Khusus Staff (Cek Harga)"
+          class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold text-white/90 hover:text-white hover:bg-white/15 transition">
+          <i data-lucide="badge-dollar-sign" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Staff</span>
+        </a>
+        <a href="admin.html" title="Portal Pengelola / Admin"
+          class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold text-white/90 hover:text-white hover:bg-white/15 transition">
+          <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+          <span class="hidden sm:inline">Admin</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Search Mobile -->
+    <div class="md:hidden px-3.5 pb-3 pt-0.5">
+      <div class="relative w-full">
+        <i data-lucide="search" class="w-4 h-4 text-[#C62828] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        <input type="text" id="mobile-search-input" oninput="handleHeaderSearch(this.value)"
+          placeholder="Cari iPhone, iPad, MacBook, Laptop ready stock..."
+          class="w-full pl-9 pr-4 py-2 rounded-full bg-white text-[#1d1d1f] placeholder-gray-400 text-xs font-medium focus:outline-none shadow-inner" />
+      </div>
+    </div>
+  </header>
+
+  <section class="pt-6 sm:pt-10 pb-4 sm:pb-6 px-3.5 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+    <p class="text-[11px] sm:text-sm font-semibold uppercase tracking-widest text-[#C62828] mb-1.5">Katalog Ready Stock Mahadewa.id</p>
+    <h1 class="text-2xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-2 sm:mb-3">Perbandingan Produk</h1>
+    <p class="text-xs sm:text-base text-[#6e6e73] max-w-2xl mx-auto mb-5 sm:mb-8 leading-relaxed">
+      Menampilkan hanya unit yang <strong class="text-emerald-700">Ready Stock</strong> di toko kami. Bandingkan spesifikasi teknis secara berdampingan atau tanyakan harga resmi via WhatsApp.
+    </p>
+
+    <!-- Filter Kategori & Kolom -->
+    <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#f5f5f7] p-2.5 sm:p-3 rounded-2xl border border-gray-200/70">
+      <div id="category-filters" class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 justify-start"></div>
+      <div class="flex items-center justify-between md:justify-end gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-gray-200/80 flex-shrink-0">
+        <button onclick="syncFromGoogleSheets(false)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-gray-100 text-[#1d1d1f] border border-gray-200 text-xs font-semibold shadow-sm transition">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Refresh Stok</span>
+        </button>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[11px] sm:text-xs font-medium text-[#6e6e73]">Kolom:</span>
+          <div class="inline-flex bg-white p-0.5 sm:p-1 rounded-xl border border-gray-200 shadow-sm">
+            <button onclick="setColumnCount(2)" id="col-btn-2" class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold">2</button>
+            <button onclick="setColumnCount(3)" id="col-btn-3" class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold">3</button>
+            <button onclick="setColumnCount(4)" id="col-btn-4" class="px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold">4</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tanya AI Rekomendasi (Hanya Unit Ready Stock) -->
+    <div class="mt-4 text-left bg-gradient-to-r from-[#fff5f5] via-white to-[#f5f5f7] p-3.5 sm:p-5 rounded-2xl border border-red-200/80 shadow-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-xl bg-[#C62828] text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </span>
+          <div>
+            <h2 class="text-xs sm:text-sm font-bold text-[#1d1d1f]">Tanya AI Mahadewa.id — Rekomendasi Unit Ready Stock</h2>
+            <p class="text-[11px] text-[#6e6e73]">AI hanya merekomendasikan perangkat yang stoknya tersedia saat ini.</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" onclick="setAiConsultantPrompt('Saya mahasiswa jurusan teknik, laptop ready stock mana yang cocok?')"
+            class="text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full bg-white hover:bg-red-50 text-[#1d1d1f] border border-gray-200 font-medium transition">⚙️ Mahasiswa Teknik</button>
+          <button type="button" onclick="setAiConsultantPrompt('Saya mahasiswa kedokteran, iPad atau laptop ringan apa yang tersedia?')"
+            class="text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full bg-white hover:bg-red-50 text-[#1d1d1f] border border-gray-200 font-medium transition">🩺 Kedokteran</button>
+          <button type="button" onclick="setAiConsultantPrompt('Saya content creator butuh kamera bagus dan kencang')"
+            class="text-[10px] sm:text-[11px] px-2.5 py-1 rounded-full bg-white hover:bg-red-50 text-[#1d1d1f] border border-gray-200 font-medium transition">🎬 Content Creator</button>
+        </div>
+      </div>
+
+      <form onsubmit="askAiProductConsultant(event)" class="flex flex-col sm:flex-row gap-2">
+        <input type="text" id="ai-consultant-input" placeholder="Ceritakan kebutuhan Anda (kuliah, kerja, desain, printer, dll)..."
+          class="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-xs sm:text-sm text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#C62828]" />
+        <button type="submit" id="btn-ask-consultant"
+          class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs sm:text-sm font-semibold shadow-sm transition flex-shrink-0">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          <span>Tanya AI</span>
+        </button>
+      </form>
+
+      <div id="ai-consultant-result" class="hidden mt-3.5 pt-3.5 border-t border-red-200/70 space-y-3">
+        <div class="flex items-start justify-between gap-2">
+          <div id="ai-consultant-answer" class="text-xs sm:text-sm text-[#1d1d1f] leading-relaxed"></div>
+          <button type="button" onclick="document.getElementById('ai-consultant-result').classList.add('hidden')" class="p-1 rounded-lg text-gray-400 hover:text-gray-700">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div id="ai-consultant-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5"></div>
+        <div id="ai-consultant-apply-wrap" class="pt-1 flex justify-end"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabel Perbandingan -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-20">
+    <div id="empty-stock-banner" class="hidden text-center py-12 bg-[#f5f5f7] rounded-3xl border border-gray-200">
+      <p class="text-sm font-bold text-[#1d1d1f]">Belum ada unit Ready Stock pada kategori ini.</p>
+      <p class="text-xs text-[#6e6e73] mt-1">Silakan pilih kategori lain atau hubungi WhatsApp Admin kami.</p>
+    </div>
+    <div class="overflow-x-auto pb-4">
+      <div id="comparison-wrapper" class="w-full">
+        <div id="compare-header-grid" class="grid gap-2.5 sm:gap-6 border-b border-gray-200 pb-6 sm:pb-8 pt-2"></div>
+        <div id="compare-specs-container" class="divide-y divide-gray-200"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#f5f5f7] border-t border-gray-200 text-[#6e6e73] text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p>&copy; <span id="footer-year"></span> <strong>Mahadewa.id Palopo</strong> — Jl. Andi Djemma / Tompotika Kec. Wara, Kota Palopo.</p>
+      <a href="https://wa.me/6282344888441" target="_blank" rel="noopener" class="font-semibold text-[#C62828] hover:underline">WA: 0823-4488-8441</a>
+    </div>
+  </footer>
+
+  <script>
+    const PERMANENT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynSBQ0DYihlIqREK6SB-m-9d1x9bU81Bb5XCRQOFdKtHzffGw4LTw-RrXZ2ijC01Z5UQ/exec';
+    const DEFAULT_LOGO_URL = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTByyjzmv5_5XHSkxerj-ZrVJPugMEUxMFhXyHPjzOaLg&s=10';
+    const DEFAULT_LOGO_FALLBACK_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='48' fill='%23C62828'/%3E%3Ctext x='50' y='64' font-family='Inter,Arial,sans-serif' font-size='44' font-weight='800' fill='white' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E";
+    const STORAGE_KEY_PRODUCTS = 'mahadewa_products_cache_v3';
+    const STORAGE_KEY_SETTINGS = 'mahadewa_settings_cache_v3';
+
+    let allProducts = [];
+    let categoriesList = ['iPhone', 'iPad', 'MacBook', 'Laptop Windows', 'PC / AIO', 'Printer', 'Starlink'];
+    let selectedCategory = 'Semua';
+    let columnCount = 3;
+    let selectedProductIds = [];
+    let geminiApiKey = '';
+    let preferredGeminiModel = '';
+    let cachedActiveModels = null;
+    let lastAiRecommendedIds = [];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('footer-year').textContent = new Date().getFullYear();
+      loadCache();
+      refreshAllUI();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+      syncFromGoogleSheets(true);
+    });
+
+    function parseStockNumber(val) {
+      if (val === undefined || val === null || val === '') return 1; // Default tersedia jika kolom stock belum diisi
+      const n = Number(String(val).replace(/[^0-9.-]/g, ''));
+      return isNaN(n) ? 0 : n;
+    }
+
+    // HANYA PRODUK DENGAN STOK > 0 YANG DITAMPILKAN KE USER
+    function getAvailableProducts() {
+      return allProducts.filter(p => parseStockNumber(p.stock) > 0);
+    }
+
+    function loadCache() {
+      try {
+        const cachedProds = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS) || '[]');
+        if (Array.isArray(cachedProds)) allProducts = cachedProds;
+        const cachedSet = JSON.parse(localStorage.getItem(STORAGE_KEY_SETTINGS) || '{}');
+        if (cachedSet.geminiApiKey) geminiApiKey = cachedSet.geminiApiKey;
+        if (cachedSet.brandLogo) document.getElementById('header-logo-img').src = cachedSet.brandLogo;
+        if (Array.isArray(cachedSet.categories) && cachedSet.categories.length) categoriesList = cachedSet.categories;
+      } catch (_) {}
+    }
+
+    async function syncFromGoogleSheets(silent = false) {
+      try {
+        const res = await fetch(`${PERMANENT_APPS_SCRIPT_URL}?t=${Date.now()}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          if (Array.isArray(data.products)) allProducts = data.products;
+          if (data.brandLogo) document.getElementById('header-logo-img').src = data.brandLogo;
+          if (data.geminiApiKey) geminiApiKey = String(data.geminiApiKey).trim();
+          if (data.brandCategories) {
+            try {
+              const cats = JSON.parse(data.brandCategories);
+              if (Array.isArray(cats) && cats.length) categoriesList = cats;
+            } catch (_) {}
+          }
+          // Sinkronkan kategori dari produk yang ready stock
+          const set = new Set(categoriesList);
+          getAvailableProducts().forEach(p => { if (p.category) set.add(String(p.category).trim()); });
+          categoriesList = Array.from(set);
+
+          localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(allProducts));
+          localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify({
+            geminiApiKey,
+            brandLogo: data.brandLogo || DEFAULT_LOGO_URL,
+            categories: categoriesList
+          }));
+          refreshAllUI();
+          if (!silent) showToast(`Stok diperbarui (${getAvailableProducts().length} unit siap dipesan)!`, 'success');
+        }
+      } catch (_) {
+        if (!silent) showToast('Gagal memuat cloud, menampilkan stok tersimpan.', 'info');
+      }
+    }
+
+    function refreshAllUI() {
+      ensureValidSelectedProducts();
+      renderCategoryFilters();
+      updateColumnButtonsUI();
+      renderComparisonTable();
+    }
+
+    function getFilteredAvailableProducts() {
+      const avail = getAvailableProducts();
+      if (selectedCategory === 'Semua') return avail;
+      return avail.filter(p => (p.category || '').toLowerCase() === selectedCategory.toLowerCase());
+    }
+
+    function ensureValidSelectedProducts() {
+      const pool = getFilteredAvailableProducts();
+      const fallback = pool.length > 0 ? pool : getAvailableProducts();
+      if (fallback.length === 0) { selectedProductIds = []; return; }
+      for (let i = 0; i < 4; i++) {
+        if (!fallback.some(p => p.id === selectedProductIds[i])) {
+          selectedProductIds[i] = fallback[i % fallback.length].id;
+        }
+      }
+    }
+
+    function renderCategoryFilters() {
+      const container = document.getElementById('category-filters');
+      const avail = getAvailableProducts();
+      // Hanya tampilkan kategori yang memiliki minimal 1 unit ready stock
+      const activeCats = ['Semua', ...categoriesList.filter(cat =>
+        avail.some(p => (p.category || '').toLowerCase() === cat.toLowerCase())
+      )];
+      container.innerHTML = activeCats.map(cat => {
+        const active = selectedCategory === cat;
+        const cls = active ? 'bg-[#C62828] text-white shadow-sm' : 'bg-white text-[#1d1d1f] hover:bg-gray-100 border border-gray-200/80';
+        return `<button onclick="selectCategoryFilter('${cat.replace(/'/g, "\\'")}')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${cls}">${cat}</button>`;
+      }).join('');
+    }
+
+    function selectCategoryFilter(cat) {
+      selectedCategory = cat;
+      ensureValidSelectedProducts();
+      renderCategoryFilters();
+      renderComparisonTable();
+    }
+
+    function setColumnCount(count) {
+      columnCount = count;
+      updateColumnButtonsUI();
+      ensureValidSelectedProducts();
+      renderComparisonTable();
+    }
+
+    function updateColumnButtonsUI() {
+      [2, 3, 4].forEach(num => {
+        const btn = document.getElementById(`col-btn-${num}`);
+        btn.className = columnCount === num
+          ? 'px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold bg-[#1d1d1f] text-white shadow-xs'
+          : 'px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold text-[#6e6e73] hover:text-[#1d1d1f]';
+      });
+    }
+
+    function handleHeaderSearch(query) {
+      const d = document.getElementById('header-search-input');
+      const m = document.getElementById('mobile-search-input');
+      if (d && d.value !== query) d.value = query;
+      if (m && m.value !== query) m.value = query;
+
+      const q = query.trim().toLowerCase();
+      if (!q) return;
+      const matches = getAvailableProducts().filter(p =>
+        `${p.name} ${p.category} ${p.chip} ${p.features}`.toLowerCase().includes(q)
+      );
+      if (matches.length > 0) {
+        selectedCategory = 'Semua';
+        renderCategoryFilters();
+        for (let i = 0; i < columnCount; i++) {
+          if (matches[i]) selectedProductIds[i] = matches[i].id;
+        }
+        renderComparisonTable();
+      }
+    }
+
+    function handleSlotProductChange(idx, prodId) {
+      selectedProductIds[idx] = prodId;
+      renderComparisonTable();
+    }
+
+    function renderComparisonTable() {
+      const headerGrid = document.getElementById('compare-header-grid');
+      const specsContainer = document.getElementById('compare-specs-container');
+      const emptyBanner = document.getElementById('empty-stock-banner');
+      const wrapper = document.getElementById('comparison-wrapper');
+
+      const pool = getFilteredAvailableProducts();
+      const dropdownProducts = pool.length > 0 ? pool : getAvailableProducts();
+
+      if (dropdownProducts.length === 0) {
+        emptyBanner.classList.remove('hidden');
+        wrapper.classList.add('hidden');
+        return;
+      }
+      emptyBanner.classList.add('hidden');
+      wrapper.classList.remove('hidden');
+
+      const gridColsClass = columnCount === 2 ? 'grid-cols-2' : columnCount === 3 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4';
+      headerGrid.className = `grid ${gridColsClass} gap-2.5 sm:gap-6 border-b border-gray-200 pb-6 sm:pb-8 pt-2`;
+
+      const activeProducts = [];
+      for (let i = 0; i < columnCount; i++) {
+        const prod = dropdownProducts.find(p => p.id === selectedProductIds[i]) || dropdownProducts[i % dropdownProducts.length];
+        if (prod) {
+          selectedProductIds[i] = prod.id;
+          activeProducts.push(prod);
+        }
+      }
+
+      headerGrid.innerHTML = activeProducts.map((prod, idx) => {
+        const fallbackImg = `https://placehold.co/320x320/f5f5f7/1d1d1f?text=${encodeURIComponent(prod.name.slice(0, 20))}`;
+        const stockQty = parseStockNumber(prod.stock);
+        const waText = encodeURIComponent(`Halo Admin Mahadewa.id, saya melihat unit *${prod.name}* (${prod.category}) di katalog website. Boleh info harga terbarunya?`);
+        const optionsHtml = dropdownProducts.map(item =>
+          `<option value="${item.id}" ${item.id === prod.id ? 'selected' : ''}>${item.name}</option>`
+        ).join('');
+
+        return `
+          <div class="flex flex-col items-center text-center bg-white rounded-2xl p-3 sm:p-5 border border-gray-200/80 shadow-xs">
+            <select onchange="handleSlotProductChange(${idx}, this.value)"
+              class="apple-select w-full px-3 py-2 pr-8 rounded-xl bg-[#f5f5f7] border border-gray-200 text-xs sm:text-sm font-bold text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#C62828] mb-3 cursor-pointer">
+              ${optionsHtml}
+            </select>
+
+            <div class="w-full flex justify-end mb-2">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Ready (${stockQty} unit)
+              </span>
+            </div>
+
+            <div class="w-28 h-28 sm:w-44 sm:h-44 rounded-2xl bg-[#f5f5f7] p-3 flex items-center justify-center mb-4 overflow-hidden">
+              <img src="${prod.image || fallbackImg}" alt="${prod.name}" onerror="this.onerror=null;this.src='${fallbackImg}';"
+                class="w-full h-full object-contain transition-transform duration-300 hover:scale-105" />
+            </div>
+
+            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#C62828] mb-1">${prod.category}</span>
+            <h3 class="text-sm sm:text-xl font-bold text-[#1d1d1f] leading-snug mb-1.5">${prod.name}</h3>
+            <p class="text-[11px] sm:text-xs text-[#6e6e73] line-clamp-2 mb-4 flex-1">${prod.tagline || ''}</p>
+
+            <a href="https://wa.me/6282344888441?text=${waText}" target="_blank" rel="noopener"
+              class="w-full inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold shadow-xs transition">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+              <span>Tanya Harga via WA</span>
+            </a>
+          </div>
+        `;
+      }).join('');
+
+      const specRows = [
+        { label: 'Layar & Dimensi', icon: 'monitor', key: 'display' },
+        { label: 'Performa & Chipset', icon: 'cpu', key: 'chip' },
+        { label: 'Kamera & Konektivitas', icon: 'camera', key: 'camera' },
+        { label: 'Baterai & Daya', icon: 'battery-charging', key: 'battery' },
+        { label: 'Fitur Unggulan', icon: 'sparkles', key: 'features' },
+        { label: 'Kelebihan Utama', icon: 'thumbs-up', key: 'pros', highlight: 'emerald' },
+        { label: 'Catatan / Kekurangan', icon: 'alert-circle', key: 'cons', highlight: 'amber' }
+      ];
+
+      specsContainer.innerHTML = specRows.map(row => `
+        <div class="py-5 sm:py-7">
+          <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#1d1d1f] mb-3 sm:mb-4">
+            <i data-lucide="${row.icon}" class="w-4 h-4 text-[#C62828]"></i>
+            <span>${row.label}</span>
+          </div>
+          <div class="grid ${gridColsClass} gap-2.5 sm:gap-6">
+            ${activeProducts.map(prod => {
+              const cardBg = row.highlight === 'emerald' ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-950'
+                : row.highlight === 'amber' ? 'bg-amber-50/70 border-amber-200/80 text-amber-950'
+                : 'bg-[#f5f5f7]/70 border-gray-200/60 text-[#1d1d1f]';
+              return `<div class="p-3 sm:p-4 rounded-2xl border ${cardBg} text-xs sm:text-sm leading-relaxed">${prod[row.key] || '-'}</div>`;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    // =========================================================================
+    // KONSULTAN AI (HANYA MEREKOMENDASIKAN PRODUK READY STOCK > 0, TANPA HARGA)
+    // =========================================================================
+    function setAiConsultantPrompt(text) {
+      const input = document.getElementById('ai-consultant-input');
+      if (input) { input.value = text; input.focus(); }
+    }
+
+    function applyAiRecommendationsToTable() {
+      if (!lastAiRecommendedIds.length) return;
+      selectedCategory = 'Semua';
+      renderCategoryFilters();
+      const countToUse = Math.min(Math.max(lastAiRecommendedIds.length, 2), 4);
+      columnCount = countToUse;
+      updateColumnButtonsUI();
+      for (let i = 0; i < countToUse; i++) {
+        if (lastAiRecommendedIds[i]) selectedProductIds[i] = lastAiRecommendedIds[i];
+      }
+      renderComparisonTable();
+      document.getElementById('comparison-wrapper').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function discoverAvailableGeminiModels(apiKey) {
+      if (Array.isArray(cachedActiveModels) && cachedActiveModels.length > 0) return cachedActiveModels;
+      const fallback = ['gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview', 'gemini-flash-latest', 'gemini-2.5-flash-lite'];
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const valid = (data.models || [])
+            .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent') && /gemini/i.test(m.name) && !/(embedding|imagen|veo|tts|audio)/i.test(m.name))
+            .map(m => m.name.replace(/^models\//, ''));
+          if (valid.length > 0) {
+            valid.sort((a, b) => (/3\.1.*flash-lite/i.test(b) ? 10 : 0) - (/3\.1.*flash-lite/i.test(a) ? 10 : 0));
+            cachedActiveModels = valid;
+            return valid;
+          }
+        }
+      } catch (_) {}
+      return fallback;
+    }
+
+    async function callGeminiWithFallback(apiKey, promptText) {
+      const discovered = await discoverAvailableGeminiModels(apiKey);
+      const candidates = preferredGeminiModel ? [preferredGeminiModel, ...discovered.filter(m => m !== preferredGeminiModel)] : discovered;
+      for (const modelName of candidates.slice(0, 5)) {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 12000);
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+            method: 'POST',
+            signal: controller.signal,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: promptText }] }],
+              generationConfig: { responseMimeType: 'application/json', temperature: 0.25, maxOutputTokens: 550 }
+            })
+          });
+          clearTimeout(tid);
+          if (res.ok) {
+            const data = await res.json();
+            const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+            preferredGeminiModel = modelName;
+            return { parsed: JSON.parse(raw.replace(/```json|```/g, '').trim()), modelUsed: modelName };
+          }
+        } catch (_) { clearTimeout(tid); }
+      }
+      throw new Error('Gemini tidak merespons');
+    }
+
+    async function askAiProductConsultant(event) {
+      event.preventDefault();
+      const q = document.getElementById('ai-consultant-input').value.trim();
+      if (!q) return showToast('Ketik kebutuhan Anda terlebih dahulu.', 'error');
+
+      const btn = document.getElementById('btn-ask-consultant');
+      const origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Mencari Stok...</span>`;
+      lucide.createIcons();
+
+      const availPool = getAvailableProducts();
+      let adviceText = '';
+      let recommendedItems = [];
+
+      try {
+        if (geminiApiKey && availPool.length > 0) {
+          const compact = availPool.slice(0, 30).map(p => ({
+            id: p.id, name: p.name, cat: p.category, stock: parseStockNumber(p.stock),
+            chip: (p.chip || '').slice(0, 80), display: (p.display || '').slice(0, 70), pros: (p.pros || '').slice(0, 120)
+          }));
+          const prompt = `Konsultan AI Mahadewa.id Palopo. Pertanyaan pelanggan: "${q}".
+Daftar produk READY STOCK saat ini (JANGAN sebutkan harga rupiah apa pun):
+${JSON.stringify(compact)}
+Pilih 1-3 produk paling cocok berdasarkan "id" yang ada di daftar. Balas JSON valid:
+{"advice":"Penjelasan ramah 2 kalimat tanpa menyebut nominal harga","recommendations":[{"id":"id-produk","reason":"Alasan berdasarkan spesifikasi & kelebihan"}]}`;
+          const { parsed } = await callGeminiWithFallback(geminiApiKey, prompt);
+          adviceText = parsed.advice || '';
+          (parsed.recommendations || []).forEach(rec => {
+            const found = availPool.find(p => p.id === rec.id);
+            if (found) recommendedItems.push({ product: found, reason: rec.reason || found.pros });
+          });
+        }
+      } catch (_) {}
+
+      if (recommendedItems.length === 0) {
+        const tokens = q.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+        const scored = availPool.map(p => {
+          const blob = `${p.name} ${p.category} ${p.chip} ${p.features} ${p.pros}`.toLowerCase();
+          let s = 0;
+          tokens.forEach(t => { if (blob.includes(t)) s += 5; });
+          return { p, s };
+        }).sort((a, b) => b.s - a.s);
+
+        const top = scored.filter(x => x.s > 0).slice(0, 3);
+        if (top.length > 0) {
+          adviceText = `Berikut unit <strong>Ready Stock</strong> di Mahadewa.id yang paling sesuai dengan kebutuhan Anda:`;
+          recommendedItems = top.map(x => ({ product: x.p, reason: x.p.pros || x.p.tagline }));
+        } else {
+          adviceText = `Mohon maaf, unit ready stock untuk kebutuhan tersebut belum ditemukan. Silakan hubungi WhatsApp kami di 0823-4488-8441.`;
+        }
+      }
+
+      renderConsultantResult(adviceText, recommendedItems);
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+      lucide.createIcons();
+    }
+
+    function renderConsultantResult(adviceText, items) {
+      const box = document.getElementById('ai-consultant-result');
+      const ans = document.getElementById('ai-consultant-answer');
+      const cards = document.getElementById('ai-consultant-cards');
+      const wrap = document.getElementById('ai-consultant-apply-wrap');
+      lastAiRecommendedIds = items.map(i => i.product.id);
+
+      ans.innerHTML = `<span class="font-bold text-[#C62828]">Saran AI Mahadewa.id:</span> ${adviceText}`;
+      cards.innerHTML = items.map(it => {
+        const p = it.product;
+        const img = p.image || `https://placehold.co/320x320/f5f5f7/1d1d1f?text=${encodeURIComponent(p.name.slice(0, 15))}`;
+        return `
+          <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200 shadow-xs">
+            <img src="${img}" alt="${p.name}" class="w-11 h-11 rounded-lg object-contain bg-[#f5f5f7] p-1 flex-shrink-0" />
+            <div class="min-w-0">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[10px] font-bold uppercase text-[#C62828]">${p.category}</span>
+                <span class="text-[10px] font-bold text-emerald-700">Stok: ${parseStockNumber(p.stock)}</span>
+              </div>
+              <p class="text-xs font-bold text-[#1d1d1f] truncate">${p.name}</p>
+              <p class="text-[11px] text-[#6e6e73] line-clamp-2 mt-0.5">${it.reason}</p>
+            </div>
+          </div>`;
+      }).join('');
+
+      wrap.innerHTML = items.length > 0 ? `
+        <button type="button" onclick="applyAiRecommendationsToTable()"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition">
+          <i data-lucide="columns-3" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Bandingkan ${items.length} Produk Ready Stock Ini</span>
+        </button>` : '';
+      box.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl text-xs font-semibold text-white ${type === 'error' ? 'bg-[#C62828]' : 'bg-[#1d1d1f]'}`;
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+  </script>
+</body>
+</html>
