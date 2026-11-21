@@ -62,7 +62,7 @@
       <div>
         <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Import / Export Massal</span>
         <h2 class="text-lg font-bold text-[#1d1d1f] mt-1.5">Upload Excel Harga, Stok & Spesifikasi</h2>
-        <p class="text-xs text-[#6e6e73]">Kolom Excel mendukung: <code class="font-mono text-[#C62828]">name, category, price, stock, tagline, image, display, chip, camera, battery, features, pros, cons</code>.</p>
+        <p class="text-xs text-[#6e6e73]">Urutan kolom Excel sesuai Spreadsheet: <code class="font-mono text-[#C62828]">id, name, category, harga, Stock, tagline, image, display, chip, camera, battery, features, pros, cons, source</code>.</p>
       </div>
       <div class="flex flex-wrap items-center gap-2.5">
         <button onclick="downloadExcelTemplate()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -278,25 +278,26 @@
       const filtered = products.filter(p => `${p.name} ${p.category}`.toLowerCase().includes(q));
       document.getElementById('catalog-count').textContent = products.length;
       document.getElementById('admin-product-list').innerHTML = filtered.map(p => {
-        const stock = Number(p.stock ?? 0);
-        const price = Number(p.price ?? 0);
+        const stock = Number(p.stock ?? p.Stock ?? 0);
+        const price = Number(p.price ?? p.harga ?? 0);
         return `
           <div class="flex items-center justify-between gap-2 p-3 rounded-2xl bg-[#f5f5f7] border border-gray-200">
             <div class="min-w-0">
               <div class="flex items-center gap-1.5">
                 <span class="text-[10px] font-bold uppercase text-[#C62828]">${p.category}</span>
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${stock > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'}">
+                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${stock > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-200 text-gray-600'}">
                   Stok: ${stock}
                 </span>
               </div>
               <p class="text-xs font-bold text-[#1d1d1f] truncate">${p.name}</p>
               <p class="text-[11px] font-semibold text-emerald-700">Rp ${price.toLocaleString('id-ID')}</p>
             </div>
-            <div class="flex gap-1.5 flex-shrink-0">
-              <button onclick="editProduct('${p.id}')" class="px-2.5 py-1 rounded-lg bg-white border border-gray-300 text-[11px] font-semibold">Edit</button>
-              <button onclick="deleteProduct('${p.id}')" class="px-2.5 py-1 rounded-lg bg-red-50 border border-red-200 text-[#C62828] text-[11px] font-semibold">Hapus</button>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <button type="button" onclick="editProduct('${p.id}')" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-gray-100 border border-gray-300 text-[11px] font-semibold">Edit</button>
+              <button type="button" onclick="deleteProduct('${p.id}')" class="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-[11px] font-semibold text-[#C62828]">Hapus</button>
             </div>
-          </div>`;
+          </div>
+        `;
       }).join('');
     }
 
@@ -305,9 +306,11 @@
       const existingId = document.getElementById('prod-id').value.trim();
       const name = document.getElementById('prod-name').value.trim();
       const id = existingId || `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
+
       const obj = {
-        id, name,
-        category: document.getElementById('prod-category').value.trim(),
+        id,
+        name,
+        category: document.getElementById('prod-category').value.trim() || 'iPhone',
         price: Number(document.getElementById('prod-price').value || 0),
         stock: Number(document.getElementById('prod-stock').value || 0),
         tagline: document.getElementById('prod-tagline').value.trim(),
@@ -321,12 +324,16 @@
         cons: document.getElementById('prod-cons').value.trim(),
         source: ''
       };
+
       const idx = products.findIndex(p => p.id === id);
-      if (idx !== -1) products[idx] = obj; else products.unshift(obj);
+      if (idx !== -1) products[idx] = obj;
+      else products.unshift(obj);
+
       resetForm();
       renderAdminList();
+      updateCategorySuggestions();
       await postToCloud({ action: 'upsert', product: obj });
-      showToast(`Produk "${obj.name}" (Harga & Stok) berhasil disimpan!`, 'success');
+      showToast(`Produk "${obj.name}" (Stok: ${obj.stock}) tersimpan!`, 'success');
     }
 
     function editProduct(id) {
@@ -335,8 +342,8 @@
       document.getElementById('prod-id').value = p.id;
       document.getElementById('prod-name').value = p.name || '';
       document.getElementById('prod-category').value = p.category || '';
-      document.getElementById('prod-price').value = Number(p.price || 0);
-      document.getElementById('prod-stock').value = Number(p.stock ?? 0);
+      document.getElementById('prod-price').value = Number(p.price ?? p.harga ?? 0);
+      document.getElementById('prod-stock').value = Number(p.stock ?? p.Stock ?? 0);
       document.getElementById('prod-tagline').value = p.tagline || '';
       document.getElementById('prod-image').value = p.image || '';
       document.getElementById('prod-display').value = p.display || '';
@@ -346,6 +353,7 @@
       document.getElementById('prod-features').value = p.features || '';
       document.getElementById('prod-pros').value = p.pros || '';
       document.getElementById('prod-cons').value = p.cons || '';
+      document.getElementById('form-title').textContent = `Edit: ${p.name}`;
       document.getElementById('btn-cancel-edit').classList.remove('hidden');
       document.getElementById('product-form').scrollIntoView({ behavior: 'smooth' });
     }
@@ -353,6 +361,7 @@
     function resetForm() {
       document.getElementById('product-form').reset();
       document.getElementById('prod-id').value = '';
+      document.getElementById('form-title').textContent = 'Tambah / Edit Produk';
       document.getElementById('btn-cancel-edit').classList.add('hidden');
     }
 
@@ -360,24 +369,39 @@
       products = products.filter(p => p.id !== id);
       renderAdminList();
       await postToCloud({ action: 'delete', id });
-      showToast('Produk dihapus.', 'info');
+      showToast('Produk dihapus dari Cloud.', 'info');
     }
 
     function downloadExcelTemplate() {
       const rows = (products.length ? products : [{
-        id: 'iphone-16-pro', name: 'iPhone 16 Pro 256GB', category: 'iPhone', price: 21999000, stock: 4,
-        tagline: 'Titanium Pro', image: '', display: '6.3 inci OLED 120Hz', chip: 'Apple A18 Pro',
-        camera: '48MP Triple Camera', battery: '27 Jam Video', features: 'Camera Control, IP68',
-        pros: 'Kamera ProRes & bodi ringkas', cons: 'Charger terpisah'
-      }]).map(p => ({
-        id: p.id, name: p.name, category: p.category, price: Number(p.price || 0), stock: Number(p.stock ?? 0),
-        tagline: p.tagline, image: p.image, display: p.display, chip: p.chip,
-        camera: p.camera, battery: p.battery, features: p.features, pros: p.pros, cons: p.cons
-      }));
+        id: 'asus-zenbook-14-oled', name: 'Asus Zenbook 14 OLED (UX3405CA-OLEDS711M)', category: 'NoteBook', harga: 30900000, Stock: 1,
+        tagline: 'Kencang harian dan kerja kreatif', image: '', display: '14-inch, 3K (2880 x 1800) OLED 120Hz', chip: 'Intel Core Ultra 7',
+        camera: 'FHD camera with IR', battery: '75WHrs, 4S1P, 4-cell Li-ion', features: 'Intel AI Boost NPU',
+        pros: 'Layar OLED tajam & ringan', cons: 'Kapasitas penyimpanan tetap', source: ''
+      }]).map(p => {
+        const stk = Number(p.stock ?? p.Stock ?? 0);
+        return {
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          harga: Number(p.price ?? p.harga ?? 0) || '',
+          Stock: stk > 0 ? stk : '',
+          tagline: p.tagline,
+          image: p.image,
+          display: p.display,
+          chip: p.chip,
+          camera: p.camera,
+          battery: p.battery,
+          features: p.features,
+          pros: p.pros,
+          cons: p.cons,
+          source: p.source || ''
+        };
+      });
       const ws = XLSX.utils.json_to_sheet(rows);
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'KatalogHargaStok');
-      XLSX.writeFile(wb, 'Mahadewa_Harga_Stok_Spesifikasi.xlsx');
+      XLSX.utils.book_append_sheet(wb, ws, 'KatalogProduk');
+      XLSX.writeFile(wb, 'Mahadewa_Harga_Stock_Spesifikasi.xlsx');
     }
 
     function handleExcelImport(event) {
@@ -391,8 +415,8 @@
           id: String(r.id || `excel-${Date.now()}-${i}`),
           name: String(r.name || r['Nama Produk'] || '').trim(),
           category: String(r.category || r['Kategori'] || 'iPhone').trim(),
-          price: Number(String(r.price ?? r['Harga'] ?? 0).replace(/[^0-9]/g, '')) || 0,
-          stock: Number(String(r.stock ?? r['Stok'] ?? 0).replace(/[^0-9]/g, '')) || 0,
+          price: Number(String(r.harga ?? r.Harga ?? r.price ?? 0).replace(/[^0-9]/g, '')) || 0,
+          stock: Number(String(r.Stock ?? r.stock ?? r.Stok ?? 0).replace(/[^0-9]/g, '')) || 0,
           tagline: String(r.tagline || r['Tagline'] || '').trim(),
           image: String(r.image || r['Foto'] || '').trim(),
           display: String(r.display || r['Layar'] || '').trim(),
@@ -402,14 +426,14 @@
           features: String(r.features || r['Fitur'] || '').trim(),
           pros: String(r.pros || r['Kelebihan'] || '').trim(),
           cons: String(r.cons || r['Kekurangan'] || '').trim(),
-          source: ''
+          source: String(r.source || r['Sumber'] || '').trim()
         })).filter(x => x.name);
 
         if (imported.length > 0) {
           products = imported;
           renderAdminList();
           await pushAllToGoogleSheets();
-          showToast(`Berhasil upload ${imported.length} produk (Harga, Stok & Spek) dari Excel!`, 'success');
+          showToast(`Berhasil upload ${imported.length} produk (harga, Stock & spesifikasi) dari Excel!`, 'success');
         }
       };
       reader.readAsArrayBuffer(file);
