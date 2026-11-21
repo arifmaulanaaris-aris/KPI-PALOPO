@@ -437,14 +437,12 @@
     }
 
     async function callGeminiUniversal(apiKey, prompt) {
-      const candidateModels = preferredGeminiModel
-        ? [preferredGeminiModel]
-        : ['gemini-flash-latest', 'gemini-2.5-flash-lite'];
+      const candidateModels = ['gemini-3-flash-preview', 'gemini-3.1-flash-lite-preview', 'gemini-flash-latest'];
 
       let lastError = '';
       for (const model of candidateModels) {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 6500);
+        const timer = setTimeout(() => controller.abort(), 14000);
         try {
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
           const res = await fetch(endpoint, {
@@ -459,7 +457,7 @@
               generationConfig: {
                 responseMimeType: 'application/json',
                 temperature: 0.2,
-                maxOutputTokens: 320
+                maxOutputTokens: 450
               }
             })
           });
@@ -477,10 +475,10 @@
           }
         } catch (err) {
           clearTimeout(timer);
-          lastError = err.name === 'AbortError' ? 'Timeout' : (err.message || 'Gagal terhubung');
+          lastError = err.name === 'AbortError' ? 'Waktu tunggu server habis' : (err.message || 'Gagal terhubung ke Gemini');
         }
       }
-      throw new Error(lastError || 'Gagal memanggil Gemini');
+      throw new Error(lastError || 'Gagal memanggil Gemini 3 Flash');
     }
 
     function preFilterReadyCandidates(question, availPool, maxItems = 15) {
@@ -572,25 +570,39 @@
         });
 
         if (isGaming) {
-          if (/(rtx|gtx|rog|tuf|victus|loq|nitro|gaming|144hz|165hz)/i.test(text)) score += 25;
-          else score -= 10;
+          if (/(rtx|gtx|rog|tuf|victus|loq|nitro|gaming|144hz|165hz)/i.test(text)) score += 45;
+          else score -= 20;
         }
         if (isHeavy) {
-          if (/(rtx|gtx|ryzen\s*[579]|core\s*i[579]|ultra\s*[579]|m[1234]|pro|max)/i.test(text)) score += 15;
-          if (/(celeron|n4020|n4500|n100|pentium|athlon)/i.test(text)) score -= 35;
+          if (/(rtx|gtx)/i.test(text)) score += 40;
+          if (/(ryzen\s*[79]|\br7\b|\br9\b|core\s*i[79]|\bi7\b|\bi9\b|ultra\s*[79]|m[234]\s*(pro|max)?)/i.test(text)) score += 30;
+          else if (/(ryzen\s*5|\br5\b|core\s*i5|\bi5\b|ultra\s*5)/i.test(text)) score += 12;
+          if (/(ryzen\s*3|\br3\b|core\s*i3|\bi3\b|celeron|n4020|n4500|n100|pentium|athlon)/i.test(text)) score -= 45;
         }
         if (isMedicalOrMobile) {
-          if (/(ipad|air|zenbook|oled|ringan|tipis|1,2|1,3|baterai|awet|pencil)/i.test(text)) score += 15;
-          if (/(gaming|berat|2,2|2,3)/i.test(text)) score -= 10;
+          if (/(ipad|air|zenbook|oled|ringan|tipis|1,2|1,3|baterai|awet|pencil)/i.test(text)) score += 20;
+          if (/(gaming|berat|2,2|2,3)/i.test(text)) score -= 12;
         }
         if (isCreator) {
-          if (/(48\s*mp|prores|oled|retina|p3|kamera|4k|m[1234]|ultra|rtx)/i.test(text)) score += 15;
+          if (/(48\s*mp|prores|oled|retina|p3|kamera|4k|m[1234]|ultra|rtx)/i.test(text)) score += 25;
         }
         return { p, score };
       }).sort((a, b) => b.score - a.score);
 
+      // Pastikan variasi seri berbeda (tidak mengulang model yang sama hanya beda warna)
+      const diverse = [];
+      const seenSeries = new Set();
+      for (const item of scored) {
+        const seriesKey = item.p.name.split(/\s+/).slice(0, 2).join(' ').toLowerCase();
+        if (!seenSeries.has(seriesKey) || diverse.length >= maxItems - 3) {
+          seenSeries.add(seriesKey);
+          diverse.push(item.p);
+        }
+        if (diverse.length >= maxItems) break;
+      }
+
       return {
-        candidates: scored.slice(0, maxItems).map(it => it.p),
+        candidates: diverse,
         detectedDeviceLabel,
         emptyDeviceCategory: false
       };
@@ -611,80 +623,73 @@
       const cardsEl = document.getElementById('ai-consultant-cards');
       const applyWrapEl = document.getElementById('ai-consultant-apply-wrap');
 
+      if (!geminiApiKey) {
+        showToast('API Key Gemini belum diatur oleh Admin.', 'error');
+        return;
+      }
+
       const originalBtnHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Menganalisis...</span>`;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Gemini 3 Flash Menganalisis...</span>`;
       if (typeof lucide !== 'undefined') lucide.createIcons();
 
       try {
         const availPool = getAvailableProducts();
-        const { candidates, detectedDeviceLabel, emptyDeviceCategory } = preFilterReadyCandidates(q, availPool, 15);
+        const { candidates, detectedDeviceLabel, emptyDeviceCategory } = preFilterReadyCandidates(q, availPool, 20);
 
-        if (emptyDeviceCategory) {
+        if (emptyDeviceCategory || availPool.length === 0) {
           renderConsultantResult(
-            `Mohon maaf, saat ini stok untuk kategori <strong>${detectedDeviceLabel}</strong> sedang kosong di Mahadewa.id Palopo. Silakan hubungi WhatsApp Admin kami untuk pemesanan atau cek kategori lain.`,
-            [], answerEl, cardsEl, applyWrapEl, resultBox, '⚡ Stok Kategori Kosong', false
+            `Mohon maaf, saat ini stok untuk kategori <strong>${detectedDeviceLabel || 'yang dicari'}</strong> sedang kosong di Mahadewa.id Palopo. Silakan hubungi WhatsApp Admin kami untuk info stok terbaru.`,
+            [], answerEl, cardsEl, applyWrapEl, resultBox, '✨ Gemini 3 Flash', true
           );
           return;
         }
 
-        let adviceText = '';
-        let recommendedItems = [];
-        let badgeText = '';
-        let isGemini = false;
-        let fallbackNote = '';
+        const compact = candidates.map(p => ({
+          id: p.id,
+          name: p.name,
+          cat: p.category,
+          display: (p.display || '').slice(0, 60),
+          chip: (p.chip || '').slice(0, 75),
+          camera: (p.camera || '').slice(0, 50),
+          features: (p.features || '').slice(0, 60),
+          pros: (p.pros || '').slice(0, 90),
+          cons: (p.cons || '').slice(0, 60)
+        }));
 
-        if (geminiApiKey && candidates.length > 0) {
-          try {
-            const compact = candidates.map(p => ({
-              id: p.id, name: p.name, cat: p.category,
-              display: (p.display || '').slice(0, 50),
-              chip: (p.chip || '').slice(0, 60),
-              camera: (p.camera || '').slice(0, 45),
-              pros: (p.pros || '').slice(0, 80),
-              cons: (p.cons || '').slice(0, 50)
-            }));
-            const prompt = `Konsultan teknis Mahadewa.id. Kebutuhan pelanggan: "${q}".
-Kandidat READY STOCK:
+        const prompt = `Kamu adalah konsultan ahli gadget & komputer resmi di toko Mahadewa.id Palopo.
+Pertanyaan pelanggan: "${q}"
+
+Daftar produk READY STOCK beserta spesifikasi lengkapnya:
 ${JSON.stringify(compact)}
-Aturan ketat:
-1. Pilih 1-3 produk PALING TEPAT secara teknis dari daftar di atas (jangan pilih Celeron/office untuk gaming/teknik berat, dan jangan pilih aksesoris RAM/SSD jika mencari unit utama).
-2. Jika kebutuhan spesifik (misal laptop gaming RTX atau warna tertentu) tidak ada di daftar, kembalikan recommendations: [] dan jelaskan jujur di advice.
-Balas JSON murni: {"advice":"Penjelasan akurat 2 kalimat","recommendations":[{"id":"id-produk","reason":"Alasan spesifikasi yang cocok"}]}`;
 
-            const { parsed, model } = await callGeminiUniversal(geminiApiKey, prompt);
-            adviceText = parsed.advice || '';
-            if (Array.isArray(parsed.recommendations)) {
-              parsed.recommendations.forEach(rec => {
-                const prod = availPool.find(p => p.id === rec.id);
-                if (prod) {
-                  recommendedItems.push({ product: prod, reason: rec.reason || prod.pros || prod.tagline });
-                }
-              });
+Tugas & Aturan Wajib:
+1. Analisis kebutuhan pelanggan secara mendalam (misalnya: mahasiswa teknik butuh GPU diskrit RTX atau prosesor kencang Ryzen 7 / Core i7 / Core Ultra 7; gaming butuh RTX/GTX; kedokteran butuh ringan & baterai awet; content creator butuh layar akurat & kamera/performa tinggi).
+2. Pilih 1 sampai 3 produk PALING TEPAT dari daftar di atas menggunakan field "id" yang persis sama. Jangan merekomendasikan aksesoris (RAM/SSD) jika pelanggan mencari laptop/unit utama, dan jangan pilih prosesor entry-level (Celeron/Ryzen 3) jika tersedia pilihan yang lebih tepat untuk beban berat.
+3. Jika produk/spesifikasi/warna yang diminta benar-benar tidak tersedia di daftar ready stock di atas, kembalikan "recommendations": [] dan jelaskan dengan ramah dan jujur di "advice".
+4. Jangan pernah menyebut harga dalam jawaban.
+5. Balas HANYA JSON murni tanpa markdown:
+{"advice":"Penjelasan ramah & akurat 2 kalimat dalam Bahasa Indonesia","recommendations":[{"id":"id-produk","reason":"Alasan spesifik mengapa produk ini cocok sesuai spesifikasi"}]}`;
+
+        const { parsed, model } = await callGeminiUniversal(geminiApiKey, prompt);
+        const adviceText = parsed.advice || 'Berikut rekomendasi unit Ready Stock yang paling sesuai untuk Anda:';
+        const recommendedItems = [];
+
+        if (Array.isArray(parsed.recommendations)) {
+          parsed.recommendations.forEach(rec => {
+            const prod = availPool.find(p => p.id === rec.id);
+            if (prod) {
+              recommendedItems.push({ product: prod, reason: rec.reason || prod.pros || prod.tagline });
             }
-            badgeText = `✨ Dijawab oleh Gemini AI (${model})`;
-            isGemini = true;
-          } catch (err) {
-            fallbackNote = err.message ? ` (${err.message.slice(0, 45)})` : '';
-          }
+          });
         }
 
-        if (!isGemini) {
-          const topLocal = candidates.slice(0, 3);
-          if (topLocal.length === 0) {
-            adviceText = 'Mohon maaf, belum ada unit ready stock yang sesuai dengan kebutuhan tersebut saat ini.';
-          } else {
-            const scope = detectedDeviceLabel ? ` kategori <strong>${detectedDeviceLabel}</strong>` : '';
-            adviceText = `Berikut unit Ready Stock${scope} di Mahadewa.id yang paling sesuai dengan kebutuhan Anda:`;
-            recommendedItems = topLocal.map(p => ({
-              product: p,
-              reason: p.pros || p.chip || p.tagline || 'Unit tersedia dan siap digunakan'
-            }));
-          }
-          badgeText = `⚡ Mode Katalog Lokal${fallbackNote}`;
-        }
-
-        renderConsultantResult(adviceText, recommendedItems, answerEl, cardsEl, applyWrapEl, resultBox, badgeText, isGemini);
+        renderConsultantResult(adviceText, recommendedItems, answerEl, cardsEl, applyWrapEl, resultBox, `✨ Dijawab oleh Gemini 3 Flash (${model})`, true);
+      } catch (err) {
+        renderConsultantResult(
+          `Maaf, koneksi ke Gemini 3 Flash sedang terkendala (${err.message}). Silakan coba klik <strong>Tanya AI</strong> kembali dalam beberapa saat.`,
+          [], answerEl, cardsEl, applyWrapEl, resultBox, '⚠️ Gangguan Koneksi Gemini 3 Flash', false
+        );
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalBtnHtml;
