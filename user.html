@@ -74,7 +74,7 @@
   </header>
 
   <section class="pt-6 sm:pt-10 pb-4 sm:pb-6 px-3.5 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-    <p class="text-[11px] sm:text-sm font-semibold uppercase tracking-widest text-[#C62828] mb-1.5">Katalog Resmi Mahadewa.id</p>
+    <p class="text-[11px] sm:text-sm font-semibold uppercase tracking-widest text-[#C62828] mb-1.5">Katalog Ready Stock Mahadewa.id</p>
     <h1 class="text-2xl sm:text-5xl font-bold tracking-tight text-[#1d1d1f] mb-2 sm:mb-3">Perbandingan Produk</h1>
     <p class="text-xs sm:text-base text-[#6e6e73] max-w-2xl mx-auto mb-5 sm:mb-8 leading-relaxed">
       Menampilkan hanya unit yang <strong class="text-emerald-700">Ready Stock</strong> di toko kami. Bandingkan spesifikasi teknis secara berdampingan atau tanyakan harga resmi via WhatsApp.
@@ -436,44 +436,34 @@
       if (el) { el.value = text; el.focus(); }
     }
 
-    async function discoverModel(apiKey) {
-      if (preferredGeminiModel) return preferredGeminiModel;
-      try {
-        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
-          headers: { 'X-goog-api-key': apiKey }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const list = (data.models || [])
-            .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent') && /gemini/i.test(m.name) && !/(embedding|imagen|veo|tts|audio)/i.test(m.name))
-            .map(m => m.name.replace(/^models\//, ''));
-          const best = list.find(n => /flash-latest/i.test(n)) || list.find(n => /3\.1.*flash-lite/i.test(n)) || list.find(n => /3.*flash/i.test(n)) || list[0];
-          if (best) { preferredGeminiModel = best; return best; }
-        }
-      } catch (_) {}
-      return 'gemini-flash-latest';
-    }
-
     async function callGeminiUniversal(apiKey, prompt) {
-      const detected = await discoverModel(apiKey);
-      const candidateModels = Array.from(new Set(['gemini-flash-latest', detected, 'gemini-3.1-flash-lite-preview', 'gemini-2.5-flash-lite']));
+      const candidateModels = preferredGeminiModel
+        ? [preferredGeminiModel]
+        : ['gemini-flash-latest', 'gemini-2.5-flash-lite'];
 
       let lastError = '';
       for (const model of candidateModels) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6500);
         try {
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
           const res = await fetch(endpoint, {
             method: 'POST',
+            signal: controller.signal,
             headers: {
               'Content-Type': 'application/json',
               'X-goog-api-key': apiKey
             },
             body: JSON.stringify({
               contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json', temperature: 0.25 }
+              generationConfig: {
+                responseMimeType: 'application/json',
+                temperature: 0.2,
+                maxOutputTokens: 320
+              }
             })
           });
+          clearTimeout(timer);
 
           if (res.ok) {
             const data = await res.json();
@@ -483,15 +473,17 @@
           } else {
             const errBody = await res.json().catch(() => ({}));
             lastError = errBody?.error?.message || `HTTP ${res.status}`;
+            if (/api key/i.test(lastError)) break;
           }
         } catch (err) {
-          lastError = err.message || 'Gagal terhubung';
+          clearTimeout(timer);
+          lastError = err.name === 'AbortError' ? 'Timeout' : (err.message || 'Gagal terhubung');
         }
       }
       throw new Error(lastError || 'Gagal memanggil Gemini');
     }
 
-    function preFilterReadyCandidates(question, availPool, maxItems = 35) {
+    function preFilterReadyCandidates(question, availPool, maxItems = 15) {
       const q = question.toLowerCase();
       let pool = [...availPool];
       let detectedDeviceLabel = '';
@@ -596,7 +588,7 @@
       if (typeof lucide !== 'undefined') lucide.createIcons();
 
       const availPool = getAvailableProducts();
-      const { candidates, detectedDeviceLabel, emptyDeviceCategory } = preFilterReadyCandidates(q, availPool, 35);
+      const { candidates, detectedDeviceLabel, emptyDeviceCategory } = preFilterReadyCandidates(q, availPool, 15);
       let advice = '';
       let recs = [];
       let sourceBadge = '';
@@ -607,13 +599,13 @@
         try {
           if (geminiApiKey && candidates.length > 0) {
             const compact = candidates.map(p => ({
-              id: p.id, name: p.name, cat: p.category, stock: parseStockNumber(p.stock ?? p.Stock),
-              chip: (p.chip || '').slice(0, 85), display: (p.display || '').slice(0, 75), pros: (p.pros || '').slice(0, 130)
+              id: p.id, name: p.name, cat: p.category,
+              chip: (p.chip || '').slice(0, 60), pros: (p.pros || '').slice(0, 85)
             }));
-            const prompt = `Konsultan AI Mahadewa.id Palopo. Pertanyaan pelanggan: "${q}".
-Daftar unit READY STOCK yang relevan saat ini (JANGAN sebutkan harga, HANYA pilih dari daftar ini dan JANGAN mengganti laptop/perangkat utama dengan aksesoris RAM/SSD):
+            const prompt = `Konsultan AI Mahadewa.id. Kebutuhan: "${q}".
+Kandidat READY STOCK (tanpa harga, jangan ganti perangkat utama dengan aksesoris RAM/SSD):
 ${JSON.stringify(compact)}
-Balas HANYA JSON murni: {"advice":"Saran singkat 2 kalimat Bahasa Indonesia","recommendations":[{"id":"id-produk","reason":"Alasan singkat berdasarkan spesifikasi & pros"}]}`;
+Balas JSON murni: {"advice":"Saran singkat 2 kalimat","recommendations":[{"id":"id-produk","reason":"Alasan singkat"}]}`;
 
             const { parsed, model } = await callGeminiUniversal(geminiApiKey, prompt);
             advice = parsed.advice || '';
