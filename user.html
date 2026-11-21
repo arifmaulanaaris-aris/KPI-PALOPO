@@ -192,25 +192,34 @@
     });
 
     function parseStockNumber(val) {
-      if (val === undefined || val === null || val === '') return 1; // Default tersedia jika kolom stock belum diisi
+      if (val === undefined || val === null || String(val).trim() === '') return 0;
       const n = Number(String(val).replace(/[^0-9.-]/g, ''));
       return isNaN(n) ? 0 : n;
     }
 
-    // HANYA PRODUK DENGAN STOK > 0 YANG DITAMPILKAN KE USER
+    // HANYA PRODUK DENGAN KOLOM Stock > 0 YANG DITAMPILKAN KE USER
     function getAvailableProducts() {
-      return allProducts.filter(p => parseStockNumber(p.stock) > 0);
+      return allProducts.filter(p => parseStockNumber(p.stock ?? p.Stock) > 0);
     }
 
     function loadCache() {
       try {
-        const cachedProds = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS) || '[]');
+        const cachedProds = JSON.parse(localStorage.getItem(STORAGE_KEY_PRODUCTS) || 'null');
         if (Array.isArray(cachedProds)) allProducts = cachedProds;
-        const cachedSet = JSON.parse(localStorage.getItem(STORAGE_KEY_SETTINGS) || '{}');
-        if (cachedSet.geminiApiKey) geminiApiKey = cachedSet.geminiApiKey;
-        if (cachedSet.brandLogo) document.getElementById('header-logo-img').src = cachedSet.brandLogo;
-        if (Array.isArray(cachedSet.categories) && cachedSet.categories.length) categoriesList = cachedSet.categories;
+        const cachedSettings = JSON.parse(localStorage.getItem(STORAGE_KEY_SETTINGS) || 'null');
+        if (cachedSettings) {
+          if (cachedSettings.brandLogo) applyBrandLogo(cachedSettings.brandLogo);
+          if (cachedSettings.geminiApiKey) geminiApiKey = cachedSettings.geminiApiKey;
+          if (Array.isArray(cachedSettings.categories) && cachedSettings.categories.length > 0) {
+            categoriesList = cachedSettings.categories;
+          }
+        }
       } catch (_) {}
+    }
+
+    function applyBrandLogo(url) {
+      const img = document.getElementById('header-logo-img');
+      if (img && url) img.src = url;
     }
 
     async function syncFromGoogleSheets(silent = false) {
@@ -219,37 +228,39 @@
         const data = await res.json();
         if (data.status === 'success') {
           if (Array.isArray(data.products)) allProducts = data.products;
-          if (data.brandLogo) document.getElementById('header-logo-img').src = data.brandLogo;
+          if (data.brandLogo) applyBrandLogo(data.brandLogo);
           if (data.geminiApiKey) geminiApiKey = String(data.geminiApiKey).trim();
           if (data.brandCategories) {
             try {
-              const cats = JSON.parse(data.brandCategories);
-              if (Array.isArray(cats) && cats.length) categoriesList = cats;
+              const parsed = JSON.parse(data.brandCategories);
+              if (Array.isArray(parsed) && parsed.length > 0) categoriesList = parsed;
             } catch (_) {}
           }
-          // Sinkronkan kategori dari produk yang ready stock
-          const set = new Set(categoriesList);
-          getAvailableProducts().forEach(p => { if (p.category) set.add(String(p.category).trim()); });
-          categoriesList = Array.from(set);
-
           localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(allProducts));
           localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify({
-            geminiApiKey,
             brandLogo: data.brandLogo || DEFAULT_LOGO_URL,
+            geminiApiKey,
             categories: categoriesList
           }));
           refreshAllUI();
-          if (!silent) showToast(`Stok diperbarui (${getAvailableProducts().length} unit siap dipesan)!`, 'success');
+          if (!silent) showToast(`Stok diperbarui (${getAvailableProducts().length} unit ready stock).`, 'success');
         }
-      } catch (_) {
-        if (!silent) showToast('Gagal memuat cloud, menampilkan stok tersimpan.', 'info');
+      } catch (e) {
+        if (!silent) showToast('Gagal memuat data terbaru dari Cloud.', 'error');
       }
     }
 
     function refreshAllUI() {
-      ensureValidSelectedProducts();
-      renderCategoryFilters();
+      const avail = getAvailableProducts();
+      const catSet = new Set();
+      avail.forEach(p => { if (p.category) catSet.add(String(p.category).trim()); });
+      const activeCategories = catSet.size > 0 ? Array.from(catSet) : categoriesList;
+      if (selectedCategory !== 'Semua' && !activeCategories.includes(selectedCategory)) {
+        selectedCategory = 'Semua';
+      }
+      renderCategoryFilters(activeCategories);
       updateColumnButtonsUI();
+      ensureValidSelectedProducts();
       renderComparisonTable();
     }
 
@@ -262,24 +273,22 @@
     function ensureValidSelectedProducts() {
       const pool = getFilteredAvailableProducts();
       const fallback = pool.length > 0 ? pool : getAvailableProducts();
-      if (fallback.length === 0) { selectedProductIds = []; return; }
       for (let i = 0; i < 4; i++) {
         if (!fallback.some(p => p.id === selectedProductIds[i])) {
-          selectedProductIds[i] = fallback[i % fallback.length].id;
+          selectedProductIds[i] = fallback[i % fallback.length]?.id || '';
         }
       }
     }
 
-    function renderCategoryFilters() {
+    function renderCategoryFilters(activeCats) {
       const container = document.getElementById('category-filters');
-      const avail = getAvailableProducts();
-      // Hanya tampilkan kategori yang memiliki minimal 1 unit ready stock
-      const activeCats = ['Semua', ...categoriesList.filter(cat =>
-        avail.some(p => (p.category || '').toLowerCase() === cat.toLowerCase())
-      )];
-      container.innerHTML = activeCats.map(cat => {
+      if (!container) return;
+      const list = ['Semua', ...(activeCats || categoriesList)];
+      container.innerHTML = list.map(cat => {
         const active = selectedCategory === cat;
-        const cls = active ? 'bg-[#C62828] text-white shadow-sm' : 'bg-white text-[#1d1d1f] hover:bg-gray-100 border border-gray-200/80';
+        const cls = active
+          ? 'bg-[#C62828] text-white shadow-sm'
+          : 'bg-white text-[#1d1d1f] hover:bg-gray-100 border border-gray-200/80';
         return `<button onclick="selectCategoryFilter('${cat.replace(/'/g, "\\'")}')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${cls}">${cat}</button>`;
       }).join('');
     }
@@ -287,8 +296,7 @@
     function selectCategoryFilter(cat) {
       selectedCategory = cat;
       ensureValidSelectedProducts();
-      renderCategoryFilters();
-      renderComparisonTable();
+      refreshAllUI();
     }
 
     function setColumnCount(count) {
@@ -301,6 +309,7 @@
     function updateColumnButtonsUI() {
       [2, 3, 4].forEach(num => {
         const btn = document.getElementById(`col-btn-${num}`);
+        if (!btn) return;
         btn.className = columnCount === num
           ? 'px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold bg-[#1d1d1f] text-white shadow-xs'
           : 'px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold text-[#6e6e73] hover:text-[#1d1d1f]';
@@ -315,16 +324,14 @@
 
       const q = query.trim().toLowerCase();
       if (!q) return;
-      const matches = getAvailableProducts().filter(p =>
-        `${p.name} ${p.category} ${p.chip} ${p.features}`.toLowerCase().includes(q)
-      );
+      const avail = getAvailableProducts();
+      const matches = avail.filter(p => `${p.name} ${p.category} ${p.chip} ${p.features}`.toLowerCase().includes(q));
       if (matches.length > 0) {
         selectedCategory = 'Semua';
-        renderCategoryFilters();
         for (let i = 0; i < columnCount; i++) {
           if (matches[i]) selectedProductIds[i] = matches[i].id;
         }
-        renderComparisonTable();
+        refreshAllUI();
       }
     }
 
@@ -334,15 +341,13 @@
     }
 
     function renderComparisonTable() {
-      const headerGrid = document.getElementById('compare-header-grid');
-      const specsContainer = document.getElementById('compare-specs-container');
       const emptyBanner = document.getElementById('empty-stock-banner');
       const wrapper = document.getElementById('comparison-wrapper');
-
+      const headerGrid = document.getElementById('compare-header-grid');
+      const specsContainer = document.getElementById('compare-specs-container');
       const pool = getFilteredAvailableProducts();
-      const dropdownProducts = pool.length > 0 ? pool : getAvailableProducts();
 
-      if (dropdownProducts.length === 0) {
+      if (pool.length === 0) {
         emptyBanner.classList.remove('hidden');
         wrapper.classList.add('hidden');
         return;
@@ -350,12 +355,13 @@
       emptyBanner.classList.add('hidden');
       wrapper.classList.remove('hidden');
 
-      const gridColsClass = columnCount === 2 ? 'grid-cols-2' : columnCount === 3 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4';
+      const displayCols = Math.min(columnCount, Math.max(pool.length, 1));
+      const gridColsClass = displayCols === 1 ? 'grid-cols-1 max-w-md mx-auto' : displayCols === 2 ? 'grid-cols-2' : displayCols === 3 ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4';
       headerGrid.className = `grid ${gridColsClass} gap-2.5 sm:gap-6 border-b border-gray-200 pb-6 sm:pb-8 pt-2`;
 
       const activeProducts = [];
-      for (let i = 0; i < columnCount; i++) {
-        const prod = dropdownProducts.find(p => p.id === selectedProductIds[i]) || dropdownProducts[i % dropdownProducts.length];
+      for (let i = 0; i < displayCols; i++) {
+        const prod = pool.find(p => p.id === selectedProductIds[i]) || pool[i % pool.length];
         if (prod) {
           selectedProductIds[i] = prod.id;
           activeProducts.push(prod);
@@ -364,36 +370,30 @@
 
       headerGrid.innerHTML = activeProducts.map((prod, idx) => {
         const fallbackImg = `https://placehold.co/320x320/f5f5f7/1d1d1f?text=${encodeURIComponent(prod.name.slice(0, 20))}`;
-        const stockQty = parseStockNumber(prod.stock);
-        const waText = encodeURIComponent(`Halo Admin Mahadewa.id, saya melihat unit *${prod.name}* (${prod.category}) di katalog website. Boleh info harga terbarunya?`);
-        const optionsHtml = dropdownProducts.map(item =>
+        const stockQty = parseStockNumber(prod.stock ?? prod.Stock);
+        const waText = encodeURIComponent(`Halo Admin Mahadewa.id, saya melihat unit *${prod.name}* (${prod.category}) ready stock di katalog website. Boleh info harga terbarunya?`);
+        const optionsHtml = pool.map(item =>
           `<option value="${item.id}" ${item.id === prod.id ? 'selected' : ''}>${item.name}</option>`
         ).join('');
 
         return `
           <div class="flex flex-col items-center text-center bg-white rounded-2xl p-3 sm:p-5 border border-gray-200/80 shadow-xs">
             <select onchange="handleSlotProductChange(${idx}, this.value)"
-              class="apple-select w-full px-3 py-2 pr-8 rounded-xl bg-[#f5f5f7] border border-gray-200 text-xs sm:text-sm font-bold text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#C62828] mb-3 cursor-pointer">
+              class="apple-select w-full px-3 py-2 pr-8 rounded-xl bg-[#f5f5f7] border border-gray-200 text-xs sm:text-sm font-bold text-[#1d1d1f] mb-3 cursor-pointer">
               ${optionsHtml}
             </select>
-
-            <div class="w-full flex justify-end mb-2">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Ready (${stockQty} unit)
-              </span>
+            <div class="w-28 h-28 sm:w-44 sm:h-44 rounded-2xl bg-[#f5f5f7] p-3 flex items-center justify-center mb-3 overflow-hidden">
+              <img src="${prod.image || fallbackImg}" alt="${prod.name}"
+                onerror="this.onerror=null;this.src='${fallbackImg}';" class="w-full h-full object-contain" />
             </div>
-
-            <div class="w-28 h-28 sm:w-44 sm:h-44 rounded-2xl bg-[#f5f5f7] p-3 flex items-center justify-center mb-4 overflow-hidden">
-              <img src="${prod.image || fallbackImg}" alt="${prod.name}" onerror="this.onerror=null;this.src='${fallbackImg}';"
-                class="w-full h-full object-contain transition-transform duration-300 hover:scale-105" />
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#C62828]">${prod.category}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Ready: ${stockQty}</span>
             </div>
-
-            <span class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[#C62828] mb-1">${prod.category}</span>
             <h3 class="text-sm sm:text-xl font-bold text-[#1d1d1f] leading-snug mb-1.5">${prod.name}</h3>
             <p class="text-[11px] sm:text-xs text-[#6e6e73] line-clamp-2 mb-4 flex-1">${prod.tagline || ''}</p>
-
             <a href="https://wa.me/6282344888441?text=${waText}" target="_blank" rel="noopener"
-              class="w-full inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold shadow-xs transition">
+              class="w-full inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full bg-[#C62828] hover:bg-[#a61c1c] text-white text-xs font-semibold transition">
               <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
               <span>Tanya Harga via WA</span>
             </a>
@@ -419,8 +419,10 @@
           </div>
           <div class="grid ${gridColsClass} gap-2.5 sm:gap-6">
             ${activeProducts.map(prod => {
-              const cardBg = row.highlight === 'emerald' ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-950'
-                : row.highlight === 'amber' ? 'bg-amber-50/70 border-amber-200/80 text-amber-950'
+              const cardBg = row.highlight === 'emerald'
+                ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-950'
+                : row.highlight === 'amber'
+                ? 'bg-amber-50/70 border-amber-200/80 text-amber-950'
                 : 'bg-[#f5f5f7]/70 border-gray-200/60 text-[#1d1d1f]';
               return `<div class="p-3 sm:p-4 rounded-2xl border ${cardBg} text-xs sm:text-sm leading-relaxed">${prod[row.key] || '-'}</div>`;
             }).join('')}
@@ -431,74 +433,25 @@
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    // =========================================================================
-    // KONSULTAN AI (HANYA MEREKOMENDASIKAN PRODUK READY STOCK > 0, TANPA HARGA)
-    // =========================================================================
     function setAiConsultantPrompt(text) {
-      const input = document.getElementById('ai-consultant-input');
-      if (input) { input.value = text; input.focus(); }
+      const el = document.getElementById('ai-consultant-input');
+      if (el) { el.value = text; el.focus(); }
     }
 
-    function applyAiRecommendationsToTable() {
-      if (!lastAiRecommendedIds.length) return;
-      selectedCategory = 'Semua';
-      renderCategoryFilters();
-      const countToUse = Math.min(Math.max(lastAiRecommendedIds.length, 2), 4);
-      columnCount = countToUse;
-      updateColumnButtonsUI();
-      for (let i = 0; i < countToUse; i++) {
-        if (lastAiRecommendedIds[i]) selectedProductIds[i] = lastAiRecommendedIds[i];
-      }
-      renderComparisonTable();
-      document.getElementById('comparison-wrapper').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    async function discoverAvailableGeminiModels(apiKey) {
-      if (Array.isArray(cachedActiveModels) && cachedActiveModels.length > 0) return cachedActiveModels;
-      const fallback = ['gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview', 'gemini-flash-latest', 'gemini-2.5-flash-lite'];
+    async function discoverModel(apiKey) {
+      if (preferredGeminiModel) return preferredGeminiModel;
       try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
         if (res.ok) {
           const data = await res.json();
-          const valid = (data.models || [])
+          const list = (data.models || [])
             .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent') && /gemini/i.test(m.name) && !/(embedding|imagen|veo|tts|audio)/i.test(m.name))
             .map(m => m.name.replace(/^models\//, ''));
-          if (valid.length > 0) {
-            valid.sort((a, b) => (/3\.1.*flash-lite/i.test(b) ? 10 : 0) - (/3\.1.*flash-lite/i.test(a) ? 10 : 0));
-            cachedActiveModels = valid;
-            return valid;
-          }
+          const best = list.find(n => /3\.1.*flash-lite/i.test(n)) || list.find(n => /3.*flash/i.test(n)) || list.find(n => /flash-latest/i.test(n)) || list[0];
+          if (best) { preferredGeminiModel = best; return best; }
         }
       } catch (_) {}
-      return fallback;
-    }
-
-    async function callGeminiWithFallback(apiKey, promptText) {
-      const discovered = await discoverAvailableGeminiModels(apiKey);
-      const candidates = preferredGeminiModel ? [preferredGeminiModel, ...discovered.filter(m => m !== preferredGeminiModel)] : discovered;
-      for (const modelName of candidates.slice(0, 5)) {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 12000);
-        try {
-          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-            method: 'POST',
-            signal: controller.signal,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: promptText }] }],
-              generationConfig: { responseMimeType: 'application/json', temperature: 0.25, maxOutputTokens: 550 }
-            })
-          });
-          clearTimeout(tid);
-          if (res.ok) {
-            const data = await res.json();
-            const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-            preferredGeminiModel = modelName;
-            return { parsed: JSON.parse(raw.replace(/```json|```/g, '').trim()), modelUsed: modelName };
-          }
-        } catch (_) { clearTimeout(tid); }
-      }
-      throw new Error('Gemini tidak merespons');
+      return 'gemini-3.1-flash-lite-preview';
     }
 
     async function askAiProductConsultant(event) {
@@ -509,90 +462,97 @@
       const btn = document.getElementById('btn-ask-consultant');
       const origHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Mencari Stok...</span>`;
-      lucide.createIcons();
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i> <span>Menganalisis...</span>`;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
 
       const availPool = getAvailableProducts();
-      let adviceText = '';
-      let recommendedItems = [];
+      let advice = '';
+      let recs = [];
 
       try {
         if (geminiApiKey && availPool.length > 0) {
+          const model = await discoverModel(geminiApiKey);
           const compact = availPool.slice(0, 30).map(p => ({
-            id: p.id, name: p.name, cat: p.category, stock: parseStockNumber(p.stock),
+            id: p.id, name: p.name, cat: p.category, stock: parseStockNumber(p.stock ?? p.Stock),
             chip: (p.chip || '').slice(0, 80), display: (p.display || '').slice(0, 70), pros: (p.pros || '').slice(0, 120)
           }));
           const prompt = `Konsultan AI Mahadewa.id Palopo. Pertanyaan pelanggan: "${q}".
-Daftar produk READY STOCK saat ini (JANGAN sebutkan harga rupiah apa pun):
+Daftar unit READY STOCK saat ini (JANGAN sebutkan harga, hanya pilih dari daftar ini):
 ${JSON.stringify(compact)}
-Pilih 1-3 produk paling cocok berdasarkan "id" yang ada di daftar. Balas JSON valid:
-{"advice":"Penjelasan ramah 2 kalimat tanpa menyebut nominal harga","recommendations":[{"id":"id-produk","reason":"Alasan berdasarkan spesifikasi & kelebihan"}]}`;
-          const { parsed } = await callGeminiWithFallback(geminiApiKey, prompt);
-          adviceText = parsed.advice || '';
-          (parsed.recommendations || []).forEach(rec => {
-            const found = availPool.find(p => p.id === rec.id);
-            if (found) recommendedItems.push({ product: found, reason: rec.reason || found.pros });
+Balas HANYA JSON murni: {"advice":"Saran singkat 2 kalimat Bahasa Indonesia","recommendations":[{"id":"id-produk","reason":"Alasan singkat"}]}`;
+
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.25 } })
           });
+          if (res.ok) {
+            const data = await res.json();
+            const parsed = JSON.parse((data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}').replace(/```json|```/g, '').trim());
+            advice = parsed.advice || '';
+            (parsed.recommendations || []).forEach(r => {
+              const found = availPool.find(p => p.id === r.id);
+              if (found) recs.push({ p: found, reason: r.reason || found.pros || found.tagline });
+            });
+          }
         }
       } catch (_) {}
 
-      if (recommendedItems.length === 0) {
+      if (recs.length === 0) {
         const tokens = q.toLowerCase().split(/\s+/).filter(w => w.length > 2);
         const scored = availPool.map(p => {
-          const blob = `${p.name} ${p.category} ${p.chip} ${p.features} ${p.pros}`.toLowerCase();
-          let s = 0;
-          tokens.forEach(t => { if (blob.includes(t)) s += 5; });
-          return { p, s };
-        }).sort((a, b) => b.s - a.s);
+          const blob = `${p.name} ${p.category} ${p.chip} ${p.display} ${p.pros} ${p.features}`.toLowerCase();
+          let score = 0;
+          tokens.forEach(t => { if (blob.includes(t)) score += 5; });
+          return { p, score };
+        }).sort((a, b) => b.score - a.score);
 
-        const top = scored.filter(x => x.s > 0).slice(0, 3);
+        const top = scored.slice(0, 3);
         if (top.length > 0) {
-          adviceText = `Berikut unit <strong>Ready Stock</strong> di Mahadewa.id yang paling sesuai dengan kebutuhan Anda:`;
-          recommendedItems = top.map(x => ({ product: x.p, reason: x.p.pros || x.p.tagline }));
+          advice = `Berikut unit Ready Stock di Mahadewa.id yang paling sesuai dengan kebutuhan Anda:`;
+          recs = top.map(it => ({ p: it.p, reason: it.p.pros || it.p.tagline || it.p.chip }));
         } else {
-          adviceText = `Mohon maaf, unit ready stock untuk kebutuhan tersebut belum ditemukan. Silakan hubungi WhatsApp kami di 0823-4488-8441.`;
+          advice = `Saat ini belum ada unit ready stock yang sesuai. Silakan hubungi WhatsApp Admin kami di 0823-4488-8441.`;
         }
       }
 
-      renderConsultantResult(adviceText, recommendedItems);
-      btn.disabled = false;
-      btn.innerHTML = origHtml;
-      lucide.createIcons();
-    }
-
-    function renderConsultantResult(adviceText, items) {
-      const box = document.getElementById('ai-consultant-result');
-      const ans = document.getElementById('ai-consultant-answer');
-      const cards = document.getElementById('ai-consultant-cards');
-      const wrap = document.getElementById('ai-consultant-apply-wrap');
-      lastAiRecommendedIds = items.map(i => i.product.id);
-
-      ans.innerHTML = `<span class="font-bold text-[#C62828]">Saran AI Mahadewa.id:</span> ${adviceText}`;
-      cards.innerHTML = items.map(it => {
-        const p = it.product;
-        const img = p.image || `https://placehold.co/320x320/f5f5f7/1d1d1f?text=${encodeURIComponent(p.name.slice(0, 15))}`;
+      lastAiRecommendedIds = recs.map(r => r.p.id);
+      document.getElementById('ai-consultant-answer').innerHTML = `<span class="font-bold text-[#C62828]">Saran AI Mahadewa.id:</span> ${advice}`;
+      document.getElementById('ai-consultant-cards').innerHTML = recs.map(r => {
+        const p = r.p;
+        const fallbackImg = `https://placehold.co/120x120/f5f5f7/1d1d1f?text=${encodeURIComponent(p.name.slice(0, 12))}`;
         return `
           <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200 shadow-xs">
-            <img src="${img}" alt="${p.name}" class="w-11 h-11 rounded-lg object-contain bg-[#f5f5f7] p-1 flex-shrink-0" />
+            <img src="${p.image || fallbackImg}" alt="${p.name}" onerror="this.onerror=null;this.src='${fallbackImg}';" class="w-11 h-11 rounded-lg object-contain bg-[#f5f5f7] p-1 flex-shrink-0" />
             <div class="min-w-0">
               <div class="flex items-center justify-between gap-1">
                 <span class="text-[10px] font-bold uppercase text-[#C62828]">${p.category}</span>
-                <span class="text-[10px] font-bold text-emerald-700">Stok: ${parseStockNumber(p.stock)}</span>
+                <span class="text-[10px] font-bold text-emerald-700">Stok: ${parseStockNumber(p.stock ?? p.Stock)}</span>
               </div>
               <p class="text-xs font-bold text-[#1d1d1f] truncate">${p.name}</p>
-              <p class="text-[11px] text-[#6e6e73] line-clamp-2 mt-0.5">${it.reason}</p>
+              <p class="text-[11px] text-[#6e6e73] line-clamp-2 mt-0.5">${r.reason}</p>
             </div>
-          </div>`;
+          </div>
+        `;
       }).join('');
 
-      wrap.innerHTML = items.length > 0 ? `
-        <button type="button" onclick="applyAiRecommendationsToTable()"
-          class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1d1d1f] hover:bg-black text-white text-xs font-semibold shadow-sm transition">
-          <i data-lucide="columns-3" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span>Bandingkan ${items.length} Produk Ready Stock Ini</span>
+      document.getElementById('ai-consultant-apply-wrap').innerHTML = recs.length > 0 ? `
+        <button type="button" onclick="applyAiRecommendationsToTable()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1d1d1f] text-white text-xs font-semibold">
+          <span>Bandingkan ${recs.length} Produk Ini di Tabel</span>
         </button>` : '';
-      box.classList.remove('hidden');
-      lucide.createIcons();
+
+      document.getElementById('ai-consultant-result').classList.remove('hidden');
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function applyAiRecommendationsToTable() {
+      if (!lastAiRecommendedIds.length) return;
+      selectedCategory = 'Semua';
+      columnCount = Math.min(Math.max(lastAiRecommendedIds.length, 2), 4);
+      lastAiRecommendedIds.forEach((id, i) => { selectedProductIds[i] = id; });
+      refreshAllUI();
     }
 
     function showToast(msg, type = 'info') {
