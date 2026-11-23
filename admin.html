@@ -60,16 +60,16 @@
     <!-- Baris Atas: Upload & Download Template Excel (Harga, Stok, Spesifikasi) -->
     <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
       <div>
-        <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Import / Export Massal</span>
-        <h2 class="text-lg font-bold text-[#1d1d1f] mt-1.5">Upload Excel Harga, Stok & Spesifikasi</h2>
-        <p class="text-xs text-[#6e6e73]">Urutan kolom Excel sesuai Spreadsheet: <code class="font-mono text-[#C62828]">id, name, category, harga, Stock, tagline, image, display, chip, camera, battery, features, pros, cons, source</code>.</p>
+        <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">Import / Export Massal (Aman — Tanpa Hapus Data Lama)</span>
+        <h2 class="text-lg font-bold text-[#1d1d1f] mt-1.5">Upload Excel Tambah / Update Harga, Stok & Spesifikasi</h2>
+        <p class="text-xs text-[#6e6e73]">Item baru otomatis <strong>ditambahkan</strong> ke katalog, dan item dengan nama/`id` yang sama akan <strong>diperbarui</strong> tanpa menghapus data lama.</p>
       </div>
       <div class="flex flex-wrap items-center gap-2.5">
         <button onclick="downloadExcelTemplate()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200">
           <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Download Excel Saat Ini / Template
         </button>
         <label class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm cursor-pointer">
-          <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload File Excel (.xlsx)
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload Excel (Tambah / Update)
           <input type="file" accept=".xlsx,.xls,.csv" onchange="handleExcelImport(event)" class="hidden" />
         </label>
         <button onclick="pushAllToGoogleSheets()" class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#1d1d1f] hover:bg-black text-white">
@@ -411,30 +411,94 @@
       reader.onload = async (e) => {
         const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
         const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-        const imported = rows.map((r, i) => ({
-          id: String(r.id || `excel-${Date.now()}-${i}`),
-          name: String(r.name || r['Nama Produk'] || '').trim(),
-          category: String(r.category || r['Kategori'] || 'iPhone').trim(),
-          price: Number(String(r.harga ?? r.Harga ?? r.price ?? 0).replace(/[^0-9]/g, '')) || 0,
-          stock: Number(String(r.Stock ?? r.stock ?? r.Stok ?? 0).replace(/[^0-9]/g, '')) || 0,
-          tagline: String(r.tagline || r['Tagline'] || '').trim(),
-          image: String(r.image || r['Foto'] || '').trim(),
-          display: String(r.display || r['Layar'] || '').trim(),
-          chip: String(r.chip || r['Performa'] || '').trim(),
-          camera: String(r.camera || r['Kamera'] || '').trim(),
-          battery: String(r.battery || r['Baterai'] || '').trim(),
-          features: String(r.features || r['Fitur'] || '').trim(),
-          pros: String(r.pros || r['Kelebihan'] || '').trim(),
-          cons: String(r.cons || r['Kekurangan'] || '').trim(),
-          source: String(r.source || r['Sumber'] || '').trim()
-        })).filter(x => x.name);
+        const imported = rows.map((r, i) => {
+          const hasPrice = r.harga !== undefined && String(r.harga).trim() !== '' || r.Harga !== undefined && String(r.Harga).trim() !== '' || r.price !== undefined && String(r.price).trim() !== '';
+          const hasStock = r.Stock !== undefined && String(r.Stock).trim() !== '' || r.stock !== undefined && String(r.stock).trim() !== '' || r.Stok !== undefined && String(r.Stok).trim() !== '';
+          return {
+            rawId: String(r.id || '').trim(),
+            name: String(r.name || r['Nama Produk'] || '').trim(),
+            category: String(r.category || r['Kategori'] || '').trim(),
+            hasPrice,
+            price: Number(String(r.harga ?? r.Harga ?? r.price ?? 0).replace(/[^0-9]/g, '')) || 0,
+            hasStock,
+            stock: Number(String(r.Stock ?? r.stock ?? r.Stok ?? 0).replace(/[^0-9]/g, '')) || 0,
+            tagline: String(r.tagline || r['Tagline'] || '').trim(),
+            image: String(r.image || r['Foto'] || '').trim(),
+            display: String(r.display || r['Layar'] || '').trim(),
+            chip: String(r.chip || r['Performa'] || '').trim(),
+            camera: String(r.camera || r['Kamera'] || '').trim(),
+            battery: String(r.battery || r['Baterai'] || '').trim(),
+            features: String(r.features || r['Fitur'] || '').trim(),
+            pros: String(r.pros || r['Kelebihan'] || '').trim(),
+            cons: String(r.cons || r['Kekurangan'] || '').trim(),
+            source: String(r.source || r['Sumber'] || '').trim(),
+            idx: i
+          };
+        }).filter(x => x.name);
 
         if (imported.length > 0) {
-          products = imported;
+          let addedCount = 0;
+          let updatedCount = 0;
+          const upsertedItems = [];
+
+          imported.forEach(item => {
+            const existingIdx = products.findIndex(p =>
+              (item.rawId && String(p.id).trim() === item.rawId) ||
+              String(p.name || '').trim().toLowerCase() === item.name.toLowerCase()
+            );
+
+            if (existingIdx !== -1) {
+              const old = products[existingIdx];
+              const merged = {
+                ...old,
+                name: item.name || old.name,
+                category: item.category || old.category || 'iPhone',
+                price: item.hasPrice ? item.price : (Number(old.price ?? old.harga ?? 0) || 0),
+                stock: item.hasStock ? item.stock : (Number(old.stock ?? old.Stock ?? 0) || 0),
+                tagline: item.tagline || old.tagline || '',
+                image: item.image || old.image || '',
+                display: item.display || old.display || '',
+                chip: item.chip || old.chip || '',
+                camera: item.camera || old.camera || '',
+                battery: item.battery || old.battery || '',
+                features: item.features || old.features || '',
+                pros: item.pros || old.pros || '',
+                cons: item.cons || old.cons || '',
+                source: item.source || old.source || ''
+              };
+              products[existingIdx] = merged;
+              upsertedItems.push(merged);
+              updatedCount++;
+            } else {
+              const created = {
+                id: item.rawId || `${item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}-${item.idx}`,
+                name: item.name,
+                category: item.category || 'iPhone',
+                price: item.price,
+                stock: item.stock,
+                tagline: item.tagline,
+                image: item.image,
+                display: item.display,
+                chip: item.chip,
+                camera: item.camera,
+                battery: item.battery,
+                features: item.features,
+                pros: item.pros,
+                cons: item.cons,
+                source: item.source
+              };
+              products.push(created);
+              upsertedItems.push(created);
+              addedCount++;
+            }
+          });
+
           renderAdminList();
-          await pushAllToGoogleSheets();
-          showToast(`Berhasil upload ${imported.length} produk (harga, Stock & spesifikasi) dari Excel!`, 'success');
+          updateCategorySuggestions();
+          await postToCloud({ action: 'mergeBatch', products: upsertedItems });
+          showToast(`Selesai! ${addedCount} produk baru ditambahkan & ${updatedCount} produk diperbarui (data lama tetap aman).`, 'success');
         }
+        event.target.value = '';
       };
       reader.readAsArrayBuffer(file);
     }
